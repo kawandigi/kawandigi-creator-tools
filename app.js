@@ -692,9 +692,9 @@ function renderUgcResults(campaign) {
         
         fullPromptCode.textContent = textToDisplay;
 
-        btnCopyFullPrompt?.onclick = () => {
+        btnCopyFullPrompt?.addEventListener('click', () => {
             copyToClipboard(textToDisplay, 'Prompt Video 10 Detik Lengkap disalin!');
-        };
+        });
     }
 
     // 3. Render Scene Cards
