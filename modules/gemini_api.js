@@ -18,58 +18,100 @@ export function saveApiKey(key) {
 }
 
 /**
- * Call Google Gemini 3.8 Flash for Structured Reasoning, Scriptwriting, and Storyboards
+ * Multi-tier model fallback list to prevent "high demand" / 503 / 429 errors
  */
-export async function callGemini(prompt, systemInstruction = '', model = 'gemini-3.8-flash') {
+const FALLBACK_MODELS = [
+    'gemini-3.8-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite'
+];
+
+/**
+ * Call Google Gemini with Automatic Model Fallback on High Demand / Spikes
+ */
+export async function callGemini(prompt, systemInstruction = '', preferredModel = 'gemini-3.8-flash') {
     const apiKey = getSavedApiKey();
     if (!apiKey) {
         throw new Error('API Key Google AI Studio belum diisi. Silakan masukkan API Key Anda di menu Pengaturan.');
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const modelsToTry = [
+        preferredModel,
+        ...FALLBACK_MODELS.filter(m => m !== preferredModel)
+    ];
 
-    const payload = {
-        contents: [
-            {
-                role: 'user',
-                parts: [{ text: prompt }]
+    let lastError = null;
+
+    for (let i = 0; i < modelsToTry.length; i++) {
+        const currentModel = modelsToTry[i];
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+
+        const payload = {
+            contents: [
+                {
+                    role: 'user',
+                    parts: [{ text: prompt }]
+                }
+            ],
+            generationConfig: {
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: 4096
             }
-        ],
-        generationConfig: {
-            temperature: 0.7,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 4096
-        }
-    };
-
-    if (systemInstruction) {
-        payload.systemInstruction = {
-            parts: [{ text: systemInstruction }]
         };
+
+        if (systemInstruction) {
+            payload.systemInstruction = {
+                parts: [{ text: systemInstruction }]
+            };
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+
+                // Check for high demand / temporary spike / rate limit
+                const isHighDemand = response.status === 503 || response.status === 429 || /high demand|temporarily unavailable|overloaded|spikes in demand|resource_exhausted/i.test(errMsg);
+                
+                if (isHighDemand && i < modelsToTry.length - 1) {
+                    const nextModel = modelsToTry[i + 1];
+                    console.warn(`[KawanDigi AI] Model ${currentModel} sedang sibuk (${errMsg}). Beralih otomatis ke fallback ${nextModel}...`);
+                    lastError = new Error(errMsg);
+                    continue;
+                }
+
+                throw new Error(`Google Gemini API Error (${currentModel}): ${errMsg}`);
+            }
+
+            const data = await response.json();
+            const candidate = data.candidates?.[0];
+            if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                if (i < modelsToTry.length - 1) continue;
+                throw new Error('Google Gemini tidak mengembalikan naskah teks yang valid.');
+            }
+
+            return candidate.content.parts[0].text;
+        } catch (err) {
+            lastError = err;
+            if (i < modelsToTry.length - 1 && /high demand|temporarily unavailable|overloaded|spikes in demand|503|429/i.test(err.message)) {
+                continue;
+            }
+            throw err;
+        }
     }
 
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-        throw new Error(`Google Gemini API Error: ${errMsg}`);
-    }
-
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-    if (!candidate || !candidate.content?.parts?.[0]?.text) {
-        throw new Error('Google Gemini tidak mengembalikan naskah teks yang valid.');
-    }
-
-    return candidate.content.parts[0].text;
+    throw lastError || new Error('Gagal menghubungi Google Gemini AI setelah mencoba server cadangan.');
 }
 
 /**
