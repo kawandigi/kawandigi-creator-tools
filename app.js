@@ -180,27 +180,138 @@ function initApiKeyModal() {
 }
 
 // =========================================================================
+// PRESET DEMO DATA (FOR EASY TESTING & FAST EXPERIMENTATION)
+// =========================================================================
+let currentUgcPresetIndex = 0;
+const UGC_PRESETS = [
+    {
+        name: 'Glow Serum 10x Niacinamide & Alpha Arbutin',
+        url: 'https://shopee.co.id/example-glow-serum-viral',
+        category: '💄 Skincare & Kecantikan',
+        tone: 'Casual & Ceria (Gen Z)',
+        duration: 30,
+        selling: 'Beli 1 Gratis 1 promo gajian, memudarkan flek hitam & bekas jerawat dalam 7 hari, bersertifikat BPOM & Halal, tekstur watery cepat meresap.'
+    },
+    {
+        name: 'TWS Bass ANC Wireless Earbuds Pro',
+        url: 'https://vt.tiktok.com/example-tws-earbuds',
+        category: '📱 Gadget & Elektronik',
+        tone: 'FOMO & Urgensi Diskon',
+        duration: 30,
+        selling: 'Flash sale diskon 65% sisa 20 unit terakhir, baterai tahan 36 jam, audio Bass Booster surround, anti air IPX5 cocok buat olahraga.'
+    },
+    {
+        name: 'Loose Korean Oversized Knit Cardigan',
+        url: 'https://shopee.co.id/example-knit-cardigan',
+        category: '👗 Fashion & OOTD',
+        tone: 'Elegan & Mewah',
+        duration: 20,
+        selling: 'Bahan rajut katun import premium anti gerah, potongan drop shoulder bikin postur ramping, tersedia 5 warna pastel estetik.'
+    }
+];
+
+let currentDramaPresetIndex = 0;
+const DRAMA_PRESETS = [
+    {
+        title: 'Rahasia Bos Menyamar',
+        episode: 1,
+        genre: '👑 CEO Konglomerat Menyamar',
+        premise: 'Adrian sengaja menyamar menjadi OB di kantor cabangnya sendiri untuk menyelidiki korupsi. Namun, manager arogan Pak Hendra menyiramkan kopi ke seragam Adrian dan memfitnahnya mencuri dokumen proyek 100 Miliar.',
+        heroName: 'Adrian (27 thn)',
+        heroDesc: 'Pria Asia 27 tahun, wajah tampan berkarisma, rambut hitam belah samping rapi, mengenakan seragam OB abu-abu sederhana, tatapan tajam penuh wibawa tersembunyi.',
+        villainName: 'Pak Hendra (45 thn)',
+        villainDesc: 'Pria 45 tahun, berbadan tambun, mengenakan setelan jas abu-abu mengilap yang terlalu ketat, jam tangan emas mencolok, senyum sinis merendahkan.',
+        scenes: 3
+    },
+    {
+        title: 'Kembalinya Menantu Naga',
+        episode: 1,
+        genre: '⚔️ Balas Dendam Menantu / Underdog',
+        premise: 'Selama 3 tahun, Arya dihina sebagai benalu miskin oleh mertua konglomerat. Saat perayaan ulang tahun Nenek, Arya diusir dan dipermalukan di depan semua tamu undangan, tepat sebelum iring-iringan 10 mobil Rolls-Royce tiba menjemput Arya sebagai pewaris Grup Dragon Corp.',
+        heroName: 'Arya (28 thn)',
+        heroDesc: 'Pria muda 28 tahun, berkaus oblong putih polos dan celana jeans pudar, tubuh tegap atletis, wajah tenang tanpa amarah namun aura kepemimpinan luar biasa.',
+        villainName: 'Ibu Sandra (50 thn)',
+        villainDesc: 'Wanita paruh baya 50 tahun sosialita, bergaun merah mewah dengan kalung berlian mencolok, riasan tebal angkuh, tatapan mata memandang rendah.',
+        scenes: 3
+    },
+    {
+        title: 'Cinta Diam-Diam Pak Direktur',
+        episode: 1,
+        genre: '💖 Romansa Kantor & Cinta Segitiga',
+        premise: 'Clarissa, anak magang yang ceroboh tapi pekerja keras, terjebak di lift kantor yang macet bersama Gavin, Direktur Utama yang terkenal sangat dingin dan benci disentuh. Namun di tengah kegelapan, Gavin justru panik karena claustrophobia dan memeluk Clarissa.',
+        heroName: 'Clarissa (22 thn)',
+        heroDesc: 'Gadis muda 22 tahun manis berambut sebahu diikat rapi, kemeja putih kasual dan rok span hitam, tas selempang canvas, kacamata bulat frame tipis.',
+        villainName: 'Gavin (29 thn)',
+        villainDesc: 'Pria dingin 29 tahun, berpostur tinggi atletis, setelan jas hitam tailor-made rapi tanpa cela, tatapan dingin berwajah stoic namun mulai memperlihatkan kerapuhan emosional.',
+        scenes: 3
+    }
+];
+
+function setUgcDuration(dur) {
+    selectedUgcDuration = dur;
+    const durationButtons = document.querySelectorAll('.btn-duration');
+    const durationLabel = document.getElementById('ugc-duration-label');
+    durationButtons.forEach(btn => {
+        if (parseInt(btn.dataset.duration, 10) === dur) {
+            btn.classList.add('active', 'bg-brand-500/20', 'border-brand-500', 'text-brand-300');
+            btn.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-300');
+        } else {
+            btn.classList.remove('active', 'bg-brand-500/20', 'border-brand-500', 'text-brand-300');
+            btn.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
+        }
+    });
+    const sceneMap = { 10: '1 Scene', 20: '2 Scene', 30: '3 Scene', 60: '6 Scene' };
+    if (durationLabel) {
+        durationLabel.textContent = `${dur} Detik (${sceneMap[dur] || '3 Scene'})`;
+    }
+}
+
+function setDramaScenes(scenes) {
+    selectedDramaScenes = scenes;
+    const durationButtons = document.querySelectorAll('.btn-drama-duration');
+    durationButtons.forEach(btn => {
+        if (parseInt(btn.dataset.dramaScenes, 10) === scenes) {
+            btn.classList.add('active', 'bg-accent-500/20', 'border-accent-500', 'text-accent-300');
+            btn.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-300');
+        } else {
+            btn.classList.remove('active', 'bg-accent-500/20', 'border-accent-500', 'text-accent-300');
+            btn.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
+        }
+    });
+}
+
+// =========================================================================
 // UGC AFFILIATE CREATOR CONTROLLER
 // =========================================================================
 function initUgcCreator() {
+    // Preset Demo Button
+    const btnUgcPreset = document.getElementById('btn-ugc-preset-demo');
+    btnUgcPreset?.addEventListener('click', () => {
+        const preset = UGC_PRESETS[currentUgcPresetIndex % UGC_PRESETS.length];
+        currentUgcPresetIndex++;
+
+        const nameInput = document.getElementById('ugc-name');
+        const urlInput = document.getElementById('ugc-url');
+        const catSelect = document.getElementById('ugc-category');
+        const toneSelect = document.getElementById('ugc-tone');
+        const sellingInput = document.getElementById('ugc-selling');
+
+        if (nameInput) nameInput.value = preset.name;
+        if (urlInput) urlInput.value = preset.url;
+        if (catSelect) catSelect.value = preset.category;
+        if (toneSelect) toneSelect.value = preset.tone;
+        if (sellingInput) sellingInput.value = preset.selling;
+        setUgcDuration(preset.duration);
+
+        showToast(`Contoh dimuat: ${preset.name}`, 'info');
+    });
+
     // Duration Buttons
     const durationButtons = document.querySelectorAll('.btn-duration');
-    const durationLabel = document.getElementById('ugc-duration-label');
-
     durationButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            durationButtons.forEach(b => {
-                b.classList.remove('active', 'bg-brand-500/20', 'border-brand-500', 'text-brand-300');
-                b.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
-            });
-            btn.classList.add('active', 'bg-brand-500/20', 'border-brand-500', 'text-brand-300');
-            btn.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-300');
-
-            selectedUgcDuration = parseInt(btn.dataset.duration, 10);
-            const sceneMap = { 10: '1 Scene', 20: '2 Scene', 30: '3 Scene', 60: '6 Scene' };
-            if (durationLabel) {
-                durationLabel.textContent = `${selectedUgcDuration} Detik (${sceneMap[selectedUgcDuration] || '3 Scene'})`;
-            }
+            const dur = parseInt(btn.dataset.duration, 10);
+            setUgcDuration(dur);
         });
     });
 
@@ -466,18 +577,40 @@ function renderUgcResults(campaign) {
 // AI DRAMA & MICRO-SERIES CREATOR CONTROLLER
 // =========================================================================
 function initDramaCreator() {
+    // Preset Demo Button
+    const btnDramaPreset = document.getElementById('btn-drama-preset-demo');
+    btnDramaPreset?.addEventListener('click', () => {
+        const preset = DRAMA_PRESETS[currentDramaPresetIndex % DRAMA_PRESETS.length];
+        currentDramaPresetIndex++;
+
+        const titleInput = document.getElementById('drama-title');
+        const epInput = document.getElementById('drama-episode-num');
+        const genreSelect = document.getElementById('drama-genre');
+        const premiseInput = document.getElementById('drama-premise');
+        const heroNameInput = document.getElementById('drama-hero-name');
+        const heroDescInput = document.getElementById('drama-hero-desc');
+        const villainNameInput = document.getElementById('drama-villain-name');
+        const villainDescInput = document.getElementById('drama-villain-desc');
+
+        if (titleInput) titleInput.value = preset.title;
+        if (epInput) epInput.value = preset.episode;
+        if (genreSelect) genreSelect.value = preset.genre;
+        if (premiseInput) premiseInput.value = preset.premise;
+        if (heroNameInput) heroNameInput.value = preset.heroName;
+        if (heroDescInput) heroDescInput.value = preset.heroDesc;
+        if (villainNameInput) villainNameInput.value = preset.villainName;
+        if (villainDescInput) villainDescInput.value = preset.villainDesc;
+        setDramaScenes(preset.scenes);
+
+        showToast(`Contoh dimuat: ${preset.title}`, 'info');
+    });
+
     // Drama Duration Buttons
     const durationButtons = document.querySelectorAll('.btn-drama-duration');
     durationButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            durationButtons.forEach(b => {
-                b.classList.remove('active', 'bg-accent-500/20', 'border-accent-500', 'text-accent-300');
-                b.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
-            });
-            btn.classList.add('active', 'bg-accent-500/20', 'border-accent-500', 'text-accent-300');
-            btn.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-300');
-
-            selectedDramaScenes = parseInt(btn.dataset.dramaScenes, 10);
+            const scenes = parseInt(btn.dataset.dramaScenes, 10);
+            setDramaScenes(scenes);
         });
     });
 
