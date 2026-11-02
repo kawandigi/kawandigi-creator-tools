@@ -3,7 +3,21 @@
  * Handles Navigation, State, Event Listeners, and Dynamic UI Rendering
  */
 
-import { getSavedApiKey, saveApiKey, generateImagen3, generateOmniVideo } from './modules/gemini_api.js';
+import { 
+    AI_PROVIDERS, 
+    getActiveProvider, 
+    setActiveProvider, 
+    getSavedApiKey, 
+    saveApiKey, 
+    getSelectedModel, 
+    saveSelectedModel, 
+    getCustomBaseUrl, 
+    saveCustomBaseUrl, 
+    getCustomModel, 
+    saveCustomModel, 
+    generateImagen3, 
+    generateOmniVideo 
+} from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
 import { extractProductDetails, extractDetailsFromImage, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
@@ -169,23 +183,93 @@ function updateApiStatusIndicator() {
     const statusText = document.getElementById('api-status-text');
     if (!statusText) return;
 
-    if (key) {
-        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>API Aktif`;
+    const providerId = getActiveProvider();
+    const providerInfo = AI_PROVIDERS[providerId] || AI_PROVIDERS.gemini;
+
+    if (key || providerId === 'custom') {
+        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>${providerInfo.badge}: Aktif`;
         statusText.classList.remove('text-amber-400');
         statusText.classList.add('text-emerald-400');
     } else {
-        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>API Key: Belum Ada`;
+        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>${providerInfo.badge}: Belum Ada Key`;
         statusText.classList.remove('text-emerald-400');
         statusText.classList.add('text-amber-400');
     }
 }
 
+function syncModalProviderUI(providerId) {
+    const provider = AI_PROVIDERS[providerId] || AI_PROVIDERS.gemini;
+    const descEl = document.getElementById('provider-desc');
+    const linkEl = document.getElementById('provider-link');
+    const linkText = document.getElementById('provider-link-text');
+    const modelContainer = document.getElementById('container-model-select');
+    const modelSelect = document.getElementById('select-ai-model');
+    const customContainer = document.getElementById('container-custom-fields');
+    const inputKey = document.getElementById('input-api-key');
+    const labelKey = document.getElementById('label-api-key');
+
+    // 1. Desc & link
+    if (descEl) descEl.textContent = provider.tagline;
+    if (linkEl && linkText) {
+        if (provider.keyUrl) {
+            linkEl.href = provider.keyUrl;
+            linkText.textContent = provider.keyUrlLabel || 'Ambil Kunci API';
+            linkEl.classList.remove('hidden');
+        } else {
+            linkEl.classList.add('hidden');
+        }
+    }
+
+    // 2. Populate models
+    if (modelSelect) {
+        modelSelect.innerHTML = '';
+        if (provider.models && provider.models.length > 0) {
+            provider.models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name;
+                modelSelect.appendChild(opt);
+            });
+            const currentSelected = getSelectedModel(providerId);
+            modelSelect.value = currentSelected || provider.defaultModel || provider.models[0].id;
+            modelContainer?.classList.remove('hidden');
+        } else {
+            modelContainer?.classList.add('hidden');
+        }
+    }
+
+    // 3. Custom fields (show only for 'custom')
+    if (customContainer) {
+        if (providerId === 'custom') {
+            customContainer.classList.remove('hidden');
+            const urlInput = document.getElementById('input-custom-url');
+            const modelInput = document.getElementById('input-custom-model');
+            if (urlInput) urlInput.value = getCustomBaseUrl();
+            if (modelInput) modelInput.value = getCustomModel();
+        } else {
+            customContainer.classList.add('hidden');
+        }
+    }
+
+    // 4. Input key
+    if (inputKey) {
+        inputKey.placeholder = provider.keyPlaceholder || 'Masukkan API Key...';
+        inputKey.value = getSavedApiKey(providerId);
+    }
+    if (labelKey) {
+        labelKey.textContent = `API Key ${provider.name}:`;
+    }
+}
+
 function openApiKeyModal() {
     const modal = document.getElementById('modal-api-key');
-    const input = document.getElementById('input-api-key');
-    if (modal && input) {
-        input.value = getSavedApiKey();
+    const providerSelect = document.getElementById('select-ai-provider');
+    if (modal) {
+        const currentProvider = getActiveProvider();
+        if (providerSelect) providerSelect.value = currentProvider;
+        syncModalProviderUI(currentProvider);
         modal.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
     }
 }
 
@@ -199,28 +283,68 @@ function initApiKeyModal() {
     const btnClose = document.getElementById('btn-close-api-modal');
     const btnSave = document.getElementById('btn-save-api-key');
     const btnClear = document.getElementById('btn-clear-api-key');
+    const providerSelect = document.getElementById('select-ai-provider');
+    const modelSelect = document.getElementById('select-ai-model');
     const inputKey = document.getElementById('input-api-key');
+    const btnToggleVis = document.getElementById('btn-toggle-key-visibility');
 
     btnOpen?.addEventListener('click', openApiKeyModal);
     btnClose?.addEventListener('click', closeApiKeyModal);
 
-    btnSave?.addEventListener('click', () => {
-        const val = inputKey.value.trim();
-        if (!val) {
-            showToast('Masukkan API Key Google AI Studio Anda.', 'error');
-            return;
-        }
-        saveApiKey(val);
-        updateApiStatusIndicator();
-        closeApiKeyModal();
-        showToast('Google API Key berhasil disimpan di browser Anda!', 'success');
+    // Switch provider in modal
+    providerSelect?.addEventListener('change', () => {
+        syncModalProviderUI(providerSelect.value);
     });
 
-    btnClear?.addEventListener('click', () => {
-        saveApiKey('');
-        inputKey.value = '';
+    // Toggle key visibility
+    btnToggleVis?.addEventListener('click', () => {
+        if (!inputKey) return;
+        const isPassword = inputKey.type === 'password';
+        inputKey.type = isPassword ? 'text' : 'password';
+        btnToggleVis.innerHTML = isPassword 
+            ? '<i data-lucide="eye-off" class="w-4 h-4"></i>'
+            : '<i data-lucide="eye" class="w-4 h-4"></i>';
+        if (window.lucide) window.lucide.createIcons();
+    });
+
+    // Save button
+    btnSave?.addEventListener('click', () => {
+        const selectedProvider = providerSelect?.value || 'gemini';
+        const keyVal = inputKey ? inputKey.value.trim() : '';
+
+        if (!keyVal && selectedProvider !== 'custom') {
+            const pName = AI_PROVIDERS[selectedProvider]?.name || selectedProvider;
+            showToast(`Masukkan API Key ${pName} Anda.`, 'error');
+            return;
+        }
+
+        setActiveProvider(selectedProvider);
+        saveApiKey(keyVal, selectedProvider);
+
+        if (modelSelect && modelSelect.value) {
+            saveSelectedModel(modelSelect.value, selectedProvider);
+        }
+
+        if (selectedProvider === 'custom') {
+            const urlInput = document.getElementById('input-custom-url');
+            const modelInput = document.getElementById('input-custom-model');
+            if (urlInput) saveCustomBaseUrl(urlInput.value.trim());
+            if (modelInput) saveCustomModel(modelInput.value.trim());
+        }
+
         updateApiStatusIndicator();
-        showToast('API Key telah dihapus.', 'info');
+        closeApiKeyModal();
+        const pName = AI_PROVIDERS[selectedProvider]?.name || selectedProvider;
+        showToast(`Provider AI ${pName} berhasil diatur & disimpan!`, 'success');
+    });
+
+    // Clear key button
+    btnClear?.addEventListener('click', () => {
+        const selectedProvider = providerSelect?.value || 'gemini';
+        saveApiKey('', selectedProvider);
+        if (inputKey) inputKey.value = '';
+        updateApiStatusIndicator();
+        showToast(`API Key ${AI_PROVIDERS[selectedProvider]?.name || selectedProvider} telah dihapus.`, 'info');
     });
 
     updateApiStatusIndicator();
@@ -599,8 +723,10 @@ function initUgcCreator() {
 
 async function handleGenerateUgc() {
     const apiKey = getSavedApiKey();
-    if (!apiKey) {
-        showToast('Masukkan Google API Key Anda terlebih dahulu.', 'error');
+    const provider = getActiveProvider();
+    if (!apiKey && provider !== 'custom') {
+        const pName = AI_PROVIDERS[provider]?.name || 'AI';
+        showToast(`Masukkan API Key ${pName} Anda terlebih dahulu di Pengaturan API.`, 'error');
         openApiKeyModal();
         return;
     }
@@ -1057,8 +1183,10 @@ function initDramaCreator() {
 
 async function handleGenerateDrama() {
     const apiKey = getSavedApiKey();
-    if (!apiKey) {
-        showToast('Masukkan Google API Key Anda terlebih dahulu.', 'error');
+    const provider = getActiveProvider();
+    if (!apiKey && provider !== 'custom') {
+        const pName = AI_PROVIDERS[provider]?.name || 'AI';
+        showToast(`Masukkan API Key ${pName} Anda terlebih dahulu di Pengaturan API.`, 'error');
         openApiKeyModal();
         return;
     }
@@ -1526,9 +1654,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
 
     // Check if API Key is configured on launch
-    if (!getSavedApiKey()) {
+    if (!getSavedApiKey() && getActiveProvider() !== 'custom') {
         setTimeout(() => {
-            showToast('Selamat datang! Masukkan Google AI Studio API Key untuk memulai.', 'info');
+            showToast('Selamat datang! Atur Provider AI Anda (Gemini, DeepSeek, OpenRouter, dll) di pojok kanan atas.', 'info');
         }, 800);
     }
 });

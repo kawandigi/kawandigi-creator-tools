@@ -1,26 +1,158 @@
 /**
- * KawanDigi Creator Studio - Google Gemini, Imagen, & Omni Video API Client
+ * KawanDigi Creator Studio - Multi-Provider AI Gateway & Video API Client
+ * Supports: Google Gemini, DeepSeek (Official), OpenRouter, Groq, & Custom OpenAI-Compatible
  * 100% Client-Side (BYOK: Bring Your Own Key) - Zero VPS / Serverless
  */
 
-const GEMINI_STORAGE_KEY = 'kawandigi_gemini_api_key';
+const STORAGE_PROVIDER_KEY = 'kawandigi_ai_provider';
+const STORAGE_KEYS_PREFIX = 'kawandigi_key_';
+const STORAGE_MODELS_PREFIX = 'kawandigi_model_';
+const STORAGE_CUSTOM_URL = 'kawandigi_custom_url';
+const STORAGE_CUSTOM_MODEL = 'kawandigi_custom_model';
 
-export function getSavedApiKey() {
-    return localStorage.getItem(GEMINI_STORAGE_KEY) || '';
+export const AI_PROVIDERS = {
+    gemini: {
+        id: 'gemini',
+        name: 'Google Gemini',
+        tagline: 'Google AI Studio • Tier Gratis 15 RPM • Multimodal Teks & Gambar',
+        badge: '✨ Gemini',
+        defaultModel: 'gemini-3.8-flash',
+        models: [
+            { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash (Cepat, Cerdas & Stabil — Rekomendasi)' },
+            { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash' },
+            { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite' },
+            { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite' }
+        ],
+        keyUrl: 'https://aistudio.google.com/app/apikey',
+        keyUrlLabel: 'Ambil API Key Gratis di Google AI Studio',
+        keyPlaceholder: 'AIzaSy...'
+    },
+    deepseek: {
+        id: 'deepseek',
+        name: 'DeepSeek Official',
+        tagline: 'DeepSeek-V3 & R1 • Sangat Murah & Pintar Merancang Naskah',
+        badge: '⚡ DeepSeek',
+        defaultModel: 'deepseek-chat',
+        models: [
+            { id: 'deepseek-chat', name: 'DeepSeek-V3 (deepseek-chat — Sangat Cepat & Pintar)' },
+            { id: 'deepseek-reasoner', name: 'DeepSeek-R1 (deepseek-reasoner — Penalaran Mendalam)' }
+        ],
+        endpoint: 'https://api.deepseek.com/chat/completions',
+        keyUrl: 'https://platform.deepseek.com',
+        keyUrlLabel: 'Daftar & Ambil API Key di Platform DeepSeek',
+        keyPlaceholder: 'sk-...'
+    },
+    openrouter: {
+        id: 'openrouter',
+        name: 'OpenRouter',
+        tagline: '1 API Key untuk Mengakses Semua Model AI (DeepSeek, Claude, Llama)',
+        badge: '🌐 OpenRouter',
+        defaultModel: 'deepseek/deepseek-chat',
+        models: [
+            { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (deepseek/deepseek-chat)' },
+            { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (deepseek/deepseek-r1)' },
+            { id: 'google/gemini-2.0-flash-001', name: 'Google Gemini 2.0 Flash' },
+            { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B Instruct' }
+        ],
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        keyUrl: 'https://openrouter.ai/keys',
+        keyUrlLabel: 'Ambil API Key di OpenRouter',
+        keyPlaceholder: 'sk-or-v1-...'
+    },
+    groq: {
+        id: 'groq',
+        name: 'Groq Cloud',
+        tagline: 'Ultra Cepat (500+ tok/s) • Tier Gratis Tersedia',
+        badge: '🚀 Groq',
+        defaultModel: 'llama-3.3-70b-versatile',
+        models: [
+            { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B Versatile' },
+            { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill Llama 70B' },
+            { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant' }
+        ],
+        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+        keyUrl: 'https://console.groq.com/keys',
+        keyUrlLabel: 'Ambil API Key Gratis di Groq Console',
+        keyPlaceholder: 'gsk_...'
+    },
+    custom: {
+        id: 'custom',
+        name: 'Kustom (OpenAI-Compatible)',
+        tagline: 'Ollama Lokal / LM Studio / Together / Mistral / Proxy Pribadi',
+        badge: '🛠️ Custom API',
+        defaultModel: 'llama3',
+        keyUrl: '',
+        keyUrlLabel: '',
+        keyPlaceholder: 'Kunci API (atau ketik dummy jika Ollama lokal)'
+    }
+};
+
+export function getActiveProvider() {
+    return localStorage.getItem(STORAGE_PROVIDER_KEY) || 'gemini';
 }
 
-export function saveApiKey(key) {
-    if (!key) {
-        localStorage.removeItem(GEMINI_STORAGE_KEY);
-    } else {
-        localStorage.setItem(GEMINI_STORAGE_KEY, key.trim());
+export function setActiveProvider(providerId) {
+    if (providerId && AI_PROVIDERS[providerId]) {
+        localStorage.setItem(STORAGE_PROVIDER_KEY, providerId);
     }
 }
 
+export function getSavedApiKey(providerId = null) {
+    const p = providerId || getActiveProvider();
+    const specificKey = localStorage.getItem(STORAGE_KEYS_PREFIX + p);
+    if (specificKey) return specificKey;
+    if (p === 'gemini') {
+        return localStorage.getItem('kawandigi_gemini_api_key') || '';
+    }
+    return '';
+}
+
+export function saveApiKey(key, providerId = null) {
+    const p = providerId || getActiveProvider();
+    const cleanKey = (key || '').trim();
+    if (!cleanKey) {
+        localStorage.removeItem(STORAGE_KEYS_PREFIX + p);
+        if (p === 'gemini') localStorage.removeItem('kawandigi_gemini_api_key');
+    } else {
+        localStorage.setItem(STORAGE_KEYS_PREFIX + p, cleanKey);
+        if (p === 'gemini') localStorage.setItem('kawandigi_gemini_api_key', cleanKey);
+    }
+}
+
+export function getSelectedModel(providerId = null) {
+    const p = providerId || getActiveProvider();
+    const saved = localStorage.getItem(STORAGE_MODELS_PREFIX + p);
+    if (saved) return saved;
+    return AI_PROVIDERS[p]?.defaultModel || '';
+}
+
+export function saveSelectedModel(model, providerId = null) {
+    const p = providerId || getActiveProvider();
+    if (model) {
+        localStorage.setItem(STORAGE_MODELS_PREFIX + p, model);
+    }
+}
+
+export function getCustomBaseUrl() {
+    return localStorage.getItem(STORAGE_CUSTOM_URL) || 'http://localhost:11434/v1';
+}
+
+export function saveCustomBaseUrl(url) {
+    localStorage.setItem(STORAGE_CUSTOM_URL, (url || '').trim());
+}
+
+export function getCustomModel() {
+    return localStorage.getItem(STORAGE_CUSTOM_MODEL) || 'llama3';
+}
+
+export function saveCustomModel(model) {
+    localStorage.setItem(STORAGE_CUSTOM_MODEL, (model || '').trim());
+}
+
 /**
- * Multi-tier model fallback list to prevent "high demand" / 503 / 429 errors
+ * Multi-tier model fallback list for Google Gemini
  */
-const FALLBACK_MODELS = [
+const FALLBACK_GEMINI_MODELS = [
     'gemini-3.8-flash',
     'gemini-3.6-flash',
     'gemini-3.5-flash-lite',
@@ -28,127 +160,400 @@ const FALLBACK_MODELS = [
 ];
 
 /**
- * Call Google Gemini with Automatic Model Fallback on High Demand / Spikes
- * Supports both Text and Multimodal Image Inputs (Screenshots, Photos, etc.)
+ * Universal AI Caller (Gemini, DeepSeek, OpenRouter, Groq, Custom)
  */
-export async function callGemini(prompt, systemInstruction = '', preferredModel = 'gemini-3.8-flash', tools = null, inlineData = null) {
-    const apiKey = getSavedApiKey();
-    if (!apiKey) {
-        throw new Error('API Key Google AI Studio belum diisi. Silakan masukkan API Key Anda di menu Pengaturan.');
+export async function callAiProvider(prompt, systemInstruction = '', preferredModel = '', tools = null, inlineData = null) {
+    const provider = getActiveProvider();
+    const apiKey = getSavedApiKey(provider);
+
+    if (!apiKey && provider !== 'custom') {
+        const providerName = AI_PROVIDERS[provider]?.name || provider;
+        throw new Error(`API Key ${providerName} belum diisi. Silakan masukkan di menu Pengaturan API (pojok kanan atas).`);
     }
 
-    const modelsToTry = [
-        preferredModel,
-        ...FALLBACK_MODELS.filter(m => m !== preferredModel)
-    ];
+    // =========================================================================
+    // 1. GOOGLE GEMINI PROVIDER
+    // =========================================================================
+    if (provider === 'gemini') {
+        const activeModel = (preferredModel && preferredModel.startsWith('gemini'))
+            ? preferredModel
+            : (getSelectedModel('gemini') || 'gemini-3.8-flash');
 
-    let lastError = null;
+        const modelsToTry = [
+            activeModel,
+            ...FALLBACK_GEMINI_MODELS.filter(m => m !== activeModel)
+        ];
 
-    for (let i = 0; i < modelsToTry.length; i++) {
-        const currentModel = modelsToTry[i];
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+        let lastError = null;
 
-        const parts = [];
-        if (inlineData) {
-            if (Array.isArray(inlineData)) {
-                inlineData.forEach(img => parts.push({ inlineData: img }));
-            } else {
-                parts.push({ inlineData: inlineData });
+        for (let i = 0; i < modelsToTry.length; i++) {
+            const currentModel = modelsToTry[i];
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+
+            const parts = [];
+            if (inlineData) {
+                if (Array.isArray(inlineData)) {
+                    inlineData.forEach(img => parts.push({ inlineData: img }));
+                } else {
+                    parts.push({ inlineData: inlineData });
+                }
+            }
+            parts.push({ text: prompt });
+
+            const payload = {
+                contents: [{ role: 'user', parts: parts }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.95,
+                    topK: 40,
+                    maxOutputTokens: 4096
+                }
+            };
+
+            if (systemInstruction) {
+                payload.systemInstruction = {
+                    parts: [{ text: systemInstruction }]
+                };
+            }
+
+            if (tools && Array.isArray(tools)) {
+                payload.tools = tools;
+            }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+                const response = await fetch(endpoint, {
+                    signal: controller.signal,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+
+                    const isHighDemand = response.status === 503 || response.status === 429 || /high demand|temporarily unavailable|overloaded|spikes in demand|resource_exhausted/i.test(errMsg);
+                    
+                    if (isHighDemand && i < modelsToTry.length - 1) {
+                        const nextModel = modelsToTry[i + 1];
+                        console.warn(`[KawanDigi AI] Model ${currentModel} sedang sibuk (${errMsg}). Beralih otomatis ke fallback ${nextModel}...`);
+                        lastError = new Error(errMsg);
+                        continue;
+                    }
+
+                    throw new Error(`Google Gemini API Error (${currentModel}): ${errMsg}`);
+                }
+
+                const data = await response.json();
+                const candidate = data.candidates?.[0];
+                if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                    if (i < modelsToTry.length - 1) continue;
+                    throw new Error('Google Gemini tidak mengembalikan naskah teks yang valid.');
+                }
+
+                return candidate.content.parts[0].text;
+            } catch (err) {
+                lastError = err;
+                if (err.name === 'AbortError' || /aborted/i.test(err.message)) {
+                    if (i < modelsToTry.length - 1) continue;
+                    throw new Error('Koneksi ke Google Gemini melebihi batas waktu (timeout). Silakan periksa koneksi internet Anda atau coba lagi.');
+                }
+                if (i < modelsToTry.length - 1 && /high demand|temporarily unavailable|overloaded|spikes in demand|503|429/i.test(err.message)) {
+                    continue;
+                }
+                throw err;
             }
         }
-        parts.push({ text: prompt });
+
+        throw lastError || new Error('Gagal menghubungi Google Gemini AI.');
+    }
+
+    // =========================================================================
+    // 2. DEEPSEEK OFFICIAL PROVIDER
+    // =========================================================================
+    if (provider === 'deepseek') {
+        const model = (!preferredModel || preferredModel.startsWith('gemini'))
+            ? (getSelectedModel('deepseek') || 'deepseek-chat')
+            : preferredModel;
+
+        const endpoint = 'https://api.deepseek.com/chat/completions';
+
+        // DeepSeek official API is text-only. Handle image fallback smoothly if available
+        if (inlineData) {
+            const geminiKey = getSavedApiKey('gemini');
+            if (geminiKey) {
+                console.info('[KawanDigi] Ekstraksi gambar dialihkan sementara ke Google Gemini Multimodal.');
+                return callAiWithSpecificProvider('gemini', prompt, systemInstruction, 'gemini-3.8-flash', tools, inlineData);
+            }
+            throw new Error('DeepSeek API resmi adalah model teks. Masukkan Nama Produk / link etalase secara langsung, atau pasang API Key Gemini/OpenRouter untuk menganalisis screenshot gambar.');
+        }
+
+        const messages = [];
+        if (systemInstruction) {
+            messages.push({ role: 'system', content: systemInstruction });
+        }
+        messages.push({ role: 'user', content: prompt });
 
         const payload = {
-            contents: [
-                {
-                    role: 'user',
-                    parts: parts
-                }
-            ],
-            generationConfig: {
-                temperature: 0.7,
-                topP: 0.95,
-                topK: 40,
-                maxOutputTokens: 4096
-            }
+            model: model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 4096
         };
 
-        if (systemInstruction) {
-            payload.systemInstruction = {
-                parts: [{ text: systemInstruction }]
-            };
-        }
-
-        if (tools && Array.isArray(tools)) {
-            payload.tools = tools;
-        }
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s generous timeout for rich creative generation
-
             const response = await fetch(endpoint, {
                 signal: controller.signal,
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify(payload)
             });
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-
-                // Check for high demand / temporary spike / rate limit
-                const isHighDemand = response.status === 503 || response.status === 429 || /high demand|temporarily unavailable|overloaded|spikes in demand|resource_exhausted/i.test(errMsg);
-                
-                if (isHighDemand && i < modelsToTry.length - 1) {
-                    const nextModel = modelsToTry[i + 1];
-                    console.warn(`[KawanDigi AI] Model ${currentModel} sedang sibuk (${errMsg}). Beralih otomatis ke fallback ${nextModel}...`);
-                    lastError = new Error(errMsg);
-                    continue;
-                }
-
-                throw new Error(`Google Gemini API Error (${currentModel}): ${errMsg}`);
+                const errData = await response.json().catch(() => ({}));
+                const msg = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(`DeepSeek API Error: ${msg}`);
             }
 
             const data = await response.json();
-            const candidate = data.candidates?.[0];
-            if (!candidate || !candidate.content?.parts?.[0]?.text) {
-                if (i < modelsToTry.length - 1) continue;
-                throw new Error('Google Gemini tidak mengembalikan naskah teks yang valid.');
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error('DeepSeek API tidak mengembalikan konten respons.');
             }
-
-            return candidate.content.parts[0].text;
+            return content;
         } catch (err) {
-            lastError = err;
             if (err.name === 'AbortError' || /aborted/i.test(err.message)) {
-                if (i < modelsToTry.length - 1) {
-                    console.warn(`[KawanDigi AI] Timeout pada model ${currentModel}, mencoba model cadangan ${modelsToTry[i + 1]}...`);
-                    continue;
-                }
-                throw new Error('Koneksi ke Google AI Studio melebihi batas waktu (timeout). Silakan periksa koneksi internet Anda atau coba klik Generate kembali.');
-            }
-            if (i < modelsToTry.length - 1 && /high demand|temporarily unavailable|overloaded|spikes in demand|503|429/i.test(err.message)) {
-                continue;
+                throw new Error('Koneksi ke DeepSeek API melebihi batas waktu (timeout). Silakan periksa koneksi internet Anda atau coba lagi.');
             }
             throw err;
         }
     }
 
-    throw lastError || new Error('Gagal menghubungi Google Gemini AI setelah mencoba server cadangan.');
+    // =========================================================================
+    // 3. OPENROUTER PROVIDER
+    // =========================================================================
+    if (provider === 'openrouter') {
+        const model = (!preferredModel || preferredModel.startsWith('gemini'))
+            ? (getSelectedModel('openrouter') || 'deepseek/deepseek-chat')
+            : preferredModel;
+
+        const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+
+        const messages = [];
+        if (systemInstruction) {
+            messages.push({ role: 'system', content: systemInstruction });
+        }
+
+        if (inlineData) {
+            const base64Str = inlineData.data;
+            const mime = inlineData.mimeType || 'image/jpeg';
+            messages.push({
+                role: 'user',
+                content: [
+                    { type: 'text', text: prompt },
+                    { type: 'image_url', image_url: { url: `data:${mime};base64,${base64Str}` } }
+                ]
+            });
+        } else {
+            messages.push({ role: 'user', content: prompt });
+        }
+
+        const payload = {
+            model: model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 4096
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+        try {
+            const response = await fetch(endpoint, {
+                signal: controller.signal,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': window.location.origin || 'http://localhost:8080',
+                    'X-Title': 'KawanDigi Creator Studio'
+                },
+                body: JSON.stringify(payload)
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                const msg = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(`OpenRouter API Error: ${msg}`);
+            }
+
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error('OpenRouter API tidak mengembalikan konten respons.');
+            }
+            return content;
+        } catch (err) {
+            if (err.name === 'AbortError' || /aborted/i.test(err.message)) {
+                throw new Error('Koneksi ke OpenRouter melebihi batas waktu (timeout). Silakan periksa koneksi internet Anda atau coba lagi.');
+            }
+            throw err;
+        }
+    }
+
+    // =========================================================================
+    // 4. GROQ PROVIDER
+    // =========================================================================
+    if (provider === 'groq') {
+        const model = (!preferredModel || preferredModel.startsWith('gemini'))
+            ? (getSelectedModel('groq') || 'llama-3.3-70b-versatile')
+            : preferredModel;
+
+        const endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+
+        const messages = [];
+        if (systemInstruction) {
+            messages.push({ role: 'system', content: systemInstruction });
+        }
+        messages.push({ role: 'user', content: prompt });
+
+        const payload = {
+            model: model,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 4096
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+        try {
+            const response = await fetch(endpoint, {
+                signal: controller.signal,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(payload)
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                const msg = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(`Groq API Error: ${msg}`);
+            }
+
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error('Groq API tidak mengembalikan konten respons.');
+            }
+            return content;
+        } catch (err) {
+            if (err.name === 'AbortError' || /aborted/i.test(err.message)) {
+                throw new Error('Koneksi ke Groq API melebihi batas waktu (timeout). Silakan periksa koneksi internet Anda atau coba lagi.');
+            }
+            throw err;
+        }
+    }
+
+    // =========================================================================
+    // 5. CUSTOM / OPENAI-COMPATIBLE PROVIDER
+    // =========================================================================
+    if (provider === 'custom') {
+        const baseUrl = getCustomBaseUrl().replace(/\/+$/, '');
+        const model = getCustomModel() || 'llama3';
+        const endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`;
+
+        const messages = [];
+        if (systemInstruction) {
+            messages.push({ role: 'system', content: systemInstruction });
+        }
+        messages.push({ role: 'user', content: prompt });
+
+        const payload = {
+            model: model,
+            messages: messages,
+            temperature: 0.7
+        };
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (apiKey) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+        try {
+            const response = await fetch(endpoint, {
+                signal: controller.signal,
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                const msg = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(`Custom API Error: ${msg}`);
+            }
+
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) {
+                throw new Error('Custom API tidak mengembalikan konten respons.');
+            }
+            return content;
+        } catch (err) {
+            if (err.name === 'AbortError' || /aborted/i.test(err.message)) {
+                throw new Error('Koneksi ke Custom API melebihi batas waktu (timeout). Silakan periksa koneksi internet atau periksa apakah server lokal Anda aktif.');
+            }
+            throw err;
+        }
+    }
+
+    throw new Error(`Provider AI '${provider}' tidak didukung.`);
 }
 
 /**
+ * Helper to call a specific provider explicitly
+ */
+export async function callAiWithSpecificProvider(specificProvider, prompt, systemInstruction = '', preferredModel = '', tools = null, inlineData = null) {
+    const originalProvider = getActiveProvider();
+    try {
+        localStorage.setItem(STORAGE_PROVIDER_KEY, specificProvider);
+        return await callAiProvider(prompt, systemInstruction, preferredModel, tools, inlineData);
+    } finally {
+        localStorage.setItem(STORAGE_PROVIDER_KEY, originalProvider);
+    }
+}
+
+// Backwards compatibility alias
+export const callGemini = callAiProvider;
+
+/**
  * Generate Real Video with Google Gemini Omni Flash (gemini-omni-1.1-flash)
- * Produces native MP4 video directly without leaving the app!
  */
 export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
-    const apiKey = getSavedApiKey();
+    const apiKey = getSavedApiKey('gemini');
     if (!apiKey) {
-        throw new Error('API Key Google AI Studio belum diisi.');
+        throw new Error('Fitur ini membutuhkan API Key Google AI Studio. Silakan masukkan di Pengaturan API.');
     }
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
@@ -183,7 +588,6 @@ export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
 
     const data = await response.json();
 
-    // Parse steps in REST response for video data
     if (data.steps && Array.isArray(data.steps)) {
         for (const step of data.steps) {
             if (step.content && Array.isArray(step.content)) {
@@ -203,9 +607,9 @@ export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
  * Generate Visual Preview Image (Nano Banana 2.1 with Free Tier Pollinations Fallback)
  */
 export async function generateVisualImage(prompt, aspectRatio = '9:16') {
-    const apiKey = getSavedApiKey();
+    const apiKey = getSavedApiKey('gemini');
 
-    // 1. Try Gemini Nano Banana 2.1 via Interactions API if user has a paid API key
+    // 1. Try Gemini Nano Banana 2.1 via Interactions API if user has a paid Google key
     if (apiKey) {
         try {
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
@@ -243,7 +647,7 @@ export async function generateVisualImage(prompt, aspectRatio = '9:16') {
         }
     }
 
-    // 2. 100% Free Tier Fallback: High-Quality instant visual generation (No paid key required)
+    // 2. 100% Free Tier Fallback: Instant visual generation (No key required)
     const width = aspectRatio === '16:9' ? 1280 : 720;
     const height = aspectRatio === '16:9' ? 720 : 1280;
     const cleanPrompt = encodeURIComponent(prompt.slice(0, 300));
