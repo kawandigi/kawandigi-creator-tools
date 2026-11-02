@@ -44,6 +44,14 @@ export function incrementTrialUsage(toolId) {
     }
 }
 
+export function resetTrialUsage() {
+    localStorage.removeItem(USAGE_STORAGE_KEY);
+}
+
+export function clearLicenses() {
+    localStorage.removeItem(LICENSE_STORAGE_KEY);
+}
+
 /**
  * Check if the user has access to a specific tool (either active license or trial remaining)
  */

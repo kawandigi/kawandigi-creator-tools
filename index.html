@@ -443,13 +443,30 @@
                 <p class="text-xs text-slate-400 mb-3">Dapatkan kode lisensi setelah melakukan pembayaran di admin atau toko.</p>
 
                 <div class="flex gap-2">
-                    <input type="text" id="license-key-input" placeholder="Contoh: KD-UGC-XXXXX atau KD-VIP-XXXXX" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase tracking-wider focus:outline-none focus:border-brand-500">
+                    <input type="text" id="license-key-input" placeholder="Contoh: KD-UGC-XXXXX atau KAWANDIGI-VIP-UNLIMITED" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase tracking-wider focus:outline-none focus:border-brand-500">
                     <button id="btn-activate-license" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl shadow transition">
                         Aktivasi
                     </button>
                 </div>
 
                 <div id="license-alert" class="hidden mt-3 p-2.5 rounded-xl text-xs font-medium"></div>
+
+                <!-- Developer & Admin Quick Access -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+                    <span class="text-slate-400 flex items-center gap-1.5 text-[11px]">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+                        Mode Owner / Developer:
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-quick-vip" class="px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-brand-500/20 border border-amber-500/40 text-amber-300 font-bold rounded-xl hover:bg-amber-500/30 transition text-xs flex items-center gap-1.5 shadow">
+                            <i data-lucide="crown" class="w-3.5 h-3.5"></i>
+                            Buka Semua Kunci (VIP)
+                        </button>
+                        <button id="btn-reset-trial" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl transition text-xs">
+                            Reset Trial (3x)
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Pricing / Catalog Cards (Jual Terpisah) -->

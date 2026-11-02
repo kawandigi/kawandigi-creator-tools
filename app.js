@@ -4,7 +4,7 @@
  */
 
 import { getSavedApiKey, saveApiKey, generateImagen3, generateOmniVideo } from './modules/gemini_api.js';
-import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
+import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
 import { extractProductDetails, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
@@ -1214,6 +1214,8 @@ function initLicenseManager() {
     const btnActivate = document.getElementById('btn-activate-license');
     const inputKey = document.getElementById('license-key-input');
     const alertBox = document.getElementById('license-alert');
+    const btnQuickVip = document.getElementById('btn-quick-vip');
+    const btnResetTrial = document.getElementById('btn-reset-trial');
 
     btnActivate?.addEventListener('click', () => {
         const raw = inputKey.value.trim();
@@ -1233,6 +1235,20 @@ function initLicenseManager() {
         }
 
         updateLicenseCards();
+    });
+
+    // Developer Quick VIP Button
+    btnQuickVip?.addEventListener('click', () => {
+        activateLicenseKey('KAWANDIGI-VIP-UNLIMITED');
+        updateLicenseCards();
+        showToast('👑 Mode VIP Developer Aktif! Seluruh tools terbuka tanpa batas.', 'success');
+    });
+
+    // Reset Trial Usage Button
+    btnResetTrial?.addEventListener('click', () => {
+        resetTrialUsage();
+        updateLicenseCards();
+        showToast('Kuota uji coba gratis (3x) berhasil di-reset!', 'info');
     });
 
     updateLicenseCards();
@@ -1260,6 +1276,15 @@ function initThemeToggle() {
 // APPLICATION INITIALIZATION
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Auto-unlock VIP Developer on localhost so the owner is never locked out!
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const lics = getLicenses();
+        if (!lics['all_access']) {
+            activateLicenseKey('KAWANDIGI-VIP-UNLIMITED');
+            console.log('[KawanDigi] Mode Developer Localhost: Lisensi Master VIP Otomatis Aktif.');
+        }
+    }
+
     initNavigation();
     initApiKeyModal();
     initVideoTierModal();
