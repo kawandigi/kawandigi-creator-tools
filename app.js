@@ -330,6 +330,40 @@ function setDramaScenes(scenes) {
 // =========================================================================
 // UGC AFFILIATE CREATOR CONTROLLER
 // =========================================================================
+// Helper: Formatter Prompt Video Lengkap (Sesuai Standar Kawan Digital Skill v2.0)
+function formatFullPromptVideoText(campaign) {
+    if (!campaign) return '';
+    const analysis = campaign.product_analysis || {};
+    const title = analysis.product_name || document.getElementById('ugc-name')?.value || 'Produk Affiliate';
+    
+    let text = `PROMPT VIDEO — ${title}\n`;
+    text += `Durasi: 10 detik | Rasio: 9:16 | Kualitas: FHD 1080p\n\n`;
+
+    const scenes = campaign.scenes || [];
+    scenes.forEach((s) => {
+        const timeRange = s.time_range || `${s.duration_seconds || 1.5} detik`;
+        text += `ADEGAN ${s.scene_number} (${timeRange}) — ${s.scene_title?.toUpperCase() || 'SCENE'}\n`;
+        text += `- Visual: ${s.visual_description || '-'}\n`;
+        if (s.camera_movement) {
+            text += `- Kamera: ${s.camera_movement}\n`;
+        }
+        text += `- Narasi: "${s.voiceover_script || '-'}"\n`;
+        if (s.caption_overlay) {
+            text += `- Subtitle (Safe Zone): ${s.caption_overlay}\n`;
+        }
+        if (s.google_flow_prompt) {
+            text += `- Prompt AI Video (Google Flow / Veo): ${s.google_flow_prompt}\n`;
+        }
+        text += `\n`;
+    });
+
+    text += `TOTAL NARASI: ${campaign.total_narasi_kata || 24} kata\n`;
+    text += `GAYA VISUAL: UGC Realistis, pencahayaan natural, 9:16 vertikal\n`;
+    text += `CTA NETRAL: "${campaign.call_to_action || 'Yuk, langsung klik keranjang di bawah video ini ya!'}"`;
+
+    return text.trim();
+}
+
 function initUgcCreator() {
     // Preset Demo Button
     const btnUgcPreset = document.getElementById('btn-ugc-preset-demo');
@@ -555,9 +589,9 @@ function initUgcCreator() {
     // Copy All Prompts
     const btnCopyAll = document.getElementById('btn-copy-all-prompts');
     btnCopyAll?.addEventListener('click', () => {
-        if (!currentUgcCampaign || !currentUgcCampaign.scenes) return;
-        const allPrompts = currentUgcCampaign.scenes.map(s => `[SCENE ${s.scene_number}: ${s.scene_title} (${s.duration_seconds}s)]\n${s.google_flow_prompt}`).join('\n\n');
-        copyToClipboard(allPrompts, 'Seluruh prompt scene berhasil disalin!');
+        if (!currentUgcCampaign) return;
+        const allPrompts = formatFullPromptVideoText(currentUgcCampaign);
+        copyToClipboard(allPrompts, 'Seluruh prompt video 10 detik lengkap berhasil disalin!');
     });
 }
 
@@ -685,11 +719,7 @@ function renderUgcResults(campaign) {
 
     // 2. Render Full Formatted Prompt Video Code Block
     if (fullPromptCode) {
-        const textToDisplay = campaign.formatted_prompt_video || 
-            `PROMPT VIDEO — ${analysis.product_name || 'Produk'}\nDurasi: 10 detik | Rasio: 9:16 | Kualitas: FHD\n\n` +
-            (campaign.scenes || []).map(s => `ADEGAN ${s.scene_number} (${s.time_range || `${s.duration_seconds}s`}) — ${s.scene_title}\n- Visual: ${s.visual_description}\n- Kamera: ${s.camera_movement || 'Dynamic'}\n- Narasi: "${s.voiceover_script}"`).join('\n\n') +
-            `\n\nTOTAL NARASI: ${campaign.total_narasi_kata || 24} kata\nGAYA VISUAL: UGC Realistis`;
-        
+        const textToDisplay = formatFullPromptVideoText(campaign);
         fullPromptCode.textContent = textToDisplay;
 
         btnCopyFullPrompt?.addEventListener('click', () => {
@@ -1002,8 +1032,24 @@ function initDramaCreator() {
     const btnCopyAllDrama = document.getElementById('btn-copy-all-drama-prompts');
     btnCopyAllDrama?.addEventListener('click', () => {
         if (!currentDramaEpisode || !currentDramaEpisode.scenes) return;
-        const allPrompts = currentDramaEpisode.scenes.map(s => `[SCENE ${s.scene_number}: ${s.scene_title} (${s.duration_seconds}s)]\n${s.google_flow_prompt}`).join('\n\n');
-        copyToClipboard(allPrompts, 'Seluruh prompt drama berhasil disalin!');
+        const ep = currentDramaEpisode.episode_info || {};
+        let text = `NASKAH DRAMA PRODUKSI — ${ep.series_title || 'Serial'} (Episode ${ep.episode_number || 1}: ${ep.episode_title || '-'})\n`;
+        text += `Genre: ${ep.genre || 'Drama'} | Logline: ${ep.logline || '-'}\n\n`;
+
+        (currentDramaEpisode.scenes || []).forEach(s => {
+            text += `ADEGAN ${s.scene_number} (${s.duration_seconds || 10}s) — ${s.scene_title || 'SCENE'}\n`;
+            text += `- Visual & Karakter: ${s.visual_direction || '-'}\n`;
+            text += `- Dialog: "${s.dialogue || '-'}"\n`;
+            if (s.sound_fx) text += `- Sound FX / Musik: ${s.sound_fx}\n`;
+            if (s.google_flow_prompt) text += `- Prompt Google Flow (Konsisten Tokoh): ${s.google_flow_prompt}\n`;
+            text += `\n`;
+        });
+
+        if (currentDramaEpisode.cliffhanger_hook) {
+            text += `🔥 CLIFFHANGER HOOK AKHIR: "${currentDramaEpisode.cliffhanger_hook}"\n`;
+        }
+
+        copyToClipboard(text.trim(), 'Seluruh naskah & prompt drama berhasil disalin!');
     });
 }
 
