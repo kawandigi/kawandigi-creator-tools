@@ -1,19 +1,15 @@
 /**
  * KawanDigi Creator Studio - AI UGC Affiliate Video Creator
- * Handles product URL scraping via Jina Reader, AIDA reasoning, and multi-scene storyboard (10s - 60s)
+ * Handles intelligent product extraction via AI, fast-paced affiliate scene duration, and AIDA reasoning
  */
 
 import { callGemini, generateImagen3 } from './gemini_api.js';
 import { hasToolAccess, incrementTrialUsage } from './license_manager.js';
 
 /**
- * Fetch product details from URL using Jina Reader (CORS-friendly client-side reader)
+ * Fetch raw web page text using Jina Reader (with CORS support)
  */
-export async function scrapeProductFromUrl(url) {
-    if (!url || !url.startsWith('http')) {
-        throw new Error('Masukkan URL produk yang valid (contoh: https://shopee.co.id/... atau TikTok Shop)');
-    }
-
+async function fetchPageContent(url) {
     try {
         const jinaUrl = `https://r.jina.ai/${encodeURIComponent(url.trim())}`;
         const resp = await fetch(jinaUrl, {
@@ -22,19 +18,85 @@ export async function scrapeProductFromUrl(url) {
             }
         });
 
-        if (!resp.ok) {
-            throw new Error(`Gagal membaca etalase produk (${resp.status}). Anda dapat mengisi detail produk secara manual.`);
+        if (resp.ok) {
+            const text = await resp.text();
+            return text.slice(0, 6000);
         }
-
-        const text = await resp.text();
-        return text.slice(0, 4000); // Take first 4000 chars for analysis
-    } catch (err) {
-        throw new Error(`Gagal mengambil data URL otomatis: ${err.message}. Silakan masukkan nama dan deskripsi produk secara manual.`);
+    } catch {
+        // Fallback gracefully
     }
+    return '';
 }
 
 /**
- * Generate Complete UGC Affiliate Storyboard & Google Flow Video Prompts
+ * Intelligent AI Product Extraction from any Affiliate URL (Shopee, TikTok Shop, Tokopedia, etc.)
+ */
+export async function extractProductDetails(url) {
+    if (!url || !url.startsWith('http')) {
+        throw new Error('Masukkan URL produk yang valid (contoh: link Shopee atau TikTok Shop).');
+    }
+
+    // 1. Fetch page content via reader
+    const pageText = await fetchPageContent(url);
+
+    // 2. Prompt Gemini to extract clean product information
+    const systemPrompt = `Anda adalah Spesialis Analisis Produk E-Commerce & Affiliate Marketing (Shopee, TikTok Shop, Tokopedia, Lazada).
+Tugas Anda adalah mengekstrak data produk yang akurat dari isi halaman etalase atau URL produk yang diberikan.
+
+PILIHAN KATEGORI (Pilih salah satu yang paling cocok):
+- 💄 Skincare & Kecantikan
+- 👗 Fashion & OOTD
+- 📱 Gadget & Elektronik
+- 🍔 Kuliner & Makanan
+- 🏠 Kebutuhan Rumah Tangga
+
+PILIHAN GAYA BAHASA (TONE):
+- Casual & Ceria (Gen Z)
+- Review Jujur & Edukatif
+- FOMO & Urgensi Diskon
+- Elegan & Mewah
+
+Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
+{
+  "product_name": "Nama produk lengkap yang bersih, mudah dipahami, tanpa karakter/simbol sampah",
+  "category": "💄 Skincare & Kecantikan",
+  "selling_points": "Poin-poin keunggulan utama, manfaat, aroma/spesifikasi, atau promo menarik dari produk ini (2-3 kalimat padat)",
+  "target_audience": "Target calon pembeli ideal produk ini",
+  "suggested_tone": "Casual & Ceria (Gen Z)"
+}`;
+
+    let userPrompt = `Ekstrak informasi produk dari link berikut:\nURL: ${url}\n\n`;
+    if (pageText) {
+        userPrompt += `Konten Halaman:\n${pageText}\n`;
+    } else {
+        userPrompt += `Catatan: Halaman web tidak dapat diakses langsung. Silakan analisis nama dan detail produk berdasarkan struktur URL slug di atas.\n`;
+    }
+
+    const rawResponse = await callGemini(userPrompt, systemPrompt);
+
+    let cleaned = rawResponse.trim();
+    if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7);
+    if (cleaned.startsWith('```')) cleaned = cleaned.slice(3);
+    if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3);
+    cleaned = cleaned.trim();
+
+    try {
+        return JSON.parse(cleaned);
+    } catch {
+        throw new Error('Gagal mengekstrak data produk secara otomatis. Silakan isi nama dan keunggulan produk secara manual.');
+    }
+}
+
+// Backwards compatibility alias
+export const scrapeProductFromUrl = fetchPageContent;
+
+/**
+ * Generate Complete UGC Affiliate Storyboard & Scene Prompts
+ * Fast-paced pacing tuned for TikTok/Reels/Shorts:
+ * - 10s: 3 scenes (Hook 3s, Demo 4s, CTA 3s)
+ * - 15s: 4 scenes (Hook 3s, Problem 4s, Demo 4s, CTA 4s)
+ * - 30s: 6 scenes (AIDA High Conversion Review)
+ * - 60s: 8 scenes (Full Storytelling & Detailed Demonstration)
  */
 export async function generateUgcCampaign({
     productUrl = '',
@@ -42,7 +104,7 @@ export async function generateUgcCampaign({
     productCategory = '',
     sellingPoints = '',
     targetAudience = '',
-    videoDuration = 30, // 10, 20, 30, or 60
+    videoDuration = 30, // 10, 15, 20, 30, or 60
     tone = 'Casual & Ceria (Gen Z)',
     voiceGender = 'Cewek Ceria'
 }) {
@@ -52,50 +114,57 @@ export async function generateUgcCampaign({
         throw new Error('Akses Tool AI UGC Creator terkunci. Silakan masukkan kode lisensi di tab Lisensi untuk membuka akses.');
     }
 
-    // 2. Determine number of scenes (Google Flow limit is 10s per clip)
+    // 2. Determine number of fast-paced cut scenes for affiliate retention
     let sceneCount = 3;
-    if (videoDuration === 10) sceneCount = 1;
-    else if (videoDuration === 20) sceneCount = 2;
-    else if (videoDuration === 30) sceneCount = 3;
-    else if (videoDuration === 60) sceneCount = 6;
+    if (videoDuration === 10) sceneCount = 3;       // 10s = 3 scenes (Fast Hook 3s, Core Demo 4s, CTA 3s)
+    else if (videoDuration === 15) sceneCount = 4;  // 15s = 4 scenes (TikTok Standard)
+    else if (videoDuration === 20) sceneCount = 4;  // 20s = 4 scenes
+    else if (videoDuration === 30) sceneCount = 6;  // 30s = 6 scenes (AIDA High Conversion)
+    else if (videoDuration === 60) sceneCount = 8;  // 60s = 8 scenes (Full Storytelling & Review)
 
     // 3. Construct prompt for Gemini
-    const systemPrompt = `Anda adalah Creative Director & Video Affiliate Strategist handal di TikTok Shop, Shopee Video, dan Instagram Reels. 
-Tugas Anda adalah menganalisis produk affiliate dan merancang Storyboard Iklan UGC Vertikal (9:16) yang menghasilkan konversi tinggi (High CTR & CVR).
+    const systemPrompt = `Anda adalah Creative Director & Master Video Affiliate Strategist nomor satu di TikTok Shop, Shopee Video, dan Instagram Reels.
+Tugas Anda adalah menganalisis produk dan merancang Storyboard Iklan UGC Vertikal (9:16) yang menghasilkan konversi tinggi (High CTR & CVR).
 
-CATATAN TEKNIS PENTING:
-Karena generator video Google (Google Flow / Veo) memiliki durasi maksimal 10 detik per klip video, Anda HARUS membagi video ini tepat menjadi ${sceneCount} scene terpisah, di mana masing-masing scene berdurasi MAKSIMAL 10 DETIK.
+ATURAN DURASI & PACING AFFILIATE (PENTING!):
+Video affiliate yang viral dan berkonversi tinggi TIDAK BOLEH lambat atau monoton.
+Video ini berdurasi total ${videoDuration} detik yang HARUS Anda bagi tepat menjadi ${sceneCount} scene/shot pendek beritme cepat (fast-paced cuts), di mana total akumulasi detik seluruh scene pas ${videoDuration} detik.
 
-Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick tambahan di luar json):
+Setiap scene memiliki peranan strategis:
+- SCENE AWAL (Detik 0-3): Visual Hook yang mengejutkan, rasa penasaran, atau pain-point yang menghentikan scroll (Stop Scrolling).
+- SCENE TENGAH: Unboxing / Live Demo / Reaksi Jujur / Pembuktian Manfaat / Before-After yang memuaskan.
+- SCENE AKHIR: Call to Action (CTA) yang mendesak, menunjuk keranjang kuning, promo terbatas hari ini.
+
+Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
 {
   "product_analysis": {
     "product_name": "Nama produk ringkas",
     "core_benefit": "Manfaat utama produk",
     "target_buyer": "Target pembeli ideal",
-    "hook_angle": "Sudut pandang hook yang dipakai (Problem / Curiosity / Social Proof)"
+    "hook_angle": "Sudut pandang hook yang dipakai (Problem / Curiosity / Social Proof / Shock Value)"
   },
   "scenes": [
     {
       "scene_number": 1,
-      "duration_seconds": 10,
+      "duration_seconds": 3,
       "scene_title": "HOOK PEMBUKA",
-      "visual_description": "Deskripsi visual adegan dalam bahasa Indonesia",
-      "google_flow_prompt": "Prompt bahasa Inggris sinematik 9:16 vertikal siap copy-paste ke Google Flow / Veo",
-      "voiceover_script": "Naskah narasi suara bahasa Indonesia yang natural, ceria, dan memikat",
-      "caption_overlay": "Teks singkat tebal untuk di layar"
+      "visual_description": "Deskripsi visual adegan cepat dalam bahasa Indonesia",
+      "google_flow_prompt": "Cinematic vertical 9:16 video prompt in English, fast motion, vivid lighting, ready for Google Omni / Veo",
+      "voiceover_script": "Naskah narasi suara bahasa Indonesia yang singkat, padat, natural, dan memikat",
+      "caption_overlay": "Teks tebal di layar (contoh: JANGAN DI-SKIP!)"
     }
   ],
-  "call_to_action": "Teks ajakan bertindak (Contoh: Klik keranjang kuning sekarang selagi promo!)",
-  "hashtags": ["#racuntiktok", "#fyp", "#reviewproduk"]
+  "call_to_action": "Teks ajakan bertindak (Contoh: Klik keranjang kuning sekarang mumpung diskon!)",
+  "hashtags": ["#racuntiktok", "#fyp", "#racunshopee", "#reviewjujur"]
 }`;
 
-    let userPrompt = `Rancang kampanye video UGC Affiliate untuk produk berikut:\n`;
+    let userPrompt = `Rancang kampanye video UGC Affiliate beritme cepat (Fast-Paced Cuts):\n`;
     if (productUrl) userPrompt += `- URL Produk: ${productUrl}\n`;
     if (productName) userPrompt += `- Nama Produk: ${productName}\n`;
     if (productCategory) userPrompt += `- Kategori Produk: ${productCategory}\n`;
     if (sellingPoints) userPrompt += `- Keunggulan / Selling Points: ${sellingPoints}\n`;
     if (targetAudience) userPrompt += `- Target Audiens: ${targetAudience}\n`;
-    userPrompt += `- Total Durasi: ${videoDuration} Detik (${sceneCount} Scene @ 10 detik)\n`;
+    userPrompt += `- Total Durasi Video: ${videoDuration} Detik (Wajib dibagi menjadi ${sceneCount} Scene @ 2-8 detik per scene)\n`;
     userPrompt += `- Gaya Bahasa / Tone: ${tone}\n`;
     userPrompt += `- Tipe Voiceover: ${voiceGender}\n`;
 

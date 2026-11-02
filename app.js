@@ -5,7 +5,7 @@
 
 import { getSavedApiKey, saveApiKey, generateImagen3, generateOmniVideo } from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
-import { scrapeProductFromUrl, generateUgcCampaign } from './modules/ugc_creator.js';
+import { extractProductDetails, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 
 // Global State
@@ -260,9 +260,9 @@ function setUgcDuration(dur) {
             btn.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
         }
     });
-    const sceneMap = { 10: '1 Scene', 20: '2 Scene', 30: '3 Scene', 60: '6 Scene' };
+    const sceneMap = { 10: '3 Scene Kilat', 15: '4 Scene TikTok', 20: '4 Scene', 30: '6 Scene AIDA', 60: '8 Scene Story' };
     if (durationLabel) {
-        durationLabel.textContent = `${dur} Detik (${sceneMap[dur] || '3 Scene'})`;
+        durationLabel.textContent = `${dur} Detik (${sceneMap[dur] || '6 Scene'})`;
     }
 }
 
@@ -332,16 +332,34 @@ function initUgcCreator() {
         btnScrape.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Ekstrak...`;
 
         try {
-            const rawContent = await scrapeProductFromUrl(url);
-            showToast('Etalase produk berhasil dianalisis!', 'success');
+            const product = await extractProductDetails(url);
+            showToast('Etalase produk berhasil dianalisis AI!', 'success');
 
-            // Quick extraction heuristic: look for title / first non-empty lines
-            const lines = rawContent.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !l.startsWith('http') && !l.startsWith('!['));
-            if (lines.length > 0 && !nameInput.value) {
-                nameInput.value = lines[0].replace(/[#*_]/g, '').slice(0, 100);
+            if (product.product_name) nameInput.value = product.product_name;
+            if (product.selling_points) sellingInput.value = product.selling_points;
+
+            if (product.category) {
+                const catSelect = document.getElementById('ugc-category');
+                if (catSelect) {
+                    for (const opt of catSelect.options) {
+                        if (opt.value === product.category || opt.text.includes(product.category) || product.category.includes(opt.value)) {
+                            catSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                }
             }
-            if (lines.length > 1 && !sellingInput.value) {
-                sellingInput.value = lines.slice(1, 4).join(', ').replace(/[#*_]/g, '').slice(0, 200);
+
+            if (product.suggested_tone) {
+                const toneSelect = document.getElementById('ugc-tone');
+                if (toneSelect) {
+                    for (const opt of toneSelect.options) {
+                        if (opt.value === product.suggested_tone || opt.text.includes(product.suggested_tone)) {
+                            toneSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                }
             }
         } catch (err) {
             showToast(err.message, 'error');
