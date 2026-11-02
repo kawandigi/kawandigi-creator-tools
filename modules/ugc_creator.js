@@ -229,6 +229,59 @@ Ekstrak informasi yang terbaca dari gambar dan kembalikan HANYA format JSON vali
 export const scrapeProductFromUrl = fetchPageContent;
 
 /**
+ * Sanitize & translate any rogue English terms to pure natural Bahasa Indonesia
+ */
+function sanitizeIndonesianUgc(campaign) {
+    if (!campaign || !Array.isArray(campaign.scenes)) return campaign;
+
+    const enToIdCamera = [
+        [/handheld snap zoom (in|up)?/gi, 'Zoom cepat ke arah produk'],
+        [/snap zoom (in|up)?/gi, 'Zoom cepat ke arah produk'],
+        [/pan left,? medium close up/gi, 'Kamera bergerak ke kiri, close up sedang'],
+        [/pan left/gi, 'Kamera bergerak perlahan ke kiri'],
+        [/pan right/gi, 'Kamera bergerak perlahan ke kanan'],
+        [/tilt up/gi, 'Kamera mendongak ke atas (tilt up)'],
+        [/tilt down/gi, 'Kamera menunduk ke bawah (tilt down)'],
+        [/close up macro shot/gi, 'Kamera statis jarak dekat fokus detail produk'],
+        [/extreme close up/gi, 'Kamera sangat dekat detail produk'],
+        [/close up/gi, 'Kamera jarak dekat'],
+        [/medium shot/gi, 'Kamera jarak sedang'],
+        [/wide shot/gi, 'Kamera jarak jauh'],
+        [/orbit pan|orbit shot/gi, 'Kamera berputar mengelilingi model (orbit pan)'],
+        [/eye[- ]level/gi, 'Kamera sejajar mata'],
+        [/slow pull back/gi, 'Kamera bergerak mundur perlahan'],
+        [/dolly in/gi, 'Kamera maju perlahan ke arah objek'],
+        [/dolly out/gi, 'Kamera mundur perlahan menjauhi objek'],
+        [/static shot/gi, 'Kamera statis']
+    ];
+
+    campaign.scenes.forEach(s => {
+        if (s.camera_movement) {
+            for (const [enRegex, idText] of enToIdCamera) {
+                if (enRegex.test(s.camera_movement)) {
+                    s.camera_movement = s.camera_movement.replace(enRegex, idText);
+                }
+            }
+        }
+        if (s.google_flow_prompt) {
+            s.google_flow_prompt = s.google_flow_prompt
+                .replace(/^Cinematic vertical 9:16 UGC video,?\s*/i, 'Video UGC vertikal 9:16, ')
+                .replace(/natural handheld lighting/gi, 'pencahayaan alami natural')
+                .replace(/natural lighting/gi, 'pencahayaan alami')
+                .replace(/photorealistic,?\s*FHD/gi, 'fotorealistis, FHD')
+                .replace(/photorealistic/gi, 'fotorealistis')
+                .replace(/highly detailed/gi, 'sangat detail')
+                .replace(/bright room/gi, 'ruangan terang')
+                .replace(/bright bedroom background/gi, 'latar kamar tidur estetik')
+                .replace(/stylish outfit/gi, 'pakaian stylish modis')
+                .replace(/casual style/gi, 'gaya kasual');
+        }
+    });
+
+    return campaign;
+}
+
+/**
  * Generate Complete UGC Affiliate Storyboard & Scene Prompts
  * Strictly adheres to Kawan Digital Skill v2.0:
  * - 6-Scene UGC Video (10 Seconds, FHD 9:16)
@@ -242,7 +295,7 @@ export const scrapeProductFromUrl = fetchPageContent;
  * - Safe zone: area tengah-atas, hindari area bawah 15% & kanan 10%
  * - Multi-Platform Neutral CTA (tidak menyebut warna keranjang)
  * - 3 Template Caption Siap Pakai (Hard-selling, Storytelling, Soft-selling)
- * - Formatted Copyable Video Prompt Block
+ * - Formatted Copyable Video Prompt Block 100% BAHASA INDONESIA
  */
 export async function generateUgcCampaign({
     productUrl = '',
@@ -275,6 +328,25 @@ ATURAN STRUKTUR VIDEO (WAJIB TEPAT 6 ADEGAN BERIKUT):
 | 5 | Honest Review — benefit jujur | 6,5–8,5 detik | 4–6 kata |
 | 6 | CTA Netral — ajakan bertindak | 8,5–10 detik | 3–5 kata |
 
+ATURAN BAHASA (SANGAT KRUSIAL — WAJIB 100% BAHASA INDONESIA):
+- SEMUA teks di dalam hasil output HARUS 100% BAHASA INDONESIA! DILARANG KERAS MENGGUNAKAN BAHASA INGGRIS!
+- Dilarang membocorkan frasa bahasa Inggris seperti "Cinematic vertical", "natural handheld lighting", "girl looking confused", "holding crop top", "Pan left", "medium close up", "snap zoom in", dll.
+- camera_movement: WAJIB DALAM BAHASA INDONESIA!
+  Gunakan istilah bahasa Indonesia seperti:
+  * "Zoom cepat ke arah produk"
+  * "Kamera bergerak ke kiri perlahan, close-up sedang"
+  * "Kamera statis jarak dekat fokus detail produk"
+  * "Kamera meregangkan/mendemonstrasikan produk secara dekat"
+  * "Kamera berputar mengelilingi model (orbit pan)"
+  * "Kamera sejajar mata fokus menunjuk ke bawah (CTA)"
+- google_flow_prompt: WAJIB 100% DALAM BAHASA INDONESIA!
+  Prompt untuk Google Flow / Veo harus berupa deskripsi visual sinematik yang hidup dan realistis dalam Bahasa Indonesia.
+  Format Google Flow Prompt:
+  "Video UGC vertikal 9:16, pencahayaan alami, [deskripsi adegan visual detail dalam Bahasa Indonesia], pergerakan kamera [kamera dalam Bahasa Indonesia], fotorealistis, FHD"
+- visual_description: WAJIB 100% dalam Bahasa Indonesia detail.
+- voiceover_script: WAJIB 100% dalam Bahasa Indonesia natural dan luwes (total 22-26 kata).
+- caption_overlay: WAJIB 100% dalam Bahasa Indonesia singkat (maksimal 2 baris).
+
 ATURAN NARASI:
 - Total narasi SELURUH video: TEPAT 22–26 KATA (maksimal 28 kata).
 - Bahasa Indonesia natural, seolah sedang ngobrol ramah.
@@ -301,45 +373,45 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
   "scenes": [
     {
       "scene_number": 1,
-      "time_range": "0–1.5s",
+      "time_range": "0–1,5 detik",
       "duration_seconds": 1.5,
       "scene_title": "HOOK",
-      "visual_description": "Deskripsi visual adegan realistis UGC pencahayaan natural",
-      "camera_movement": "Handheld snap zoom in",
-      "voiceover_script": "Naskah 3-5 kata",
-      "word_count": 4,
-      "caption_overlay": "Teks overlay tengah-atas (maks 2 baris)",
-      "google_flow_prompt": "Cinematic vertical 9:16 UGC video, natural handheld lighting, photorealistic, FHD..."
+      "visual_description": "Seorang gadis Gen Z tersenyum ceria menunjukkan produk di depan kamera dengan latar kamar estetik pencahayaan alami.",
+      "camera_movement": "Zoom cepat ke arah produk",
+      "voiceover_script": "Mau tampil cantik modis seharian?",
+      "word_count": 5,
+      "caption_overlay": "Mau Tampil Cantik Modis?",
+      "google_flow_prompt": "Video UGC vertikal 9:16, pencahayaan alami, seorang gadis Gen Z tersenyum ceria menunjukkan produk di depan kamera dengan latar kamar estetik, pergerakan kamera zoom cepat ke arah produk, fotorealistis, FHD"
     }
   ],
   "total_narasi_kata": 24,
   "formatted_prompt_video": "PROMPT VIDEO — [Nama Produk]\nDurasi: 10 detik | Rasio: 9:16 | Kualitas: FHD...",
   "captions": {
     "hard_selling": {
-      "hook": "Teks hook",
-      "benefit": "Teks benefit",
+      "hook": "Teks hook bahasa Indonesia",
+      "benefit": "Teks benefit bahasa Indonesia",
       "cta": "Yuk, langsung klik keranjang di bawah video ini ya!",
       "hashtags": ["#racunshopee", "#reviewjujur", "#affiliate"],
-      "full_text": "Teks lengkap caption siap salin"
+      "full_text": "Teks lengkap caption siap salin bahasa Indonesia"
     },
     "storytelling": {
-      "hook": "Teks hook",
-      "benefit": "Teks benefit",
+      "hook": "Teks hook bahasa Indonesia",
+      "benefit": "Teks benefit bahasa Indonesia",
       "cta": "Temukan tautan produknya persis di bawah video ya.",
       "hashtags": ["#reviewjujur", "#tiktokaffiliate", "#rekomendasiproduk"],
-      "full_text": "Teks lengkap caption siap salin"
+      "full_text": "Teks lengkap caption siap salin bahasa Indonesia"
     },
     "soft_selling": {
-      "hook": "Teks hook",
-      "benefit": "Teks benefit",
+      "hook": "Teks hook bahasa Indonesia",
+      "benefit": "Teks benefit bahasa Indonesia",
       "cta": "Link ada di bawah video ya.",
       "hashtags": ["#tipsbelanja", "#reviewproduk", "#affiliate"],
-      "full_text": "Teks lengkap caption siap salin"
+      "full_text": "Teks lengkap caption siap salin bahasa Indonesia"
     }
   }
 }`;
 
-    let userPrompt = `Buatkan Storyboard 6 Adegan, Prompt Video 10 Detik, dan 3 Template Caption sesuai standar Kawan Digital:\n`;
+    let userPrompt = `Buatkan Storyboard 6 Adegan, Prompt Video 10 Detik, dan 3 Template Caption sesuai standar Kawan Digital (SEMUA OUTPUT HARUS 100% BAHASA INDONESIA, TERMASUK PERGERAKAN KAMERA DAN PROMPT VIDEO GOOGLE FLOW):\n`;
     if (productName) userPrompt += `- Nama Produk: ${productName}\n`;
     if (productCategory) userPrompt += `- Kategori: ${productCategory}\n`;
     if (sellingPoints) userPrompt += `- Keunggulan / Selling Points: ${sellingPoints}\n`;
@@ -358,7 +430,8 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     cleaned = cleaned.trim();
 
     try {
-        const campaign = JSON.parse(cleaned);
+        const parsed = JSON.parse(cleaned);
+        const campaign = sanitizeIndonesianUgc(parsed);
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');
         }

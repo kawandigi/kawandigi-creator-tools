@@ -334,15 +334,16 @@ function setDramaScenes(scenes) {
 function formatFullPromptVideoText(campaign) {
     if (!campaign) return '';
     const analysis = campaign.product_analysis || {};
-    const title = analysis.product_name || document.getElementById('ugc-name')?.value || 'Produk Affiliate';
+    const title = analysis.product_name || document.getElementById('ugc-name')?.value || 'Produk Pilihan';
     
     let text = `PROMPT VIDEO — ${title}\n`;
-    text += `Durasi: 10 detik | Rasio: 9:16 | Kualitas: FHD 1080p\n\n`;
+    text += `Durasi: 10 detik | Rasio: 9:16 | Kualitas: FHD\n\n`;
 
     const scenes = campaign.scenes || [];
     scenes.forEach((s) => {
         const timeRange = s.time_range || `${s.duration_seconds || 1.5} detik`;
-        text += `ADEGAN ${s.scene_number} (${timeRange}) — ${s.scene_title?.toUpperCase() || 'SCENE'}\n`;
+        const titleUpper = (s.scene_title || `ADEGAN ${s.scene_number}`).toUpperCase();
+        text += `ADEGAN ${s.scene_number} (${timeRange}) — ${titleUpper}\n`;
         text += `- Visual: ${s.visual_description || '-'}\n`;
         if (s.camera_movement) {
             text += `- Kamera: ${s.camera_movement}\n`;
@@ -352,13 +353,14 @@ function formatFullPromptVideoText(campaign) {
             text += `- Subtitle (Safe Zone): ${s.caption_overlay}\n`;
         }
         if (s.google_flow_prompt) {
-            text += `- Prompt AI Video (Google Flow / Veo): ${s.google_flow_prompt}\n`;
+            text += `- Prompt Video AI (Google Flow / Veo): ${s.google_flow_prompt}\n`;
         }
         text += `\n`;
     });
 
     text += `TOTAL NARASI: ${campaign.total_narasi_kata || 24} kata\n`;
-    text += `GAYA VISUAL: UGC Realistis, pencahayaan natural, 9:16 vertikal\n`;
+    text += `GAYA VISUAL: UGC Realistis, pencahayaan alami, 9:16 vertikal\n`;
+    text += `REFERENSI GAMBAR: Ada\n`;
     text += `CTA NETRAL: "${campaign.call_to_action || 'Yuk, langsung klik keranjang di bawah video ini ya!'}"`;
 
     return text.trim();

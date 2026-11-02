@@ -31,11 +31,12 @@ export async function generateDramaEpisode({
 
     const systemPrompt = `Anda adalah Sutradara & Naskah Drama Pendek (*Micro-Drama / Sinetron Pendek TikTok & ReelShort*) kelas dunia.
 Tugas Anda adalah menulis naskah episode drama pendek yang dramatis, penuh emosi, dan memiliki cliffhanger kuat di detik terakhir agar penonton wajib menonton episode selanjutnya.
+SEMUA OUTPUT TEKS, DIALOG, DAN PROMPT VIDEO WAJIB 100% BAHASA INDONESIA!
 
 ATURAN TEKNIS GOOGLE FLOW / VEO:
 Video ini terdiri dari tepat ${sceneCount} scene, di mana tiap scene berdurasi MAKSIMAL 10 DETIK.
 KONSISTENSI VISUAL KARAKTER:
-Setiap prompt video untuk Google Flow HARUS secara eksplisit menyertakan deskripsi visual karakter protagonis dan antagonis yang sama persis agar wajah dan pakaian mereka konsisten.
+Setiap prompt video untuk Google Flow HARUS secara eksplisit menyertakan deskripsi visual karakter protagonis dan antagonis yang sama persis dalam Bahasa Indonesia agar wajah dan pakaian mereka konsisten.
 
 Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick tambahan):
 {
@@ -49,11 +50,11 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick tambahan
   "characters": {
     "protagonist": {
       "name": "${protagonist.name}",
-      "character_prompt_tag": "Deskripsi visual pendek dalam bahasa Inggris untuk disematkan di tiap prompt video"
+      "character_prompt_tag": "Deskripsi visual pendek karakter dalam bahasa Indonesia untuk disematkan di tiap prompt video"
     },
     "antagonist": {
       "name": "${antagonist.name}",
-      "character_prompt_tag": "Deskripsi visual antagonis dalam bahasa Inggris"
+      "character_prompt_tag": "Deskripsi visual antagonis dalam bahasa Indonesia"
     }
   },
   "scenes": [
@@ -63,7 +64,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick tambahan
       "scene_name": "PENGENALAN / AWAL KONFLIK",
       "action_description": "Deskripsi aksi dramatis dalam bahasa Indonesia",
       "dialogue": "Dialog tokoh yang emosional dan tajam",
-      "google_flow_prompt": "Cinematic 9:16 vertical video prompt in English, with specific character visual tags, dramatic lighting, and camera motion, ready for Google Flow",
+      "google_flow_prompt": "Video vertikal 9:16 sinematik gaya sinetron micro-drama dalam bahasa Indonesia, dengan detail visual karakter, pencahayaan dramatis, dan pergerakan kamera, fotorealistis FHD siap pakai untuk Google Flow / Veo",
       "sound_fx": "Efek suara / musik pengiring yang menegangkan"
     }
   ],
