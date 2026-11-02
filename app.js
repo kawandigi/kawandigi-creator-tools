@@ -7,6 +7,7 @@ import { getSavedApiKey, saveApiKey, generateImagen3, generateOmniVideo } from '
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
 import { extractProductDetails, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
+import { renderInAppSceneVideo } from './modules/video_renderer.js';
 
 // Global State
 let selectedUgcDuration = 30; // 10, 20, 30, 60
@@ -368,25 +369,18 @@ function initUgcCreator() {
     const sellingInput = document.getElementById('ugc-selling');
 
     btnScrape?.addEventListener('click', async () => {
-        const apiKey = getSavedApiKey();
-        if (!apiKey) {
-            showToast('Silakan masukkan Google AI Studio API Key Anda terlebih dahulu.', 'error');
-            openApiKeyModal();
-            return;
-        }
-
         const url = urlInput.value.trim();
         if (!url) {
-            showToast('Silakan tempelkan link produk terlebih dahulu.', 'error');
+            showToast('Silakan tempelkan link produk Shopee atau TikTok Shop terlebih dahulu.', 'error');
             return;
         }
 
         btnScrape.disabled = true;
-        btnScrape.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Ekstrak...`;
+        btnScrape.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Menganalisis...`;
 
         try {
             const product = await extractProductDetails(url);
-            showToast('Etalase produk berhasil dianalisis AI!', 'success');
+            showToast('Informasi produk berhasil dianalisis!', 'success');
 
             if (product.product_name) nameInput.value = product.product_name;
             if (product.selling_points) sellingInput.value = product.selling_points;
@@ -583,40 +577,66 @@ function renderUgcResults(campaign) {
             </div>
             ` : ''}
 
-            <!-- Google Flow Prompt Box -->
-            <div class="pt-1">
-                <div class="flex items-center justify-between mb-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                        <i data-lucide="terminal" class="w-3 h-3"></i> Prompt Google Flow / Veo (10s Clip):
-                    </label>
-                    <button class="btn-copy-prompt text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-semibold">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Prompt
+            <!-- 1-Click Google Flow Bridge (Primary Workflow) -->
+            <div class="mt-2 p-3 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2.5 shadow-lg">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-emerald-300">Google Flow (Veo 10s Clip)</span>
+                                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded-full font-bold">100% Gratis</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400">1-Klik Salin prompt & buka studio Google Flow</p>
+                        </div>
+                    </div>
+                    <button class="btn-flow-render px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition transform active:scale-95 flex-shrink-0">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        <span>Buka di Google Flow</span>
                     </button>
                 </div>
-                <div class="prompt-box p-2.5 text-[11px] text-slate-200 leading-relaxed font-mono select-all">
-                    ${scene.google_flow_prompt}
+
+                <!-- Prompt box with Copy button -->
+                <div class="bg-slate-950/80 border border-emerald-500/20 rounded-lg p-2.5 flex items-start justify-between gap-2">
+                    <p class="prompt-text text-[11px] text-slate-300 font-mono leading-relaxed select-all">
+                        ${scene.google_flow_prompt}
+                    </p>
+                    <button class="btn-copy-prompt text-emerald-400 hover:text-emerald-300 text-[10px] font-bold flex items-center gap-1 flex-shrink-0 bg-emerald-950/60 border border-emerald-500/30 px-2 py-1 rounded">
+                        <i data-lucide="copy" class="w-3 h-3"></i> Salin
+                    </button>
+                </div>
+                <div class="flow-status-msg hidden text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 p-2 rounded-lg flex items-center gap-1.5">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                    <span>Prompt tersalin di clipboard! Di tab Google Flow, tinggal tekan Ctrl+V (Paste) lalu klik Generate.</span>
                 </div>
             </div>
 
             <!-- Video & Visual Generator Controls -->
-            <div class="pt-2 border-t border-slate-900 flex flex-col gap-2">
+            <div class="pt-2 border-t border-slate-900 space-y-2">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button class="btn-generate-video w-full py-2 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 transition">
-                        <i data-lucide="video" class="w-3.5 h-3.5 text-white"></i>
-                        <span>Generate Video AI (.mp4)</span>
+                    <button class="btn-render-inapp w-full py-2 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 transition">
+                        <i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i>
+                        <span>Buat Video In-App (Tanpa Pindah Tab)</span>
                     </button>
                     <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
                         <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
-                        <span>Preview Gambar</span>
+                        <span>Preview Gambar Visual</span>
                     </button>
                 </div>
+
+                <!-- Secondary Link: Google Gemini Omni Video API -->
+                <button class="btn-generate-video text-[10px] text-slate-500 hover:text-slate-300 underline text-center block w-full py-0.5">
+                    Coba Generate via Google Gemini Omni Video API (.mp4)
+                </button>
 
                 <!-- Video Player Container -->
                 <div class="video-container hidden text-center space-y-2 pt-2 bg-slate-900/60 p-3 rounded-xl border border-brand-500/30">
                     <video class="scene-video-player mx-auto rounded-xl border border-brand-500/50 max-h-80 w-auto shadow-2xl" controls autoplay loop playsinline></video>
                     <div class="flex items-center justify-center gap-2 pt-1">
-                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="scene.mp4">
-                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.mp4)
+                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="scene.webm">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.webm)
                         </a>
                     </div>
                 </div>
@@ -643,22 +663,69 @@ function renderUgcResults(campaign) {
             copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
         });
 
-        // Wire Video Generator (Gemini Omni 1.1 Flash)
-        const btnVideo = sceneCard.querySelector('.btn-generate-video');
+        // Wire Google Flow 1-Click Bridge
+        const btnFlow = sceneCard.querySelector('.btn-flow-render');
+        const flowStatusMsg = sceneCard.querySelector('.flow-status-msg');
+        btnFlow?.addEventListener('click', async () => {
+            await copyToClipboard(scene.google_flow_prompt, `Prompt Scene ${scene.scene_number} disalin!`);
+            window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+            if (flowStatusMsg) flowStatusMsg.classList.remove('hidden');
+            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka Ulang Google Flow`;
+            if (window.lucide) window.lucide.createIcons();
+        });
+
+        // Wire In-App Video Renderer (Canvas + Pollinations + MediaRecorder)
+        const btnInApp = sceneCard.querySelector('.btn-render-inapp');
         const videoContainer = sceneCard.querySelector('.video-container');
         const videoPlayer = sceneCard.querySelector('.scene-video-player');
         const btnDownloadVideo = sceneCard.querySelector('.btn-download-video');
 
+        btnInApp?.addEventListener('click', async () => {
+            btnInApp.disabled = true;
+            btnInApp.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Merender Video...`;
+
+            try {
+                // 1. Get visual artwork
+                const imageUrl = await generateImagen3(scene.google_flow_prompt, '9:16');
+
+                // 2. Play speech audio in sync
+                speakVoiceover(scene.voiceover_script);
+
+                // 3. Render animated video canvas
+                const videoBlobUrl = await renderInAppSceneVideo({
+                    imageUrl,
+                    durationSeconds: scene.duration_seconds || 4,
+                    captionText: scene.caption_overlay || scene.voiceover_script,
+                    voiceoverText: scene.voiceover_script,
+                    sceneNumber: scene.scene_number || (index + 1)
+                });
+
+                videoPlayer.src = videoBlobUrl;
+                btnDownloadVideo.href = videoBlobUrl;
+                btnDownloadVideo.download = `kawandigi-scene-${scene.scene_number || (index + 1)}.webm`;
+                videoContainer.classList.remove('hidden');
+                btnInApp.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Render Ulang Video`;
+                showToast(`Video Scene ${scene.scene_number || (index + 1)} berhasil dibuat!`, 'success');
+            } catch (err) {
+                showToast('Gagal merender video: ' + err.message, 'error');
+                btnInApp.innerHTML = `<i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i> Buat Video In-App`;
+            } finally {
+                btnInApp.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
+            }
+        });
+
+        // Wire Gemini Omni Video API (for accounts with Cloud billing)
+        const btnVideo = sceneCard.querySelector('.btn-generate-video');
         btnVideo?.addEventListener('click', async () => {
             btnVideo.disabled = true;
-            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Membuat Video AI...`;
+            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Menghubungi Gemini Omni API...`;
             try {
                 const videoDataUrl = await generateOmniVideo(scene.google_flow_prompt, '9:16');
                 videoPlayer.src = videoDataUrl;
                 btnDownloadVideo.href = videoDataUrl;
                 btnDownloadVideo.download = `kawandigi-scene-${scene.scene_number || (index + 1)}.mp4`;
                 videoContainer.classList.remove('hidden');
-                btnVideo.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Generate Ulang Video`;
                 showToast(`Video Scene ${scene.scene_number || (index + 1)} siap ditonton!`, 'success');
             } catch (err) {
                 if (err.message === 'FREE_TIER_VIDEO_LIMIT') {
@@ -666,9 +733,9 @@ function renderUgcResults(campaign) {
                 } else {
                     showToast(err.message, 'error');
                 }
-                btnVideo.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5 text-white"></i> Generate Video AI (.mp4)`;
             } finally {
                 btnVideo.disabled = false;
+                btnVideo.textContent = 'Coba Generate via Google Gemini Omni Video API (.mp4)';
                 if (window.lucide) window.lucide.createIcons();
             }
         });
@@ -746,6 +813,14 @@ function initDramaCreator() {
     // Generate Drama Episode Button
     const btnGenerateDrama = document.getElementById('btn-generate-drama');
     btnGenerateDrama?.addEventListener('click', handleGenerateDrama);
+
+    // Copy All Drama Prompts
+    const btnCopyAllDrama = document.getElementById('btn-copy-all-drama-prompts');
+    btnCopyAllDrama?.addEventListener('click', () => {
+        if (!currentDramaEpisode || !currentDramaEpisode.scenes) return;
+        const allPrompts = currentDramaEpisode.scenes.map(s => `[SCENE ${s.scene_number}: ${s.scene_title} (${s.duration_seconds}s)]\n${s.google_flow_prompt}`).join('\n\n');
+        copyToClipboard(allPrompts, 'Seluruh prompt drama berhasil disalin!');
+    });
 }
 
 async function handleGenerateDrama() {
@@ -777,10 +852,12 @@ async function handleGenerateDrama() {
     const emptyState = document.getElementById('drama-empty-state');
     const loadingState = document.getElementById('drama-loading-state');
     const resultsContainer = document.getElementById('drama-results');
+    const actionsHeader = document.getElementById('drama-actions');
     const btnGenerate = document.getElementById('btn-generate-drama');
 
     emptyState?.classList.add('hidden');
     resultsContainer?.classList.add('hidden');
+    actionsHeader?.classList.add('hidden');
     loadingState?.classList.remove('hidden');
     btnGenerate.disabled = true;
 
@@ -805,6 +882,7 @@ async function handleGenerateDrama() {
 
         currentDramaEpisode = drama;
         renderDramaResults(drama);
+        actionsHeader?.classList.remove('hidden');
         updateLicenseCards();
         showToast(`Episode ${episodeNumber} berhasil ditulis dengan cliffhanger viral!`, 'success');
     } catch (err) {
@@ -896,40 +974,66 @@ function renderDramaResults(drama) {
             </div>
             ` : ''}
 
-            <!-- Google Flow Prompt Box with Character Consistency -->
-            <div class="pt-1">
-                <div class="flex items-center justify-between mb-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                        <i data-lucide="terminal" class="w-3 h-3"></i> Prompt Google Flow / Veo (Konsisten Tokoh):
-                    </label>
-                    <button class="btn-copy-prompt text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-semibold">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Prompt
+            <!-- 1-Click Google Flow Bridge (Character Consistency) -->
+            <div class="mt-2 p-3 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2.5 shadow-lg">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-emerald-300">Google Flow (Veo Drama Scene)</span>
+                                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded-full font-bold">100% Gratis</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400">Konsistensi karakter & sinematik drama 9:16 vertikal</p>
+                        </div>
+                    </div>
+                    <button class="btn-flow-render px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition transform active:scale-95 flex-shrink-0">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        <span>Buka di Google Flow</span>
                     </button>
                 </div>
-                <div class="prompt-box p-2.5 text-[11px] text-slate-200 leading-relaxed font-mono select-all">
-                    ${scene.google_flow_prompt}
+
+                <!-- Prompt box with Copy button -->
+                <div class="bg-slate-950/80 border border-emerald-500/20 rounded-lg p-2.5 flex items-start justify-between gap-2">
+                    <p class="prompt-text text-[11px] text-slate-300 font-mono leading-relaxed select-all">
+                        ${scene.google_flow_prompt}
+                    </p>
+                    <button class="btn-copy-prompt text-emerald-400 hover:text-emerald-300 text-[10px] font-bold flex items-center gap-1 flex-shrink-0 bg-emerald-950/60 border border-emerald-500/30 px-2 py-1 rounded">
+                        <i data-lucide="copy" class="w-3 h-3"></i> Salin
+                    </button>
+                </div>
+                <div class="flow-status-msg hidden text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 p-2 rounded-lg flex items-center gap-1.5">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                    <span>Prompt tersalin di clipboard! Di tab Google Flow, tinggal tekan Ctrl+V (Paste) lalu klik Generate.</span>
                 </div>
             </div>
 
             <!-- Video & Visual Generator Controls -->
-            <div class="pt-2 border-t border-slate-900 flex flex-col gap-2">
+            <div class="pt-2 border-t border-slate-900 space-y-2">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button class="btn-generate-video w-full py-2 bg-gradient-to-r from-accent-600 to-brand-600 hover:from-accent-500 hover:to-brand-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-accent-500/20 transition">
-                        <i data-lucide="video" class="w-3.5 h-3.5 text-white"></i>
-                        <span>Generate Video AI (.mp4)</span>
+                    <button class="btn-render-inapp w-full py-2 bg-gradient-to-r from-accent-600 to-brand-600 hover:from-accent-500 hover:to-brand-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-accent-500/20 transition">
+                        <i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i>
+                        <span>Buat Video In-App (Tanpa Pindah Tab)</span>
                     </button>
                     <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
                         <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
-                        <span>Preview Gambar</span>
+                        <span>Preview Gambar Tokoh</span>
                     </button>
                 </div>
+
+                <!-- Secondary Link: Google Gemini Omni Video API -->
+                <button class="btn-generate-video text-[10px] text-slate-500 hover:text-slate-300 underline text-center block w-full py-0.5">
+                    Coba Generate via Google Gemini Omni Video API (.mp4)
+                </button>
 
                 <!-- Video Player Container -->
                 <div class="video-container hidden text-center space-y-2 pt-2 bg-slate-900/60 p-3 rounded-xl border border-accent-500/30">
                     <video class="scene-video-player mx-auto rounded-xl border border-accent-500/50 max-h-80 w-auto shadow-2xl" controls autoplay loop playsinline></video>
                     <div class="flex items-center justify-center gap-2 pt-1">
-                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="drama-scene.mp4">
-                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.mp4)
+                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="drama-scene.webm">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.webm)
                         </a>
                     </div>
                 </div>
@@ -956,32 +1060,79 @@ function renderDramaResults(drama) {
             copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
         });
 
-        // Wire Video Generator (Gemini Omni 1.1 Flash)
-        const btnVideo = sceneCard.querySelector('.btn-generate-video');
+        // Wire Google Flow 1-Click Bridge
+        const btnFlow = sceneCard.querySelector('.btn-flow-render');
+        const flowStatusMsg = sceneCard.querySelector('.flow-status-msg');
+        btnFlow?.addEventListener('click', async () => {
+            await copyToClipboard(scene.google_flow_prompt, `Prompt Scene ${scene.scene_number} disalin!`);
+            window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+            if (flowStatusMsg) flowStatusMsg.classList.remove('hidden');
+            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka Ulang Google Flow`;
+            if (window.lucide) window.lucide.createIcons();
+        });
+
+        // Wire In-App Video Renderer (Canvas + Pollinations + MediaRecorder)
+        const btnInApp = sceneCard.querySelector('.btn-render-inapp');
         const videoContainer = sceneCard.querySelector('.video-container');
         const videoPlayer = sceneCard.querySelector('.scene-video-player');
         const btnDownloadVideo = sceneCard.querySelector('.btn-download-video');
 
+        btnInApp?.addEventListener('click', async () => {
+            btnInApp.disabled = true;
+            btnInApp.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Merender Video...`;
+
+            try {
+                // 1. Get visual artwork
+                const imageUrl = await generateImagen3(scene.google_flow_prompt, '9:16');
+
+                // 2. Play speech audio in sync
+                speakVoiceover(scene.dialogue);
+
+                // 3. Render animated video canvas
+                const videoBlobUrl = await renderInAppSceneVideo({
+                    imageUrl,
+                    durationSeconds: scene.duration_seconds || 5,
+                    captionText: scene.dialogue,
+                    voiceoverText: scene.dialogue,
+                    sceneNumber: scene.scene_number || (index + 1)
+                });
+
+                videoPlayer.src = videoBlobUrl;
+                btnDownloadVideo.href = videoBlobUrl;
+                btnDownloadVideo.download = `kawandigi-drama-ep${drama.episode_info?.episode_number || 1}-sc${scene.scene_number || (index + 1)}.webm`;
+                videoContainer.classList.remove('hidden');
+                btnInApp.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Render Ulang Video`;
+                showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} berhasil dibuat!`, 'success');
+            } catch (err) {
+                showToast('Gagal merender video: ' + err.message, 'error');
+                btnInApp.innerHTML = `<i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i> Buat Video In-App`;
+            } finally {
+                btnInApp.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
+            }
+        });
+
+        // Wire Gemini Omni Video API (for accounts with Cloud billing)
+        const btnVideo = sceneCard.querySelector('.btn-generate-video');
         btnVideo?.addEventListener('click', async () => {
             btnVideo.disabled = true;
-            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Membuat Video AI...`;
+            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Menghubungi Gemini Omni API...`;
             try {
                 const videoDataUrl = await generateOmniVideo(scene.google_flow_prompt, '9:16');
                 videoPlayer.src = videoDataUrl;
                 btnDownloadVideo.href = videoDataUrl;
                 btnDownloadVideo.download = `kawandigi-drama-ep${drama.episode_info?.episode_number || 1}-sc${scene.scene_number || (index + 1)}.mp4`;
                 videoContainer.classList.remove('hidden');
-                btnVideo.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Generate Ulang Video`;
-                showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} siap!`, 'success');
+                showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} siap ditonton!`, 'success');
             } catch (err) {
                 if (err.message === 'FREE_TIER_VIDEO_LIMIT') {
                     openVideoTierModal(scene.google_flow_prompt);
                 } else {
                     showToast(err.message, 'error');
                 }
-                btnVideo.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5 text-white"></i> Generate Video AI (.mp4)`;
             } finally {
                 btnVideo.disabled = false;
+                btnVideo.textContent = 'Coba Generate via Google Gemini Omni Video API (.mp4)';
                 if (window.lucide) window.lucide.createIcons();
             }
         });

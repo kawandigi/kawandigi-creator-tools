@@ -30,7 +30,7 @@ const FALLBACK_MODELS = [
 /**
  * Call Google Gemini with Automatic Model Fallback on High Demand / Spikes
  */
-export async function callGemini(prompt, systemInstruction = '', preferredModel = 'gemini-3.8-flash') {
+export async function callGemini(prompt, systemInstruction = '', preferredModel = 'gemini-3.8-flash', tools = null) {
     const apiKey = getSavedApiKey();
     if (!apiKey) {
         throw new Error('API Key Google AI Studio belum diisi. Silakan masukkan API Key Anda di menu Pengaturan.');
@@ -66,6 +66,10 @@ export async function callGemini(prompt, systemInstruction = '', preferredModel 
             payload.systemInstruction = {
                 parts: [{ text: systemInstruction }]
             };
+        }
+
+        if (tools && Array.isArray(tools)) {
+            payload.tools = tools;
         }
 
         try {
