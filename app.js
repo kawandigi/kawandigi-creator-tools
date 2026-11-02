@@ -368,6 +368,13 @@ function initUgcCreator() {
     const sellingInput = document.getElementById('ugc-selling');
 
     btnScrape?.addEventListener('click', async () => {
+        const apiKey = getSavedApiKey();
+        if (!apiKey) {
+            showToast('Silakan masukkan Google AI Studio API Key Anda terlebih dahulu.', 'error');
+            openApiKeyModal();
+            return;
+        }
+
         const url = urlInput.value.trim();
         if (!url) {
             showToast('Silakan tempelkan link produk terlebih dahulu.', 'error');

@@ -69,13 +69,18 @@ export async function callGemini(prompt, systemInstruction = '', preferredModel 
         }
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+
             const response = await fetch(endpoint, {
+                signal: controller.signal,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
