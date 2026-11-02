@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Google Gemini & Imagen API Client
+ * KawanDigi Creator Studio - Google Gemini, Imagen, & Omni Video API Client
  * 100% Client-Side (BYOK: Bring Your Own Key) - Zero VPS / Serverless
  */
 
@@ -18,9 +18,9 @@ export function saveApiKey(key) {
 }
 
 /**
- * Call Google Gemini 2.5 Flash for Structured Reasoning, Scriptwriting, and Storyboards
+ * Call Google Gemini 3.8 Flash for Structured Reasoning, Scriptwriting, and Storyboards
  */
-export async function callGemini(prompt, systemInstruction = '', model = 'gemini-2.5-flash') {
+export async function callGemini(prompt, systemInstruction = '', model = 'gemini-3.8-flash') {
     const apiKey = getSavedApiKey();
     if (!apiKey) {
         throw new Error('API Key Google AI Studio belum diisi. Silakan masukkan API Key Anda di menu Pengaturan.');
@@ -73,27 +73,23 @@ export async function callGemini(prompt, systemInstruction = '', model = 'gemini
 }
 
 /**
- * Generate Visual Image with Google Imagen 3 via Gemini API
+ * Generate Real Video with Google Gemini Omni Flash (gemini-omni-1.1-flash)
+ * Produces native MP4 video directly without leaving the app!
  */
-export async function generateImagen3(prompt, aspectRatio = '9:16') {
+export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
     const apiKey = getSavedApiKey();
     if (!apiKey) {
         throw new Error('API Key Google AI Studio belum diisi.');
     }
 
-    // Google Imagen 3 generate images endpoint
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
 
     const payload = {
-        instances: [
-            { prompt: prompt }
-        ],
-        parameters: {
-            sampleCount: 1,
-            aspectRatio: aspectRatio === '9:16' ? '9:16' : (aspectRatio === '16:9' ? '16:9' : '1:1'),
-            outputOptions: {
-                mimeType: 'image/jpeg'
-            }
+        model: 'gemini-omni-1.1-flash',
+        input: prompt,
+        response_format: {
+            type: 'video',
+            aspect_ratio: aspectRatio === '16:9' ? '16:9' : '9:16'
         }
     };
 
@@ -108,7 +104,93 @@ export async function generateImagen3(prompt, aspectRatio = '9:16') {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-        throw new Error(`Google Imagen 3 API Error: ${errMsg}`);
+        throw new Error(`Google Omni Video Error: ${errMsg}`);
+    }
+
+    const data = await response.json();
+
+    // Parse steps in REST response for video data
+    if (data.steps && Array.isArray(data.steps)) {
+        for (const step of data.steps) {
+            if (step.content && Array.isArray(step.content)) {
+                for (const part of step.content) {
+                    if (part.type === 'video' && part.data) {
+                        return `data:${part.mime_type || 'video/mp4'};base64,${part.data}`;
+                    }
+                }
+            }
+        }
+    }
+
+    throw new Error('Google Omni Video tidak mengembalikan data video.');
+}
+
+/**
+ * Generate Visual Preview Image (Nano Banana 2.1 / Imagen)
+ */
+export async function generateVisualImage(prompt, aspectRatio = '9:16') {
+    const apiKey = getSavedApiKey();
+    if (!apiKey) {
+        throw new Error('API Key Google AI Studio belum diisi.');
+    }
+
+    // Try Gemini Nano Banana 2.1 via Interactions API first
+    try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
+        const payload = {
+            model: 'gemini-nano-banana-2.1',
+            input: prompt,
+            response_format: {
+                type: 'image',
+                aspect_ratio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16')
+            }
+        };
+
+        const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.steps && Array.isArray(data.steps)) {
+                for (const step of data.steps) {
+                    if (step.content && Array.isArray(step.content)) {
+                        for (const part of step.content) {
+                            if (part.type === 'image' && part.data) {
+                                return `data:${part.mime_type || 'image/png'};base64,${part.data}`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch {
+        // Fallback to legacy Imagen endpoint
+    }
+
+    // Legacy Imagen fallback
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+    const payload = {
+        instances: [{ prompt: prompt }],
+        parameters: {
+            sampleCount: 1,
+            aspectRatio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16'),
+            outputOptions: { mimeType: 'image/jpeg' }
+        }
+    };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(`Image Generation Error: ${errMsg}`);
     }
 
     const data = await response.json();
@@ -117,5 +199,8 @@ export async function generateImagen3(prompt, aspectRatio = '9:16') {
         return `data:image/jpeg;base64,${prediction.bytesBase64Encoded}`;
     }
 
-    throw new Error('Google Imagen 3 tidak mengembalikan data gambar.');
+    throw new Error('Google AI tidak mengembalikan data gambar.');
 }
+
+// Backwards compatibility alias
+export const generateImagen3 = generateVisualImage;

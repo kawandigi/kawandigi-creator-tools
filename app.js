@@ -3,7 +3,7 @@
  * Handles Navigation, State, Event Listeners, and Dynamic UI Rendering
  */
 
-import { getSavedApiKey, saveApiKey, generateImagen3 } from './modules/gemini_api.js';
+import { getSavedApiKey, saveApiKey, generateImagen3, generateOmniVideo } from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
 import { scrapeProductFromUrl, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
@@ -522,13 +522,31 @@ function renderUgcResults(campaign) {
                 </div>
             </div>
 
-            <!-- Imagen 3 Preview Generator -->
+            <!-- Video & Visual Generator Controls -->
             <div class="pt-2 border-t border-slate-900 flex flex-col gap-2">
-                <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
-                    <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
-                    <span>Generate Preview Gambar AI (Imagen 3)</span>
-                </button>
-                <div class="preview-image-container hidden text-center">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button class="btn-generate-video w-full py-2 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 transition">
+                        <i data-lucide="video" class="w-3.5 h-3.5 text-white"></i>
+                        <span>Generate Video AI (.mp4)</span>
+                    </button>
+                    <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
+                        <span>Preview Gambar</span>
+                    </button>
+                </div>
+
+                <!-- Video Player Container -->
+                <div class="video-container hidden text-center space-y-2 pt-2 bg-slate-900/60 p-3 rounded-xl border border-brand-500/30">
+                    <video class="scene-video-player mx-auto rounded-xl border border-brand-500/50 max-h-80 w-auto shadow-2xl" controls autoplay loop playsinline></video>
+                    <div class="flex items-center justify-center gap-2 pt-1">
+                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="scene.mp4">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.mp4)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Image Preview Container -->
+                <div class="preview-image-container hidden text-center pt-1">
                     <img class="preview-img mx-auto rounded-xl border border-slate-700 max-h-80 object-cover shadow-lg" alt="AI Preview" />
                 </div>
             </div>
@@ -542,6 +560,32 @@ function renderUgcResults(campaign) {
         // Wire Copy Prompt
         sceneCard.querySelector('.btn-copy-prompt')?.addEventListener('click', () => {
             copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
+        });
+
+        // Wire Video Generator (Gemini Omni 1.1 Flash)
+        const btnVideo = sceneCard.querySelector('.btn-generate-video');
+        const videoContainer = sceneCard.querySelector('.video-container');
+        const videoPlayer = sceneCard.querySelector('.scene-video-player');
+        const btnDownloadVideo = sceneCard.querySelector('.btn-download-video');
+
+        btnVideo?.addEventListener('click', async () => {
+            btnVideo.disabled = true;
+            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Membuat Video AI...`;
+            try {
+                const videoDataUrl = await generateOmniVideo(scene.google_flow_prompt, '9:16');
+                videoPlayer.src = videoDataUrl;
+                btnDownloadVideo.href = videoDataUrl;
+                btnDownloadVideo.download = `kawandigi-scene-${scene.scene_number || (index + 1)}.mp4`;
+                videoContainer.classList.remove('hidden');
+                btnVideo.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Generate Ulang Video`;
+                showToast(`Video Scene ${scene.scene_number || (index + 1)} siap ditonton!`, 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+                btnVideo.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5 text-white"></i> Generate Video AI (.mp4)`;
+            } finally {
+                btnVideo.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
+            }
         });
 
         // Wire Imagen Preview
@@ -560,7 +604,7 @@ function renderUgcResults(campaign) {
                 showToast(`Preview Gambar Scene ${scene.scene_number} siap!`, 'success');
             } catch (err) {
                 showToast(err.message, 'error');
-                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Generate Preview Gambar AI (Imagen 3)`;
+                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Preview Gambar`;
             } finally {
                 btnImagen.disabled = false;
                 if (window.lucide) window.lucide.createIcons();
@@ -777,13 +821,31 @@ function renderDramaResults(drama) {
                 </div>
             </div>
 
-            <!-- Imagen 3 Preview Generator -->
+            <!-- Video & Visual Generator Controls -->
             <div class="pt-2 border-t border-slate-900 flex flex-col gap-2">
-                <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
-                    <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
-                    <span>Generate Preview Gambar AI (Imagen 3)</span>
-                </button>
-                <div class="preview-image-container hidden text-center">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button class="btn-generate-video w-full py-2 bg-gradient-to-r from-accent-600 to-brand-600 hover:from-accent-500 hover:to-brand-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-accent-500/20 transition">
+                        <i data-lucide="video" class="w-3.5 h-3.5 text-white"></i>
+                        <span>Generate Video AI (.mp4)</span>
+                    </button>
+                    <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
+                        <span>Preview Gambar</span>
+                    </button>
+                </div>
+
+                <!-- Video Player Container -->
+                <div class="video-container hidden text-center space-y-2 pt-2 bg-slate-900/60 p-3 rounded-xl border border-accent-500/30">
+                    <video class="scene-video-player mx-auto rounded-xl border border-accent-500/50 max-h-80 w-auto shadow-2xl" controls autoplay loop playsinline></video>
+                    <div class="flex items-center justify-center gap-2 pt-1">
+                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="drama-scene.mp4">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.mp4)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Image Preview Container -->
+                <div class="preview-image-container hidden text-center pt-1">
                     <img class="preview-img mx-auto rounded-xl border border-slate-700 max-h-80 object-cover shadow-lg" alt="AI Preview" />
                 </div>
             </div>
@@ -797,6 +859,32 @@ function renderDramaResults(drama) {
         // Wire Copy Prompt
         sceneCard.querySelector('.btn-copy-prompt')?.addEventListener('click', () => {
             copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
+        });
+
+        // Wire Video Generator (Gemini Omni 1.1 Flash)
+        const btnVideo = sceneCard.querySelector('.btn-generate-video');
+        const videoContainer = sceneCard.querySelector('.video-container');
+        const videoPlayer = sceneCard.querySelector('.scene-video-player');
+        const btnDownloadVideo = sceneCard.querySelector('.btn-download-video');
+
+        btnVideo?.addEventListener('click', async () => {
+            btnVideo.disabled = true;
+            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Membuat Video AI...`;
+            try {
+                const videoDataUrl = await generateOmniVideo(scene.google_flow_prompt, '9:16');
+                videoPlayer.src = videoDataUrl;
+                btnDownloadVideo.href = videoDataUrl;
+                btnDownloadVideo.download = `kawandigi-drama-ep${drama.episode_info?.episode_number || 1}-sc${scene.scene_number || (index + 1)}.mp4`;
+                videoContainer.classList.remove('hidden');
+                btnVideo.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Generate Ulang Video`;
+                showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} siap!`, 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+                btnVideo.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5 text-white"></i> Generate Video AI (.mp4)`;
+            } finally {
+                btnVideo.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
+            }
         });
 
         // Wire Imagen Preview
@@ -815,7 +903,7 @@ function renderDramaResults(drama) {
                 showToast(`Visual Preview Scene ${scene.scene_number} siap!`, 'success');
             } catch (err) {
                 showToast(err.message, 'error');
-                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Generate Preview Gambar AI (Imagen 3)`;
+                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Preview Gambar`;
             } finally {
                 btnImagen.disabled = false;
                 if (window.lucide) window.lucide.createIcons();
