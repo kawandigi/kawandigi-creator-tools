@@ -60,6 +60,52 @@ async function copyToClipboard(text, successMessage = 'Teks berhasil disalin!') 
     }
 }
 
+// Built-in Browser Voiceover Audio Player (TTS - Web Speech API, Rp 0)
+function speakVoiceover(text) {
+    if (!('speechSynthesis' in window)) {
+        showToast('Browser Anda belum mendukung pemutar suara web.', 'error');
+        return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'id-ID';
+    utterance.rate = 1.05;
+    utterance.pitch = 1.05;
+    window.speechSynthesis.speak(utterance);
+    showToast('Memutar suara narasi voiceover...', 'info');
+}
+
+// Modal Video Tier Handler
+function openVideoTierModal(promptToCopy) {
+    const modal = document.getElementById('modal-video-tier');
+    const btnAction = document.getElementById('btn-flow-direct-action');
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+
+    if (promptToCopy) {
+        copyToClipboard(promptToCopy, 'Prompt scene telah disalin ke clipboard!');
+    }
+
+    if (btnAction) {
+        btnAction.onclick = () => {
+            if (promptToCopy) {
+                copyToClipboard(promptToCopy, 'Prompt disalin! Silakan paste di Google Flow');
+            }
+            window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+        };
+    }
+}
+
+function initVideoTierModal() {
+    const modal = document.getElementById('modal-video-tier');
+    const btnClose = document.getElementById('btn-close-video-modal');
+    btnClose?.addEventListener('click', () => modal?.classList.add('hidden'));
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.add('hidden');
+    });
+}
+
 // =========================================================================
 // TAB NAVIGATION SYSTEM
 // =========================================================================
@@ -506,9 +552,14 @@ function renderUgcResults(campaign) {
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Naskah Suara (Voiceover):</label>
-                    <button class="btn-copy-vo text-[10px] text-brand-400 hover:text-brand-300 flex items-center gap-1 font-semibold">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Naskah
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button class="btn-play-vo text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold">
+                            <i data-lucide="volume-2" class="w-3 h-3"></i> Putar Suara
+                        </button>
+                        <button class="btn-copy-vo text-[10px] text-brand-400 hover:text-brand-300 flex items-center gap-1 font-semibold">
+                            <i data-lucide="copy" class="w-3 h-3"></i> Salin Naskah
+                        </button>
+                    </div>
                 </div>
                 <p class="text-xs text-amber-200 italic bg-amber-950/20 border border-amber-500/20 p-2.5 rounded-lg leading-relaxed">
                     "${scene.voiceover_script || '-'}"
@@ -575,6 +626,11 @@ function renderUgcResults(campaign) {
             copyToClipboard(scene.voiceover_script, `Naskah Scene ${scene.scene_number} disalin!`);
         });
 
+        // Wire Play Vo (Web Speech Audio)
+        sceneCard.querySelector('.btn-play-vo')?.addEventListener('click', () => {
+            speakVoiceover(scene.voiceover_script);
+        });
+
         // Wire Copy Prompt
         sceneCard.querySelector('.btn-copy-prompt')?.addEventListener('click', () => {
             copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
@@ -598,7 +654,11 @@ function renderUgcResults(campaign) {
                 btnVideo.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Generate Ulang Video`;
                 showToast(`Video Scene ${scene.scene_number || (index + 1)} siap ditonton!`, 'success');
             } catch (err) {
-                showToast(err.message, 'error');
+                if (err.message === 'FREE_TIER_VIDEO_LIMIT') {
+                    openVideoTierModal(scene.google_flow_prompt);
+                } else {
+                    showToast(err.message, 'error');
+                }
                 btnVideo.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5 text-white"></i> Generate Video AI (.mp4)`;
             } finally {
                 btnVideo.disabled = false;
@@ -806,9 +866,14 @@ function renderDramaResults(drama) {
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dialog Karakter:</label>
-                    <button class="btn-copy-dialogue text-[10px] text-accent-400 hover:text-accent-300 flex items-center gap-1 font-semibold">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Dialog
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button class="btn-play-dialogue text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold">
+                            <i data-lucide="volume-2" class="w-3 h-3"></i> Putar Dialog
+                        </button>
+                        <button class="btn-copy-dialogue text-[10px] text-accent-400 hover:text-accent-300 flex items-center gap-1 font-semibold">
+                            <i data-lucide="copy" class="w-3 h-3"></i> Salin Dialog
+                        </button>
+                    </div>
                 </div>
                 <p class="text-xs text-white font-medium bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg leading-relaxed">
                     ${scene.dialogue || '-'}
@@ -874,6 +939,11 @@ function renderDramaResults(drama) {
             copyToClipboard(scene.dialogue, `Dialog Scene ${scene.scene_number} disalin!`);
         });
 
+        // Wire Play Dialogue (Web Speech Audio)
+        sceneCard.querySelector('.btn-play-dialogue')?.addEventListener('click', () => {
+            speakVoiceover(scene.dialogue);
+        });
+
         // Wire Copy Prompt
         sceneCard.querySelector('.btn-copy-prompt')?.addEventListener('click', () => {
             copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
@@ -897,7 +967,11 @@ function renderDramaResults(drama) {
                 btnVideo.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Generate Ulang Video`;
                 showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} siap!`, 'success');
             } catch (err) {
-                showToast(err.message, 'error');
+                if (err.message === 'FREE_TIER_VIDEO_LIMIT') {
+                    openVideoTierModal(scene.google_flow_prompt);
+                } else {
+                    showToast(err.message, 'error');
+                }
                 btnVideo.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5 text-white"></i> Generate Video AI (.mp4)`;
             } finally {
                 btnVideo.disabled = false;
@@ -1030,6 +1104,7 @@ function initThemeToggle() {
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initApiKeyModal();
+    initVideoTierModal();
     initUgcCreator();
     initDramaCreator();
     initLicenseManager();

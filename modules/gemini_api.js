@@ -146,6 +146,11 @@ export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+
+        if (/limit: 0 requests per day on Free Tier|Rate limit exceeded.*gemini-omni/i.test(errMsg)) {
+            throw new Error('FREE_TIER_VIDEO_LIMIT');
+        }
+
         throw new Error(`Google Omni Video Error: ${errMsg}`);
     }
 
@@ -168,80 +173,56 @@ export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
 }
 
 /**
- * Generate Visual Preview Image (Nano Banana 2.1 / Imagen)
+ * Generate Visual Preview Image (Nano Banana 2.1 with Free Tier Pollinations Fallback)
  */
 export async function generateVisualImage(prompt, aspectRatio = '9:16') {
     const apiKey = getSavedApiKey();
-    if (!apiKey) {
-        throw new Error('API Key Google AI Studio belum diisi.');
-    }
 
-    // Try Gemini Nano Banana 2.1 via Interactions API first
-    try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
-        const payload = {
-            model: 'gemini-nano-banana-2.1',
-            input: prompt,
-            response_format: {
-                type: 'image',
-                aspect_ratio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16')
-            }
-        };
+    // 1. Try Gemini Nano Banana 2.1 via Interactions API if user has a paid API key
+    if (apiKey) {
+        try {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
+            const payload = {
+                model: 'gemini-nano-banana-2.1',
+                input: prompt,
+                response_format: {
+                    type: 'image',
+                    aspect_ratio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16')
+                }
+            };
 
-        const resp = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+            const resp = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (resp.ok) {
-            const data = await resp.json();
-            if (data.steps && Array.isArray(data.steps)) {
-                for (const step of data.steps) {
-                    if (step.content && Array.isArray(step.content)) {
-                        for (const part of step.content) {
-                            if (part.type === 'image' && part.data) {
-                                return `data:${part.mime_type || 'image/png'};base64,${part.data}`;
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.steps && Array.isArray(data.steps)) {
+                    for (const step of data.steps) {
+                        if (step.content && Array.isArray(step.content)) {
+                            for (const part of step.content) {
+                                if (part.type === 'image' && part.data) {
+                                    return `data:${part.mime_type || 'image/png'};base64,${part.data}`;
+                                }
                             }
                         }
                     }
                 }
             }
+        } catch {
+            // Proceed to free visual generator fallback
         }
-    } catch {
-        // Fallback to legacy Imagen endpoint
     }
 
-    // Legacy Imagen fallback
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-    const payload = {
-        instances: [{ prompt: prompt }],
-        parameters: {
-            sampleCount: 1,
-            aspectRatio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16'),
-            outputOptions: { mimeType: 'image/jpeg' }
-        }
-    };
+    // 2. 100% Free Tier Fallback: High-Quality instant visual generation (No paid key required)
+    const width = aspectRatio === '16:9' ? 1280 : 720;
+    const height = aspectRatio === '16:9' ? 720 : 1280;
+    const cleanPrompt = encodeURIComponent(prompt.slice(0, 300));
+    const freeImageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
 
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-        throw new Error(`Image Generation Error: ${errMsg}`);
-    }
-
-    const data = await response.json();
-    const prediction = data.predictions?.[0];
-    if (prediction && prediction.bytesBase64Encoded) {
-        return `data:image/jpeg;base64,${prediction.bytesBase64Encoded}`;
-    }
-
-    throw new Error('Google AI tidak mengembalikan data gambar.');
+    return freeImageUrl;
 }
 
 // Backwards compatibility alias
