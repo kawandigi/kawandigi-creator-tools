@@ -85,7 +85,7 @@ export async function callGemini(prompt, systemInstruction = '', preferredModel 
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s generous timeout for rich creative generation
 
             const response = await fetch(endpoint, {
                 signal: controller.signal,
@@ -124,6 +124,13 @@ export async function callGemini(prompt, systemInstruction = '', preferredModel 
             return candidate.content.parts[0].text;
         } catch (err) {
             lastError = err;
+            if (err.name === 'AbortError' || /aborted/i.test(err.message)) {
+                if (i < modelsToTry.length - 1) {
+                    console.warn(`[KawanDigi AI] Timeout pada model ${currentModel}, mencoba model cadangan ${modelsToTry[i + 1]}...`);
+                    continue;
+                }
+                throw new Error('Koneksi ke Google AI Studio melebihi batas waktu (timeout). Silakan periksa koneksi internet Anda atau coba klik Generate kembali.');
+            }
             if (i < modelsToTry.length - 1 && /high demand|temporarily unavailable|overloaded|spikes in demand|503|429/i.test(err.message)) {
                 continue;
             }
