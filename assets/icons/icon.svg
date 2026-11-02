@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#6366f1" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="#030712" />
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#grad)" filter="url(#shadow)" />
+  <!-- Video Camera & Play Icon -->
+  <path d="M160 176C142.3 176 128 190.3 128 208V304C128 321.7 142.3 336 160 336H288C305.7 336 320 321.7 320 304V208C320 190.3 305.7 176 288 176H160Z" fill="white" />
+  <path d="M336 228.6L373.8 200.2C382.2 193.9 394 200 394 210.6V301.4C394 312 382.2 318.1 373.8 311.8L336 283.4V228.6Z" fill="white" opacity="0.9" />
+  <!-- Sparkle stars -->
+  <path d="M224 220L228 240L248 244L228 248L224 268L220 248L200 244L220 240Z" fill="#fbbf24" />
+</svg>

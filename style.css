@@ -1,0 +1,112 @@
+/* KawanDigi Creator Studio - Custom Styles & Glassmorphism */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #030712;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Active Nav Tabs */
+.nav-tab.active {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
+}
+
+.nav-tab:not(.active) {
+    color: #94a3b8;
+}
+
+.nav-tab:not(.active):hover {
+    color: #f8fafc;
+    background: rgba(51, 65, 85, 0.4);
+}
+
+/* Mobile Nav Active */
+.mobile-nav-btn.active {
+    color: #818cf8;
+}
+
+.mobile-nav-btn:not(.active) {
+    color: #64748b;
+}
+
+/* Custom Animation Utilities */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Toast Notification Styles */
+.kd-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    max-width: 90vw;
+}
+
+.kd-toast-success {
+    background: #064e3b;
+    border: 1px solid #059669;
+    color: #ecfdf5;
+}
+
+.kd-toast-error {
+    background: #7f1d1d;
+    border: 1px solid #dc2626;
+    color: #fef2f2;
+}
+
+.kd-toast-info {
+    background: #1e1b4b;
+    border: 1px solid #6366f1;
+    color: #e0e7ff;
+}
+
+/* Code / Prompt Box Styling */
+.prompt-box {
+    background: #090d16;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
