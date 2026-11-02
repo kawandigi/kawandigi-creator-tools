@@ -29,8 +29,9 @@ const FALLBACK_MODELS = [
 
 /**
  * Call Google Gemini with Automatic Model Fallback on High Demand / Spikes
+ * Supports both Text and Multimodal Image Inputs (Screenshots, Photos, etc.)
  */
-export async function callGemini(prompt, systemInstruction = '', preferredModel = 'gemini-3.8-flash', tools = null) {
+export async function callGemini(prompt, systemInstruction = '', preferredModel = 'gemini-3.8-flash', tools = null, inlineData = null) {
     const apiKey = getSavedApiKey();
     if (!apiKey) {
         throw new Error('API Key Google AI Studio belum diisi. Silakan masukkan API Key Anda di menu Pengaturan.');
@@ -47,11 +48,21 @@ export async function callGemini(prompt, systemInstruction = '', preferredModel 
         const currentModel = modelsToTry[i];
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
 
+        const parts = [];
+        if (inlineData) {
+            if (Array.isArray(inlineData)) {
+                inlineData.forEach(img => parts.push({ inlineData: img }));
+            } else {
+                parts.push({ inlineData: inlineData });
+            }
+        }
+        parts.push({ text: prompt });
+
         const payload = {
             contents: [
                 {
                     role: 'user',
-                    parts: [{ text: prompt }]
+                    parts: parts
                 }
             ],
             generationConfig: {

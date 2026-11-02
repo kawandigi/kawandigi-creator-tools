@@ -186,16 +186,63 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     return fallbackData;
 }
 
+/**
+ * Intelligent AI Multimodal Extraction from Screenshot (Shopee, TikTok Shop, Tokopedia, Listing, Menu)
+ * As defined in Kawan Digital Skill v2.0
+ */
+export async function extractDetailsFromImage(base64Data, mimeType = 'image/jpeg') {
+    const systemPrompt = `Kamu adalah Kawan Digital, asisten AI spesialis analisis screenshot etalase marketplace (Shopee, TikTok Shop, Tokopedia, Lazada), listing hotel/staycation, atau menu kuliner.
+Tugasmu adalah menganalisis gambar screenshot yang diunggah secara objektif, akurat, dan jujur tanpa mengarang fakta.
+
+Ekstrak informasi yang terbaca dari gambar dan kembalikan HANYA format JSON valid berikut (tanpa markdown backtick):
+{
+  "product_name": "Nama produk / nama tempat / nama menu yang terbaca jelas",
+  "category": "🛍️ Konten Affiliate Produk",
+  "variant": "Warna & varian yang terlihat di gambar (atau 'Standar')",
+  "visual_details": "Detail visual yang terlihat (bahan, bentuk, kemasan, porsi, dsb.)",
+  "price": "Harga / diskon / rating jika terbaca jelas, atau 'belum terdeteksi'",
+  "selling_points": "Keunggulan utama / benefit yang tampak atau terbaca dari deskripsi screenshot (2-3 kalimat padat)",
+  "suggested_tone": "Casual & Ceria (Gen Z)",
+  "target_audience": "Target calon pembeli ideal produk ini"
+}`;
+
+    const prompt = `Analisis screenshot etalase produk berikut. Ekstrak nama produk, kategori, varian warna/detail visual, harga (jika terbaca), dan keunggulan utamanya dalam format JSON.`;
+
+    const rawResponse = await callGemini(prompt, systemPrompt, 'gemini-3.8-flash', null, {
+        mimeType: mimeType,
+        data: base64Data
+    });
+
+    if (rawResponse) {
+        const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                return JSON.parse(jsonMatch[0]);
+            } catch {}
+        }
+    }
+
+    throw new Error('Gagal menganalisis screenshot. Pastikan gambar etalase memiliki teks judul yang jelas.');
+}
+
 // Backwards compatibility alias
 export const scrapeProductFromUrl = fetchPageContent;
 
 /**
  * Generate Complete UGC Affiliate Storyboard & Scene Prompts
- * Fast-paced pacing tuned for TikTok/Reels/Shorts:
- * - 10s: 3 scenes (Hook 3s, Demo 4s, CTA 3s)
- * - 15s: 4 scenes (Hook 3s, Problem 4s, Demo 4s, CTA 4s)
- * - 30s: 6 scenes (AIDA High Conversion Review)
- * - 60s: 8 scenes (Full Storytelling & Detailed Demonstration)
+ * Strictly adheres to Kawan Digital Skill v2.0:
+ * - 6-Scene UGC Video (10 Seconds, FHD 9:16)
+ *   1. Hook (0–1.5s, 3–5 kata)
+ *   2. Problem (1.5–3s, 4–6 kata)
+ *   3. Pengenalan (3–4.5s, 4–6 kata)
+ *   4. Demonstrasi (4.5–6.5s, 4–6 kata)
+ *   5. Honest Review (6.5–8.5s, 4–6 kata)
+ *   6. CTA Netral (8.5–10s, 3–5 kata)
+ * - Total narasi: 22–26 kata (maksimal 28 kata)
+ * - Safe zone: area tengah-atas, hindari area bawah 15% & kanan 10%
+ * - Multi-Platform Neutral CTA (tidak menyebut warna keranjang)
+ * - 3 Template Caption Siap Pakai (Hard-selling, Storytelling, Soft-selling)
+ * - Formatted Copyable Video Prompt Block
  */
 export async function generateUgcCampaign({
     productUrl = '',
@@ -203,9 +250,10 @@ export async function generateUgcCampaign({
     productCategory = '',
     sellingPoints = '',
     targetAudience = '',
-    videoDuration = 30, // 10, 15, 20, 30, or 60
+    videoDuration = 10,
     tone = 'Casual & Ceria (Gen Z)',
-    voiceGender = 'Cewek Ceria'
+    voiceGender = 'Cewek Ceria',
+    imageAnalysis = null
 }) {
     // 1. License / Trial Check
     const access = hasToolAccess('ugc');
@@ -213,57 +261,90 @@ export async function generateUgcCampaign({
         throw new Error('Akses Tool AI UGC Creator terkunci. Silakan masukkan kode lisensi di tab Lisensi untuk membuka akses.');
     }
 
-    // 2. Determine number of fast-paced cut scenes for affiliate retention
-    let sceneCount = 3;
-    if (videoDuration === 10) sceneCount = 3;       // 10s = 3 scenes (Fast Hook 3s, Core Demo 4s, CTA 3s)
-    else if (videoDuration === 15) sceneCount = 4;  // 15s = 4 scenes (TikTok Standard)
-    else if (videoDuration === 20) sceneCount = 4;  // 20s = 4 scenes
-    else if (videoDuration === 30) sceneCount = 6;  // 30s = 6 scenes (AIDA High Conversion)
-    else if (videoDuration === 60) sceneCount = 8;  // 60s = 8 scenes (Full Storytelling & Review)
+    // 2. Construct prompt for Gemini according to Kawan Digital Skill v2.0
+    const systemPrompt = `Kamu adalah Kawan Digital, asisten pembuat konten affiliate dan review berbahasa Indonesia.
+Tugasmu adalah menghasilkan Storyboard 6 adegan (grid 2x3), prompt video UGC durasi 10 detik, dan 3 template caption siap pakai untuk TikTok & Shopee Video.
 
-    // 3. Construct prompt for Gemini
-    const systemPrompt = `Anda adalah Creative Director & Master Video Affiliate Strategist nomor satu di TikTok Shop, Shopee Video, dan Instagram Reels.
-Tugas Anda adalah menganalisis produk dan merancang Storyboard Iklan UGC Vertikal (9:16) yang menghasilkan konversi tinggi (High CTR & CVR).
+ATURAN STRUKTUR VIDEO (WAJIB TEPAT 6 ADEGAN BERIKUT):
+| # | Adegan | Waktu | Kata Narasi |
+|---|---|---|---|
+| 1 | Hook — tarik perhatian | 0–1,5 detik | 3–5 kata |
+| 2 | Problem — masalah yang relate | 1,5–3 detik | 4–6 kata |
+| 3 | Pengenalan — tampilkan produk/tempat | 3–4,5 detik | 4–6 kata |
+| 4 | Demonstrasi — tunjukkan aksi/keunggulan | 4,5–6,5 detik | 4–6 kata |
+| 5 | Honest Review — benefit jujur | 6,5–8,5 detik | 4–6 kata |
+| 6 | CTA Netral — ajakan bertindak | 8,5–10 detik | 3–5 kata |
 
-ATURAN DURASI & PACING AFFILIATE (PENTING!):
-Video affiliate yang viral dan berkonversi tinggi TIDAK BOLEH lambat atau monoton.
-Video ini berdurasi total ${videoDuration} detik yang HARUS Anda bagi tepat menjadi ${sceneCount} scene/shot pendek beritme cepat (fast-paced cuts), di mana total akumulasi detik seluruh scene pas ${videoDuration} detik.
+ATURAN NARASI:
+- Total narasi SELURUH video: TEPAT 22–26 KATA (maksimal 28 kata).
+- Bahasa Indonesia natural, seolah sedang ngobrol ramah.
+- CTA Netral: JANGAN SEBUT WARNA KERANJANG (JANGAN "keranjang kuning" / "keranjang oranye").
+  Gunakan CTA netral seperti: "Yuk, langsung klik keranjang di bawah video ini ya!" atau "Temukan tautan produknya persis di bawah video ya."
 
-Setiap scene memiliki peranan strategis:
-- SCENE AWAL (Detik 0-3): Visual Hook yang mengejutkan, rasa penasaran, atau pain-point yang menghentikan scroll (Stop Scrolling).
-- SCENE TENGAH: Unboxing / Live Demo / Reaksi Jujur / Pembuktian Manfaat / Before-After yang memuaskan.
-- SCENE AKHIR: Call to Action (CTA) yang mendesak, menunjuk keranjang kuning, promo terbatas hari ini.
+ATURAN SAFE ZONE & SUBTITLE:
+- Subtitle maksimal 2 baris di area tengah-atas.
+- Hindari ~15% area bawah dan ~10–15% area kanan (tertutup tombol like, komentar, keranjang, caption).
+
+3 TEMPLATE CAPTION SIAP PAKAI:
+1. Hard-selling: Singkat, langsung, to the point, urgensi + 3-6 hashtag relevan.
+2. Storytelling: Relatable, personal experience, emosional + 3-6 hashtag relevan.
+3. Soft-selling: Edukatif, informatif, subtle persuasion + 3-6 hashtag relevan.
 
 Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
 {
   "product_analysis": {
-    "product_name": "Nama produk ringkas",
+    "product_name": "Nama produk lengkap",
+    "category": "Kategori produk/tempat",
     "core_benefit": "Manfaat utama produk",
-    "target_buyer": "Target pembeli ideal",
-    "hook_angle": "Sudut pandang hook yang dipakai (Problem / Curiosity / Social Proof / Shock Value)"
+    "target_buyer": "Target calon pembeli"
   },
   "scenes": [
     {
       "scene_number": 1,
-      "duration_seconds": 3,
-      "scene_title": "HOOK PEMBUKA",
-      "visual_description": "Deskripsi visual adegan cepat dalam bahasa Indonesia",
-      "google_flow_prompt": "Cinematic vertical 9:16 video prompt in English, fast motion, vivid lighting, ready for Google Omni / Veo",
-      "voiceover_script": "Naskah narasi suara bahasa Indonesia yang singkat, padat, natural, dan memikat",
-      "caption_overlay": "Teks tebal di layar (contoh: JANGAN DI-SKIP!)"
+      "time_range": "0–1.5s",
+      "duration_seconds": 1.5,
+      "scene_title": "HOOK",
+      "visual_description": "Deskripsi visual adegan realistis UGC pencahayaan natural",
+      "camera_movement": "Handheld snap zoom in",
+      "voiceover_script": "Naskah 3-5 kata",
+      "word_count": 4,
+      "caption_overlay": "Teks overlay tengah-atas (maks 2 baris)",
+      "google_flow_prompt": "Cinematic vertical 9:16 UGC video, natural handheld lighting, photorealistic, FHD..."
     }
   ],
-  "call_to_action": "Teks ajakan bertindak (Contoh: Klik keranjang kuning sekarang mumpung diskon!)",
-  "hashtags": ["#racuntiktok", "#fyp", "#racunshopee", "#reviewjujur"]
+  "total_narasi_kata": 24,
+  "formatted_prompt_video": "PROMPT VIDEO — [Nama Produk]\nDurasi: 10 detik | Rasio: 9:16 | Kualitas: FHD...",
+  "captions": {
+    "hard_selling": {
+      "hook": "Teks hook",
+      "benefit": "Teks benefit",
+      "cta": "Yuk, langsung klik keranjang di bawah video ini ya!",
+      "hashtags": ["#racunshopee", "#reviewjujur", "#affiliate"],
+      "full_text": "Teks lengkap caption siap salin"
+    },
+    "storytelling": {
+      "hook": "Teks hook",
+      "benefit": "Teks benefit",
+      "cta": "Temukan tautan produknya persis di bawah video ya.",
+      "hashtags": ["#reviewjujur", "#tiktokaffiliate", "#rekomendasiproduk"],
+      "full_text": "Teks lengkap caption siap salin"
+    },
+    "soft_selling": {
+      "hook": "Teks hook",
+      "benefit": "Teks benefit",
+      "cta": "Link ada di bawah video ya.",
+      "hashtags": ["#tipsbelanja", "#reviewproduk", "#affiliate"],
+      "full_text": "Teks lengkap caption siap salin"
+    }
+  }
 }`;
 
-    let userPrompt = `Rancang kampanye video UGC Affiliate beritme cepat (Fast-Paced Cuts):\n`;
-    if (productUrl) userPrompt += `- URL Produk: ${productUrl}\n`;
+    let userPrompt = `Buatkan Storyboard 6 Adegan, Prompt Video 10 Detik, dan 3 Template Caption sesuai standar Kawan Digital:\n`;
     if (productName) userPrompt += `- Nama Produk: ${productName}\n`;
-    if (productCategory) userPrompt += `- Kategori Produk: ${productCategory}\n`;
+    if (productCategory) userPrompt += `- Kategori: ${productCategory}\n`;
     if (sellingPoints) userPrompt += `- Keunggulan / Selling Points: ${sellingPoints}\n`;
     if (targetAudience) userPrompt += `- Target Audiens: ${targetAudience}\n`;
-    userPrompt += `- Total Durasi Video: ${videoDuration} Detik (Wajib dibagi menjadi ${sceneCount} Scene @ 2-8 detik per scene)\n`;
+    if (productUrl) userPrompt += `- Referensi URL: ${productUrl}\n`;
     userPrompt += `- Gaya Bahasa / Tone: ${tone}\n`;
     userPrompt += `- Tipe Voiceover: ${voiceGender}\n`;
 
@@ -278,7 +359,6 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
 
     try {
         const campaign = JSON.parse(cleaned);
-        // Track trial usage if in trial mode
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');
         }

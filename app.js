@@ -5,7 +5,7 @@
 
 import { getSavedApiKey, saveApiKey, generateImagen3, generateOmniVideo } from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
-import { extractProductDetails, generateUgcCampaign } from './modules/ugc_creator.js';
+import { extractProductDetails, extractDetailsFromImage, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
 
@@ -353,6 +353,137 @@ function initUgcCreator() {
         showToast(`Contoh dimuat: ${preset.name}`, 'info');
     });
 
+    // Screenshot Dropzone & Paste (Ctrl+V) handler
+    const dropzone = document.getElementById('screenshot-dropzone');
+    const screenshotInput = document.getElementById('ugc-screenshot-input');
+    const dropzoneEmpty = document.getElementById('dropzone-empty');
+    const dropzonePreview = document.getElementById('dropzone-preview');
+    const screenshotImgPreview = document.getElementById('screenshot-img-preview');
+    const screenshotFilename = document.getElementById('screenshot-filename');
+    const screenshotStatus = document.getElementById('screenshot-status');
+    const btnRemoveScreenshot = document.getElementById('btn-remove-screenshot');
+
+    let currentScreenshotBase64 = null;
+    let currentScreenshotMime = null;
+
+    const handleScreenshotFile = (file) => {
+        if (!file || !file.type.startsWith('image/')) {
+            showToast('Unggah file gambar (PNG, JPG, WebP).', 'error');
+            return;
+        }
+
+        const nameInput = document.getElementById('ugc-name');
+        const catSelect = document.getElementById('ugc-category');
+        const toneSelect = document.getElementById('ugc-tone');
+        const sellingInput = document.getElementById('ugc-selling');
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const dataUrl = e.target.result;
+            const [header, base64] = dataUrl.split(',');
+            const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+
+            currentScreenshotBase64 = base64;
+            currentScreenshotMime = mime;
+
+            screenshotImgPreview.src = dataUrl;
+            screenshotFilename.textContent = file.name || 'screenshot.png';
+            screenshotStatus.innerHTML = `<div class="w-3 h-3 border-2 border-brand-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Menganalisis...`;
+            dropzoneEmpty.classList.add('hidden');
+            dropzonePreview.classList.remove('hidden');
+
+            try {
+                const details = await extractDetailsFromImage(base64, mime);
+                screenshotStatus.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-emerald-400 inline-block mr-1"></i> Teranalisis Sukses`;
+
+                if (details.product_name) nameInput.value = details.product_name;
+                if (details.selling_points) sellingInput.value = details.selling_points;
+                if (details.category) {
+                    for (const opt of catSelect.options) {
+                        if (opt.value === details.category || opt.text.includes(details.category) || details.category.includes(opt.value)) {
+                            catSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                }
+                if (details.suggested_tone) {
+                    for (const opt of toneSelect.options) {
+                        if (opt.value === details.suggested_tone || opt.text.includes(details.suggested_tone)) {
+                            toneSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                }
+                showToast(`Screenshot etalase berhasil dianalisis AI!`, 'success');
+            } catch (err) {
+                screenshotStatus.innerHTML = `<span class="text-rose-400">Gagal menganalisis</span>`;
+                showToast(err.message, 'error');
+            } finally {
+                if (window.lucide) window.lucide.createIcons();
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    dropzone?.addEventListener('click', (e) => {
+        if (!e.target.closest('#btn-remove-screenshot')) {
+            screenshotInput?.click();
+        }
+    });
+
+    screenshotInput?.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+            handleScreenshotFile(e.target.files[0]);
+        }
+    });
+
+    dropzone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('border-brand-500', 'bg-brand-500/10');
+    });
+
+    dropzone?.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-brand-500', 'bg-brand-500/10');
+    });
+
+    dropzone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-brand-500', 'bg-brand-500/10');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleScreenshotFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    // Global Paste (Ctrl+V) listener for screenshots
+    window.addEventListener('paste', (e) => {
+        // Only trigger if in UGC tab
+        const ugcSection = document.getElementById('section-ugc');
+        if (ugcSection && ugcSection.classList.contains('hidden')) return;
+
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                if (file) {
+                    handleScreenshotFile(file);
+                    showToast('Screenshot ditempel dari clipboard!', 'info');
+                    break;
+                }
+            }
+        }
+    });
+
+    btnRemoveScreenshot?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentScreenshotBase64 = null;
+        currentScreenshotMime = null;
+        screenshotInput.value = '';
+        dropzonePreview.classList.add('hidden');
+        dropzoneEmpty.classList.remove('hidden');
+        showToast('Screenshot dihapus.', 'info');
+    });
+
     // Duration Buttons
     const durationButtons = document.querySelectorAll('.btn-duration');
     durationButtons.forEach(btn => {
@@ -498,6 +629,9 @@ function renderUgcResults(campaign) {
     const actionsHeader = document.getElementById('ugc-actions');
     const summaryCard = document.getElementById('ugc-summary-card');
     const sceneList = document.getElementById('ugc-scene-list');
+    const captionsContainer = document.getElementById('ugc-captions-container');
+    const fullPromptCode = document.getElementById('ugc-full-prompt-code');
+    const btnCopyFullPrompt = document.getElementById('btn-copy-full-prompt-block');
 
     resultsContainer.classList.remove('hidden');
     actionsHeader.classList.remove('hidden');
@@ -505,20 +639,65 @@ function renderUgcResults(campaign) {
     const analysis = campaign.product_analysis || {};
     summaryCard.innerHTML = `
         <div class="flex items-center justify-between font-bold text-brand-300 text-xs pb-1 border-b border-brand-500/20">
-            <span class="flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-amber-400"></i> Strategi AIDA Konversi</span>
-            <span class="px-2 py-0.5 rounded-full bg-brand-500/20 text-[10px] font-extrabold uppercase">${analysis.hook_angle || 'Problem Solver'}</span>
+            <span class="flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-amber-400"></i> Hasil Analisis & Formula Konten UGC</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase">Durasi Pas 10s • ${campaign.total_narasi_kata || 24} Kata</span>
         </div>
         <div class="pt-1.5 text-slate-300 space-y-1 text-[11px]">
-            <p><strong class="text-white">Produk:</strong> ${analysis.product_name || 'Produk Pilihan'}</p>
+            <p><strong class="text-white">Produk/Tempat:</strong> ${analysis.product_name || 'Produk Pilihan'}</p>
+            <p><strong class="text-white">Kategori:</strong> ${analysis.category || 'Affiliate Produk'}</p>
             <p><strong class="text-white">Target Pembeli:</strong> ${analysis.target_buyer || '-'}</p>
-            <p><strong class="text-white">Call To Action:</strong> <span class="text-amber-300 font-semibold">${campaign.call_to_action || 'Klik keranjang sekarang!'}</span></p>
-            <div class="pt-1 flex flex-wrap gap-1">
-                ${(campaign.hashtags || []).map(h => `<span class="px-1.5 py-0.5 bg-slate-800 rounded text-[10px] text-brand-400 font-mono">${h}</span>`).join('')}
-            </div>
+            <p><strong class="text-white">Keunggulan Utama:</strong> ${analysis.core_benefit || '-'}</p>
         </div>
     `;
 
-    // Render Scene Cards
+    // 1. Render 3 Template Captions
+    if (captionsContainer && campaign.captions) {
+        captionsContainer.innerHTML = '';
+        const capList = [
+            { id: 'hard', title: '⚡ Hard-Selling', desc: 'To the point & urgensi', data: campaign.captions.hard_selling },
+            { id: 'story', title: '📖 Storytelling', desc: 'Relatable & pengalaman', data: campaign.captions.storytelling },
+            { id: 'soft', title: '💡 Soft-Selling', desc: 'Edukatif & halus', data: campaign.captions.soft_selling }
+        ];
+
+        capList.forEach(cap => {
+            if (!cap.data) return;
+            const fullText = cap.data.full_text || `${cap.data.hook}\n${cap.data.benefit}\n${cap.data.cta}\n${(cap.data.hashtags || []).join(' ')}`;
+            const card = document.createElement('div');
+            card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2';
+            card.innerHTML = `
+                <div>
+                    <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                        <span class="text-xs font-bold text-white">${cap.title}</span>
+                        <span class="text-[10px] text-slate-400">${cap.desc}</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-2 leading-relaxed whitespace-pre-wrap">${fullText}</p>
+                </div>
+                <button type="button" class="btn-copy-cap w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-brand-300 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="copy" class="w-3 h-3"></i> Salin Caption
+                </button>
+            `;
+            card.querySelector('.btn-copy-cap')?.addEventListener('click', () => {
+                copyToClipboard(fullText, `Caption ${cap.title} disalin!`);
+            });
+            captionsContainer.appendChild(card);
+        });
+    }
+
+    // 2. Render Full Formatted Prompt Video Code Block
+    if (fullPromptCode) {
+        const textToDisplay = campaign.formatted_prompt_video || 
+            `PROMPT VIDEO — ${analysis.product_name || 'Produk'}\nDurasi: 10 detik | Rasio: 9:16 | Kualitas: FHD\n\n` +
+            (campaign.scenes || []).map(s => `ADEGAN ${s.scene_number} (${s.time_range || `${s.duration_seconds}s`}) — ${s.scene_title}\n- Visual: ${s.visual_description}\n- Kamera: ${s.camera_movement || 'Dynamic'}\n- Narasi: "${s.voiceover_script}"`).join('\n\n') +
+            `\n\nTOTAL NARASI: ${campaign.total_narasi_kata || 24} kata\nGAYA VISUAL: UGC Realistis`;
+        
+        fullPromptCode.textContent = textToDisplay;
+
+        btnCopyFullPrompt?.onclick = () => {
+            copyToClipboard(textToDisplay, 'Prompt Video 10 Detik Lengkap disalin!');
+        };
+    }
+
+    // 3. Render Scene Cards
     sceneList.innerHTML = '';
     const scenes = campaign.scenes || [];
 
@@ -537,16 +716,21 @@ function renderUgcResults(campaign) {
                     <h4 class="text-xs font-bold text-white tracking-wide uppercase">${scene.scene_title || `Scene ${index + 1}`}</h4>
                 </div>
                 <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-semibold border border-slate-700">
-                    ⏱️ ${scene.duration_seconds || 10} Detik
+                    ⏱️ ${scene.time_range || `${scene.duration_seconds || 1.5} Detik`}
                 </span>
             </div>
 
-            <!-- Visual Description -->
+            <!-- Visual Description & Camera -->
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Visual Adegan (9:16 Vertikal):</label>
                 <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
                     ${scene.visual_description || '-'}
                 </p>
+                ${scene.camera_movement ? `
+                <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                    <i data-lucide="video" class="w-3 h-3 text-brand-400"></i> Kamera: <span class="text-slate-300">${scene.camera_movement}</span>
+                </p>
+                ` : ''}
             </div>
 
             <!-- Voiceover Script -->
