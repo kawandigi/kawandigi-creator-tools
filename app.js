@@ -382,11 +382,11 @@ function updateApiStatusIndicator() {
     const providerInfo = AI_PROVIDERS[providerId] || AI_PROVIDERS.gemini;
 
     if (key || providerId === 'custom') {
-        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>${providerInfo.badge}: Aktif`;
+        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 animate-pulse"></span><span class="hidden sm:inline">${providerInfo.badge}: </span><span>Aktif</span>`;
         statusText.classList.remove('text-amber-400');
         statusText.classList.add('text-emerald-400');
     } else {
-        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>${providerInfo.badge}: Belum Ada Key`;
+        statusText.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span><span class="hidden sm:inline">${providerInfo.badge}: Belum Ada Key</span><span class="sm:hidden">Set API</span>`;
         statusText.classList.remove('text-emerald-400');
         statusText.classList.add('text-amber-400');
     }

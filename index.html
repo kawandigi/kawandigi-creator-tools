@@ -54,21 +54,22 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-500 selection:text-white">
 
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-10 h-10 rounded-xl shadow-lg shadow-brand-500/25 object-cover flex-shrink-0">
-                <div>
-                    <h1 class="text-lg font-black tracking-tight flex items-center gap-2">
-                        <span class="tracking-tight"><span class="logo-kawan text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                        <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider">CREATOR TOOLS</span>
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            <!-- Logo & Branding (Compact on mobile) -->
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-lg shadow-brand-500/25 object-cover flex-shrink-0">
+                <div class="min-w-0">
+                    <h1 class="text-sm sm:text-lg font-black tracking-tight flex items-center gap-1.5 flex-nowrap">
+                        <span class="tracking-tight whitespace-nowrap"><span class="logo-kawan text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
+                        <span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider whitespace-nowrap">CREATOR TOOLS</span>
                     </h1>
-                    <p class="text-[11px] text-slate-400 font-medium">Google Flow & Gemini Video Suite</p>
+                    <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium hidden sm:block truncate">Google Flow & Gemini Video Suite</p>
                 </div>
             </div>
 
             <!-- Desktop Navigation Tabs -->
-            <nav class="hidden md:flex items-center gap-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60">
+            <nav class="hidden md:flex items-center gap-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 flex-shrink-0">
                 <button id="nav-ugc" class="nav-tab active px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="shopping-bag" class="w-4 h-4"></i>
                     UGC Affiliate
@@ -88,17 +89,17 @@
             </nav>
 
             <!-- Right Controls: History, API Key & Theme -->
-            <div class="flex items-center gap-2">
-                <button id="btn-open-history" class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Buka Riwayat Project (Maks 20 Project)">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                <button id="btn-open-history" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Buka Riwayat Project (Maks 20 Project)">
                     <i data-lucide="history" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span class="hidden sm:inline font-bold">Riwayat</span>
+                    <span class="font-bold">Riwayat</span>
                     <span id="history-counter-badge" class="px-1.5 py-0.2 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/40 text-[10px] font-bold">0</span>
                 </button>
-                <button id="btn-api-key-modal" class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span id="api-status-text">API Key: Belum Ada</span>
+                <button id="btn-api-key-modal" class="flex items-center gap-1.5 text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition whitespace-nowrap" title="Pengaturan Layanan AI">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
+                    <span id="api-status-text" class="text-[11px] sm:text-xs font-semibold">API Key</span>
                 </button>
-                <button id="btn-theme-toggle" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition" title="Toggle Theme">
+                <button id="btn-theme-toggle" class="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition flex-shrink-0" title="Toggle Theme">
                     <i data-lucide="sun" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -106,23 +107,23 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-8">
 
         <!-- ========================================== -->
         <!-- TAB 1: AI UGC AFFILIATE VIDEO CREATOR -->
         <!-- ========================================== -->
-        <section id="section-ugc" class="tab-content active space-y-6">
+        <section id="section-ugc" class="tab-content active space-y-4 sm:space-y-6">
             <!-- Hero Banner -->
-            <div class="bg-gradient-to-r from-brand-900/40 via-purple-900/30 to-slate-900 border border-brand-500/20 rounded-2xl p-6 relative overflow-hidden">
+            <div class="bg-gradient-to-r from-brand-900/40 via-purple-900/30 to-slate-900 border border-brand-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
                 <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 text-xs font-bold mb-3 border border-brand-500/30">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 text-[10px] sm:text-xs font-bold mb-2 sm:mb-3 border border-brand-500/30">
                         <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                         100% Client-Side • Langsung Jadi Video AI (.mp4) & Siap Google Flow
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+                    <h2 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
                         AI UGC Affiliate Video Creator
                     </h2>
-                    <p class="text-sm text-slate-300 leading-relaxed">
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
                         Cukup tempel link etalase produk TikTok Shop atau Shopee. AI Agent akan menganalisis keunggulan produk dan merancang Storyboard Iklan 9:16 vertikal siap konversi.
                     </p>
                 </div>
@@ -227,18 +228,18 @@
                             <span>Durasi Video Target:</span>
                             <span class="text-brand-400 font-bold" id="ugc-duration-label">10 Detik (1 Klip — Utama)</span>
                         </label>
-                        <div class="grid grid-cols-3 gap-2.5">
-                            <button type="button" data-duration="10" class="btn-duration active bg-brand-500/20 border border-brand-500 text-brand-300 rounded-xl py-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
-                                <i data-lucide="zap" class="w-3.5 h-3.5 text-brand-400"></i>
-                                10 Detik (Utama)
+                        <div class="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+                            <button type="button" data-duration="10" class="btn-duration active bg-brand-500/20 border border-brand-500 text-brand-300 rounded-xl py-2 sm:py-2.5 px-1 sm:px-2 text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm text-center">
+                                <i data-lucide="zap" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-400 flex-shrink-0"></i>
+                                <span class="truncate">10s (Utama)</span>
                             </button>
-                            <button type="button" data-duration="20" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2.5 text-xs font-bold text-slate-300 hover:border-brand-500 transition flex items-center justify-center gap-1.5">
-                                <i data-lucide="film" class="w-3.5 h-3.5 text-slate-400"></i>
-                                20 Detik (2 Klip)
+                            <button type="button" data-duration="20" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2 sm:py-2.5 px-1 sm:px-2 text-[11px] sm:text-xs font-bold text-slate-300 hover:border-brand-500 transition flex items-center justify-center gap-1 sm:gap-1.5 text-center">
+                                <i data-lucide="film" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 flex-shrink-0"></i>
+                                <span class="truncate">20s (2 Klip)</span>
                             </button>
-                            <button type="button" data-duration="30" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2.5 text-xs font-bold text-slate-300 hover:border-brand-500 transition flex items-center justify-center gap-1.5">
-                                <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-slate-400"></i>
-                                30 Detik (3 Klip)
+                            <button type="button" data-duration="30" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2 sm:py-2.5 px-1 sm:px-2 text-[11px] sm:text-xs font-bold text-slate-300 hover:border-brand-500 transition flex items-center justify-center gap-1 sm:gap-1.5 text-center">
+                                <i data-lucide="clapperboard" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 flex-shrink-0"></i>
+                                <span class="truncate">30s (3 Klip)</span>
                             </button>
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">

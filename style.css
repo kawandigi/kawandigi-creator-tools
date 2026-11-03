@@ -448,3 +448,26 @@ html:not(.dark) #history-search-input {
     border-color: #cbd5e1 !important;
     color: #0f172a !important;
 }
+
+/* =========================================================================
+   Mobile Viewport Refinements (Prevent Overlapping)
+   ========================================================================= */
+@media (max-width: 640px) {
+    header {
+        overflow: hidden;
+    }
+    
+    header h1 {
+        font-size: 0.875rem !important;
+        line-height: 1.25rem !important;
+    }
+
+    #btn-api-key-modal {
+        max-width: 140px;
+    }
+
+    /* Safe bottom spacing for fixed mobile nav */
+    nav.md\:hidden {
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+    }
+}
