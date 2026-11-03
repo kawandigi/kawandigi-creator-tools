@@ -48,7 +48,9 @@ import {
     setAdminPin,
     verifyAdminPin,
     getGoogleClientId,
-    saveGoogleClientId
+    saveGoogleClientId,
+    fetchGoogleClientIdFromServer,
+    saveGoogleClientIdToServer
 } from './modules/auth_manager.js';
 import {
     getFeatureFlags,
@@ -292,7 +294,8 @@ function switchTab(tabId) {
         renderTutorials();
     } else if (tabId === 'admin') {
         const currentUser = getCurrentUser();
-        if (!isSuperAdmin(currentUser)) {
+        const unlocked = sessionStorage.getItem('kd_admin_unlocked') === '1';
+        if (!isSuperAdmin(currentUser) && !unlocked) {
             showToast('Akses Terbatas: Hanya Administrator Resmi yang dapat mengakses Console Admin.', 'error');
             switchTab('catalog');
             return;
@@ -2826,10 +2829,17 @@ function renderAdminAnalytics() {
 // =========================================================================
 // USER AUTHENTICATION & GOOGLE OAUTH / GIS
 // =========================================================================
-function initAuthManager() {
+async function initAuthManager() {
+    // 1. Centralized Google OAuth from Cloudflare backend
+    await fetchGoogleClientIdFromServer();
+
     updateHeaderAuthUI();
 
     document.getElementById('btn-header-auth')?.addEventListener('click', () => {
+        openUserProfileModal();
+    });
+
+    document.getElementById('btn-dock-profile')?.addEventListener('click', () => {
         openUserProfileModal();
     });
 
@@ -2850,6 +2860,7 @@ function initAuthManager() {
 
     document.getElementById('btn-logout-user')?.addEventListener('click', () => {
         logoutUser();
+        sessionStorage.removeItem('kd_admin_unlocked');
         document.getElementById('modal-user-profile')?.classList.add('hidden');
         updateHeaderAuthUI();
         showToast('Anda telah keluar dari akun.', 'info');
@@ -2865,27 +2876,6 @@ function initAuthManager() {
         document.getElementById('modal-whatsapp-prompt')?.classList.add('hidden');
         showToast('Nomor WhatsApp berhasil disimpan! Selamat datang di KawanDigi.', 'success');
         updateHeaderAuthUI();
-    });
-
-    document.getElementById('btn-demo-google-login')?.addEventListener('click', () => {
-        const superAdminUser = {
-            id: 'superadmin_' + Date.now(),
-            name: 'Imanuel Pramana (Admin)',
-            email: 'admin.kawandigi@gmail.com',
-            picture: 'assets/icons/favicon.png',
-            joinedAt: new Date().toISOString(),
-            totalGenerates: 94,
-            xp: 1500,
-            level: 'Mythic Legend',
-            subscription: {
-                plan: 'Superadmin Official Lifetime',
-                active: true
-            }
-        };
-        saveCurrentUser(superAdminUser);
-        updateHeaderAuthUI();
-        document.getElementById('modal-user-profile')?.classList.add('hidden');
-        showToast('Berhasil masuk sebagai Superadmin: admin.kawandigi@gmail.com', 'success');
     });
 
     initGoogleIdentityServices();
@@ -2915,20 +2905,26 @@ function updateHeaderAuthUI() {
     const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 94;
     const levelInfo = calculateLevel(xpVal);
 
-    // Toggle Admin Visibility (Only visible for admin.kawandigi@gmail.com)
-    const isAdmin = isSuperAdmin(user);
+    // Toggle Admin Visibility
+    // Superadmin atau PIN unlocked -> tampilkan
+    // Regular member logged in -> sembunyikan sepenuhnya
+    // Belum login (guest) -> tampilkan tombol admin (klik meminta PIN master)
+    const isSuper = isSuperAdmin(user);
+    const isUnlocked = sessionStorage.getItem('kd_admin_unlocked') === '1';
+    const isRegularMember = user && user.email && !isSuper;
+
     const navAdmin = document.getElementById('nav-admin');
     const headerAdmin = document.getElementById('btn-header-admin');
     const drawerAdmin = document.getElementById('drawer-admin-btn');
 
-    if (isAdmin) {
-        if (navAdmin) { navAdmin.classList.remove('hidden'); navAdmin.classList.add('flex'); }
-        if (headerAdmin) { headerAdmin.classList.remove('hidden'); headerAdmin.classList.add('flex'); }
-        if (drawerAdmin) { drawerAdmin.classList.remove('hidden'); drawerAdmin.classList.add('flex'); }
-    } else {
+    if (isRegularMember) {
         if (navAdmin) { navAdmin.classList.add('hidden'); navAdmin.classList.remove('flex'); }
         if (headerAdmin) { headerAdmin.classList.add('hidden'); headerAdmin.classList.remove('flex'); }
         if (drawerAdmin) { drawerAdmin.classList.add('hidden'); drawerAdmin.classList.remove('flex'); }
+    } else {
+        if (navAdmin) { navAdmin.classList.remove('hidden'); navAdmin.classList.add('flex'); }
+        if (headerAdmin) { headerAdmin.classList.remove('hidden'); headerAdmin.classList.add('flex'); }
+        if (drawerAdmin) { drawerAdmin.classList.remove('hidden'); drawerAdmin.classList.add('flex'); }
     }
 
     if (user && user.email) {
@@ -3012,64 +3008,107 @@ function openUserProfileModal() {
 
     modal.classList.remove('hidden');
 
-    // Check Google Client ID status & re-render GIS button in visible container
-    const clientId = getGoogleClientId();
-    const noticeEl = document.getElementById('google-oauth-notice');
-    if (!clientId) {
-        if (noticeEl) noticeEl.classList.remove('hidden');
-    } else {
-        if (noticeEl) noticeEl.classList.add('hidden');
-        setTimeout(() => {
-            initGoogleIdentityServices();
-        }, 120);
+    // Pastikan tombol Google OAuth ter-render rapi
+    setTimeout(() => {
+        renderGoogleSignInButton();
+    }, 120);
+}
+
+function waitForGoogleGis(callback, maxAttempts = 30) {
+    if (window.google?.accounts?.id) {
+        callback();
+        return;
     }
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        if (window.google?.accounts?.id) {
+            clearInterval(interval);
+            callback();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            console.warn('[KawanDigi] Google Identity Services SDK timeout.');
+        }
+    }, 150);
 }
 
 function initGoogleIdentityServices() {
     const clientId = getGoogleClientId();
-    if (!clientId || !window.google?.accounts?.id) return;
+    if (!clientId) {
+        console.info('[KawanDigi] Google Client ID belum dikonfigurasi di Cloudflare.');
+        return;
+    }
 
-    try {
-        window.google.accounts.id.initialize({
-            client_id: clientId,
-            callback: (response) => {
-                const payload = decodeJwtResponse(response.credential);
-                if (payload) {
-                    const currentUser = getCurrentUser() || {};
-                    const user = {
-                        id: payload.sub,
-                        name: payload.name || 'Member Google',
-                        email: payload.email,
-                        picture: payload.picture || 'assets/icons/favicon.png',
-                        whatsapp: currentUser.whatsapp || '',
-                        joinedAt: currentUser.joinedAt || new Date().toISOString(),
-                        subscription: currentUser.subscription || { plan: 'VIP Master Lifetime' }
-                    };
-                    saveCurrentUser(user);
-                    updateHeaderAuthUI();
-                    document.getElementById('modal-user-profile')?.classList.add('hidden');
+    waitForGoogleGis(() => {
+        try {
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: (response) => {
+                    const payload = decodeJwtResponse(response.credential);
+                    if (payload && payload.email) {
+                        const currentUser = getCurrentUser() || {};
+                        const isAdminUser = payload.email.toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase();
 
-                    if (!user.whatsapp) {
-                        document.getElementById('modal-whatsapp-prompt')?.classList.remove('hidden');
+                        const user = {
+                            id: payload.sub,
+                            name: payload.name || (isAdminUser ? 'Imanuel Pramana (Admin)' : 'Member Google'),
+                            email: payload.email,
+                            picture: payload.picture || 'assets/icons/favicon.png',
+                            whatsapp: currentUser.whatsapp || '',
+                            joinedAt: currentUser.joinedAt || new Date().toISOString(),
+                            role: isAdminUser ? 'superadmin' : 'member',
+                            subscription: isAdminUser 
+                                ? { plan: 'Superadmin Official Lifetime', active: true } 
+                                : (currentUser.subscription || { plan: 'VIP Master Lifetime', active: true }),
+                            level: isAdminUser ? 'Mythic Legend' : (currentUser.level || 'Diamond Creator'),
+                            xp: isAdminUser ? Math.max(currentUser.xp || 0, 1500) : (currentUser.xp || 100)
+                        };
+
+                        saveCurrentUser(user);
+                        updateHeaderAuthUI();
+                        document.getElementById('modal-user-profile')?.classList.add('hidden');
+
+                        // Sync session ke Cloudflare backend
+                        fetch('/api/auth/google', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(user)
+                        }).catch(e => console.error('Cloudflare auth sync:', e));
+
+                        if (isAdminUser) {
+                            sessionStorage.setItem('kd_admin_unlocked', '1');
+                            showToast(Selamat datang Superadmin, !, 'success');
+                        } else {
+                            showToast(Selamat datang, !, 'success');
+                        }
                     }
-                    showToast(`Selamat datang, ${user.name}!`, 'success');
                 }
-            }
-        });
-
-        const btnContainer = document.getElementById('g_id_signin_button');
-        if (btnContainer) {
-            btnContainer.innerHTML = '';
-            window.google.accounts.id.renderButton(btnContainer, {
-                theme: 'filled_blue',
-                size: 'large',
-                text: 'continue_with',
-                shape: 'pill',
-                width: 280
             });
+
+            renderGoogleSignInButton();
+        } catch (e) {
+            console.error('[KawanDigi] Google Identity Services error:', e);
         }
+    });
+}
+
+function renderGoogleSignInButton() {
+    const btnContainer = document.getElementById('g_id_signin_button');
+    if (!btnContainer || !window.google?.accounts?.id) return;
+
+    btnContainer.innerHTML = '';
+    const isDark = document.documentElement.classList.contains('dark');
+    try {
+        window.google.accounts.id.renderButton(btnContainer, {
+            theme: isDark ? 'filled_black' : 'outline',
+            size: 'large',
+            shape: 'pill',
+            width: Math.min(window.innerWidth - 64, 280),
+            text: 'signin_with',
+            locale: 'id'
+        });
     } catch (e) {
-        console.warn('[KawanDigi] Google Identity Services init error:', e);
+        console.error('[KawanDigi] Gagal render tombol Google GIS:', e);
     }
 }
 
@@ -3078,21 +3117,7 @@ function initGoogleIdentityServices() {
 // =========================================================================
 function initAdminConsole() {
     document.getElementById('btn-header-admin')?.addEventListener('click', () => {
-        const user = getCurrentUser();
-        if (!isSuperAdmin(user)) {
-            showToast('Akses Ditolak: Hanya Superadmin (admin.kawandigi@gmail.com) yang dapat mengakses Console Admin.', 'error');
-            return;
-        }
-        if (sessionStorage.getItem('kd_admin_unlocked') === '1') {
-            openAdminConsole();
-        } else {
-            document.getElementById('modal-admin-pin')?.classList.remove('hidden');
-            const pinInput = document.getElementById('input-admin-pin');
-            if (pinInput) {
-                pinInput.value = '';
-                pinInput.focus();
-            }
-        }
+        window.kdOpenAdminConsole();
     });
 
     document.getElementById('btn-close-admin-pin')?.addEventListener('click', () => {
@@ -3100,18 +3125,12 @@ function initAdminConsole() {
     });
 
     document.getElementById('btn-submit-admin-pin')?.addEventListener('click', () => {
-        const user = getCurrentUser();
-        if (!isSuperAdmin(user)) {
-            showToast('Akses Ditolak: Anda harus login dengan akun Google Superadmin admin.kawandigi@gmail.com', 'error');
-            document.getElementById('modal-admin-pin')?.classList.add('hidden');
-            return;
-        }
         const pin = document.getElementById('input-admin-pin')?.value;
         if (verifyAdminPin(pin)) {
             sessionStorage.setItem('kd_admin_unlocked', '1');
             document.getElementById('modal-admin-pin')?.classList.add('hidden');
             openAdminConsole();
-            showToast('Akses Superadmin Terverifikasi. Selamat datang, Admin!', 'success');
+            showToast('Akses Admin Terverifikasi. Selamat datang, Admin!', 'success');
         } else {
             showToast('PIN Admin salah. Coba lagi.', 'error');
         }
@@ -3189,11 +3208,21 @@ function initAdminConsole() {
         }
     });
 
-    document.getElementById('btn-save-google-client-id')?.addEventListener('click', () => {
-        const cid = document.getElementById('admin-google-client-id')?.value;
-        saveGoogleClientId(cid);
-        showToast('Google Client ID berhasil disimpan!', 'success');
+    document.getElementById('btn-save-google-client-id')?.addEventListener('click', async () => {
+        const cid = document.getElementById('admin-google-client-id')?.value.trim();
+        if (!cid) {
+            showToast('Silakan masukkan Google Client ID yang valid.', 'warning');
+            return;
+        }
+        showToast('Menyimpan Google Client ID ke Cloudflare...', 'info');
+        const ok = await saveGoogleClientIdToServer(cid);
+        if (ok) {
+            showToast('Google Client ID berhasil disimpan ke Cloudflare! Aktif untuk semua HP & PC.', 'success');
+        } else {
+            showToast('Tersimpan di browser lokal. Pastikan Cloudflare terhubung.', 'info');
+        }
         initGoogleIdentityServices();
+        renderGoogleSignInButton();
     });
 
     document.getElementById('btn-add-digital-product')?.addEventListener('click', () => {
@@ -3388,9 +3417,10 @@ function renderAdminTutorials() {
     if (window.lucide) window.lucide.createIcons();
 }
 
-function loadAdminSettings() {
+async function loadAdminSettings() {
     const cidInput = document.getElementById('admin-google-client-id');
-    if (cidInput) cidInput.value = getGoogleClientId();
+    const serverCid = await fetchGoogleClientIdFromServer();
+    if (cidInput) cidInput.value = serverCid || getGoogleClientId();
 }
 
 function openProductEditor(product = null) {
@@ -3536,11 +3566,7 @@ window.kdCloseDrawer = closeDrawer;
 window.kdOpenProfileModal = openUserProfileModal;
 window.kdOpenAdminConsole = () => {
     const user = getCurrentUser();
-    if (!isSuperAdmin(user)) {
-        showToast('Akses Ditolak: Anda harus login menggunakan akun Google admin.kawandigi@gmail.com', 'error');
-        return;
-    }
-    if (sessionStorage.getItem('kd_admin_unlocked') === '1') {
+    if (isSuperAdmin(user) || sessionStorage.getItem('kd_admin_unlocked') === '1') {
         openAdminConsole();
     } else {
         document.getElementById('modal-admin-pin')?.classList.remove('hidden');

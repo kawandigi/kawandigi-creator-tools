@@ -34,3 +34,10 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 CREATE INDEX IF NOT EXISTS idx_activity_timestamp ON activity_logs(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_activity_hour ON activity_logs(hour_wib);
 CREATE INDEX IF NOT EXISTS idx_activity_email ON activity_logs(email);
+
+-- Centralized App Settings (Google OAuth & System Configuration)
+CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

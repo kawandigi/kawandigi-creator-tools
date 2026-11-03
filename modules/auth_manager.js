@@ -234,10 +234,52 @@ export function verifyAdminPin(inputPin) {
     return (inputPin || '').trim() === current;
 }
 
+let cachedGoogleClientId = localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || '';
+
+export async function fetchGoogleClientIdFromServer() {
+    try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 'success' && json.data && json.data.google_client_id) {
+                cachedGoogleClientId = json.data.google_client_id.trim();
+                localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, cachedGoogleClientId);
+                return cachedGoogleClientId;
+            }
+        }
+    } catch (e) {
+        console.warn('Gagal memuat Google Client ID dari Cloudflare:', e);
+    }
+    return cachedGoogleClientId;
+}
+
 export function getGoogleClientId() {
-    return localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || '';
+    return cachedGoogleClientId || localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || '';
+}
+
+export async function saveGoogleClientIdToServer(clientId) {
+    const clean = (clientId || '').trim();
+    cachedGoogleClientId = clean;
+    localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, clean);
+
+    try {
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ google_client_id: clean })
+        });
+        if (res.ok) {
+            return true;
+        }
+    } catch (e) {
+        console.error('Gagal menyimpan Google Client ID ke Cloudflare:', e);
+    }
+    return false;
 }
 
 export function saveGoogleClientId(clientId) {
-    localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, (clientId || '').trim());
+    const clean = (clientId || '').trim();
+    cachedGoogleClientId = clean;
+    localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, clean);
+    saveGoogleClientIdToServer(clean).catch(() => {});
 }

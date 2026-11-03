@@ -92,6 +92,54 @@ export default {
           return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
         }
       }
+
+      // 5. Cloudflare Centralized Settings API (Google OAuth & System Config)
+      if (url.pathname === '/api/settings') {
+        globalThis.__kd_settings = globalThis.__kd_settings || {};
+        if (request.method === 'GET') {
+          let clientId = env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || '';
+          if (db) {
+            try {
+              await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+              const row = await db.prepare("SELECT value FROM app_settings WHERE key = 'google_client_id'").first();
+              if (row && row.value) {
+                clientId = row.value;
+              }
+            } catch (e) {
+              console.error("D1 app_settings read error:", e);
+            }
+          }
+          return new Response(JSON.stringify({
+            status: 'success',
+            data: {
+              google_client_id: clientId || env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || ''
+            }
+          }), { headers: corsHeaders });
+        }
+
+        if (request.method === 'POST') {
+          try {
+            const body = await request.json();
+            const newClientId = (body.google_client_id || '').trim();
+            globalThis.__kd_settings.google_client_id = newClientId;
+            if (db) {
+              await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+              await db.prepare(`
+                INSERT INTO app_settings (key, value, updated_at)
+                VALUES ('google_client_id', ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+              `).bind(newClientId).run();
+            }
+            return new Response(JSON.stringify({
+              status: 'success',
+              message: 'Google OAuth Client ID tersimpan di Cloudflare',
+              google_client_id: newClientId
+            }), { headers: corsHeaders });
+          } catch (e) {
+            return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
+          }
+        }
+      }
     }
 
     // Default: serve static SPA assets

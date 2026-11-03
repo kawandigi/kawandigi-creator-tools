@@ -1,5 +1,5 @@
 // Service Worker for kawandigi CREATOR TOOLS
-const CACHE_NAME = 'kawandigi-cache-v11';
+const CACHE_NAME = 'kawandigi-cache-v12';
 const ASSETS = [
     './',
     './index.html',
@@ -46,6 +46,7 @@ self.addEventListener('fetch', (event) => {
     
     // Jangan cache request ke external API (Google, AI providers, dll)
     const url = new URL(event.request.url);
+    if (url.pathname.startsWith("/api/")) return;
     if (!url.origin.includes(self.location.origin) && !url.href.includes('cdn.tailwindcss.com') && !url.href.includes('unpkg.com')) {
         return;
     }
