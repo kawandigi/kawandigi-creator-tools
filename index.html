@@ -1052,6 +1052,13 @@
     <script type="module" src="app.js"></script>
     <script>
         lucide.createIcons();
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch((err) => {
+                    console.log('Service Worker registration skipped:', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>

@@ -8,5 +8,6 @@ $RECYCLE.BIN/
 # Temporary files
 *.tmp
 *.log
+*.zip
 .vscode/
 .idea/
