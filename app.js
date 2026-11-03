@@ -2942,9 +2942,9 @@ function updateHeaderAuthUI() {
         }
         if (btn) btn.title = `Akun: ${user.name} (${user.email})`;
 
-        if (greetingName) greetingName.textContent = user.name || 'IMANUEL PRAMANA';
+        if (greetingName) greetingName.textContent = (user.name || 'KREATOR KAWANDIGI').toUpperCase();
         if (greetingRole) greetingRole.textContent = `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`;
-        if (drawerName) drawerName.textContent = user.name || 'Imanuel Pramana';
+        if (drawerName) drawerName.textContent = user.name || 'Kreator KawanDigi';
         if (drawerAvatar && user.picture) drawerAvatar.src = user.picture;
         if (drawerTier) drawerTier.textContent = `${levelInfo.icon} ${levelInfo.title} • VIP`;
     } else {
@@ -2953,10 +2953,10 @@ function updateHeaderAuthUI() {
         if (nameEl) nameEl.textContent = 'Akun';
         if (btn) btn.title = 'Masuk Akun Google';
 
-        if (greetingName) greetingName.textContent = 'IMANUEL PRAMANA';
-        if (greetingRole) greetingRole.textContent = 'MEMBER VIP (AKTIF)';
-        if (drawerName) drawerName.textContent = 'Imanuel Pramana';
-        if (drawerTier) drawerTier.textContent = '💎 Diamond Creator • VIP';
+        if (greetingName) greetingName.textContent = 'KREATOR KAWANDIGI';
+        if (greetingRole) greetingRole.textContent = 'TRIAL PENGUNJUNG';
+        if (drawerName) drawerName.textContent = 'Tamu / Belum Masuk';
+        if (drawerTier) drawerTier.textContent = 'Hubungkan Akun Google';
     }
 
     if (heroXp) heroXp.textContent = xpVal.toLocaleString('id-ID');
@@ -3054,7 +3054,7 @@ function initGoogleIdentityServices() {
 
                         const user = {
                             id: payload.sub,
-                            name: payload.name || (isAdminUser ? 'Imanuel Pramana (Admin)' : 'Member Google'),
+                            name: payload.name || (isAdminUser ? 'Admin KawanDigi' : 'Member Google'),
                             email: payload.email,
                             picture: payload.picture || 'assets/icons/favicon.png',
                             whatsapp: currentUser.whatsapp || '',
