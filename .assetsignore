@@ -1,0 +1,6 @@
+.git/
+.gitignore
+wrangler.json
+README.md
+kawandigi-deploy.zip
+*.log
