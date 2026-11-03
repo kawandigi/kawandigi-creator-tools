@@ -22,6 +22,17 @@ import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTri
 import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
+import { 
+    getHistory, 
+    saveProjectToHistory, 
+    getHistoryById, 
+    getLastActiveProjectId, 
+    setLastActiveProjectId, 
+    deleteHistoryItem, 
+    clearAllHistory, 
+    exportHistoryJson, 
+    formatRelativeTime 
+} from './modules/history_manager.js';
 
 // Global State
 let selectedUgcDuration = 10; // 10s Utama, 20s (2 Klip), 30s (3 Klip)
@@ -1051,8 +1062,30 @@ async function handleGenerateUgc() {
 
         currentUgcCampaign = campaign;
         renderUgcResults(campaign);
+        populateGoogleFlowStudio(campaign);
         updateLicenseCards();
-        showToast('Storyboard UGC Affiliate berhasil dirancang!', 'success');
+
+        // Save to History (Max 20 projects, persists across refresh)
+        saveProjectToHistory({
+            type: 'ugc',
+            title: campaign.product_analysis?.product_name || productName || 'Produk Pilihan',
+            category: campaign.product_analysis?.category || productCategory || 'Affiliate',
+            duration: selectedUgcDuration || 10,
+            tone: tone,
+            previewText: campaign.scenes?.[0]?.voiceover_script || campaign.scenes?.[0]?.visual_description || '',
+            inputs: {
+                productUrl,
+                productName,
+                productCategory,
+                tone,
+                videoDuration: selectedUgcDuration,
+                sellingPoints
+            },
+            data: campaign
+        });
+        updateHistoryBadge();
+
+        showToast('Storyboard UGC Affiliate berhasil dirancang & disimpan ke Riwayat!', 'success');
     } catch (err) {
         showToast(err.message, 'error');
         emptyState?.classList.remove('hidden');
@@ -1346,7 +1379,31 @@ async function handleGenerateDrama() {
         renderDramaResults(drama);
         actionsHeader?.classList.remove('hidden');
         updateLicenseCards();
-        showToast(`Episode ${episodeNumber} berhasil ditulis dengan cliffhanger viral!`, 'success');
+
+        // Save to History (Max 20 projects, persists across refresh)
+        saveProjectToHistory({
+            type: 'drama',
+            title: drama.series_title ? `${drama.series_title} (Ep. ${drama.episode_number || episodeNumber})` : seriesTitle,
+            category: genre,
+            duration: (drama.scenes?.length || selectedDramaScenes) * 15,
+            tone: genre,
+            previewText: drama.logline || drama.scenes?.[0]?.voiceover || '',
+            inputs: {
+                seriesTitle,
+                genre,
+                episodeNumber,
+                storyPremise,
+                heroName,
+                heroDesc,
+                villainName,
+                villainDesc,
+                sceneCount: selectedDramaScenes
+            },
+            data: drama
+        });
+        updateHistoryBadge();
+
+        showToast(`Episode ${episodeNumber} berhasil ditulis & disimpan ke Riwayat!`, 'success');
     } catch (err) {
         showToast(err.message, 'error');
         emptyState?.classList.remove('hidden');
@@ -1788,6 +1845,282 @@ function initThemeToggle() {
 }
 
 // =========================================================================
+// PROJECT HISTORY CONTROLLER (Max 20 Projects, Browser Local Storage)
+// =========================================================================
+function updateHistoryBadge() {
+    const list = getHistory();
+    const count = list.length;
+    const headerBadge = document.getElementById('history-counter-badge');
+    const drawerBadge = document.getElementById('drawer-count-badge');
+    const mobileBadge = document.getElementById('m-history-badge');
+
+    if (headerBadge) headerBadge.textContent = count;
+    if (drawerBadge) drawerBadge.textContent = `${count} / 20`;
+    if (mobileBadge) {
+        mobileBadge.textContent = count;
+        if (count > 0) mobileBadge.classList.remove('hidden');
+        else mobileBadge.classList.add('hidden');
+    }
+}
+
+function openHistoryDrawer() {
+    const drawer = document.getElementById('drawer-history');
+    if (!drawer) return;
+    drawer.classList.remove('hidden');
+    setTimeout(() => {
+        drawer.classList.add('open');
+    }, 10);
+    renderHistoryList(document.getElementById('history-search-input')?.value || '');
+}
+
+function closeHistoryDrawer() {
+    const drawer = document.getElementById('drawer-history');
+    if (!drawer) return;
+    drawer.classList.remove('open');
+    setTimeout(() => {
+        drawer.classList.add('hidden');
+    }, 300);
+}
+
+function renderHistoryList(filterQuery = '') {
+    const container = document.getElementById('history-list-container');
+    const emptyState = document.getElementById('history-empty-state');
+    if (!container) return;
+
+    updateHistoryBadge();
+    const all = getHistory();
+
+    let items = all;
+    if (filterQuery && filterQuery.trim()) {
+        const q = filterQuery.trim().toLowerCase();
+        items = all.filter(it => 
+            (it.title && it.title.toLowerCase().includes(q)) ||
+            (it.category && it.category.toLowerCase().includes(q)) ||
+            (it.previewText && it.previewText.toLowerCase().includes(q))
+        );
+    }
+
+    if (items.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+
+    if (emptyState) emptyState.classList.add('hidden');
+    container.innerHTML = '';
+
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'history-item-card bg-slate-950 border border-slate-800 hover:border-brand-500/50 rounded-xl p-3.5 space-y-2.5 transition shadow-sm';
+        card.dataset.id = item.id;
+
+        const isDrama = item.type === 'drama';
+        const typeBadgeClass = isDrama 
+            ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' 
+            : 'bg-brand-500/20 text-brand-300 border-brand-500/30';
+        const typeBadgeText = isDrama ? '🎬 AI Drama' : '🛍️ UGC Affiliate';
+
+        card.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${typeBadgeClass}">
+                        ${typeBadgeText}
+                    </span>
+                    <span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono border border-slate-700">
+                        ⏱️ ${item.duration}s
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-medium">
+                        ${formatRelativeTime(item.timestamp)}
+                    </span>
+                </div>
+                <button class="btn-delete-item text-slate-500 hover:text-rose-400 p-1 rounded transition" title="Hapus dari riwayat">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-white line-clamp-1">${item.title || 'Project Tanpa Judul'}</h4>
+                <p class="text-[10px] text-slate-400 mt-0.5 line-clamp-1">Kategori: <span class="text-slate-300">${item.category || '-'}</span></p>
+            </div>
+
+            ${item.previewText ? `
+            <p class="text-[11px] text-slate-400 bg-slate-900/80 p-2 rounded-lg border border-slate-800/80 line-clamp-2 italic leading-relaxed">
+                "${item.previewText}"
+            </p>
+            ` : ''}
+
+            <div class="flex items-center gap-2 pt-1">
+                <button class="btn-load-item flex-1 py-1.5 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95">
+                    <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
+                    <span>Buka Project</span>
+                </button>
+                <button class="btn-copy-prompt-item px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-brand-300 border border-slate-700 font-semibold text-xs rounded-lg flex items-center gap-1 transition" title="Salin Prompt Video Siap Pakai">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span>Prompt</span>
+                </button>
+            </div>
+        `;
+
+        // Wire Load
+        card.querySelector('.btn-load-item')?.addEventListener('click', () => {
+            loadProject(item);
+        });
+
+        // Wire Copy Prompt
+        card.querySelector('.btn-copy-prompt-item')?.addEventListener('click', () => {
+            if (isDrama) {
+                const text = item.data?.formatted_script || JSON.stringify(item.data, null, 2);
+                copyToClipboard(text, `Naskah Drama "${item.title}" disalin!`);
+            } else {
+                const text = formatFullPromptVideoText(item.data);
+                copyToClipboard(text, `Prompt Video "${item.title}" disalin!`);
+            }
+        });
+
+        // Wire Delete
+        card.querySelector('.btn-delete-item')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Hapus project "${item.title}" dari riwayat?`)) {
+                deleteHistoryItem(item.id);
+                renderHistoryList(document.getElementById('history-search-input')?.value || '');
+                showToast(`Project "${item.title}" dihapus dari riwayat`, 'info');
+            }
+        });
+
+        container.appendChild(card);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function loadProject(item, quiet = false) {
+    if (!item || !item.data) return;
+
+    if (item.type === 'drama') {
+        // Switch to Drama tab
+        const navDrama = document.getElementById('nav-drama');
+        navDrama?.click();
+
+        // Restore inputs
+        if (item.inputs) {
+            const titleInput = document.getElementById('drama-title');
+            const epInput = document.getElementById('drama-episode-num');
+            const genreSelect = document.getElementById('drama-genre');
+            const premiseInput = document.getElementById('drama-premise');
+            const heroNameInput = document.getElementById('drama-hero-name');
+            const heroDescInput = document.getElementById('drama-hero-desc');
+            const villainNameInput = document.getElementById('drama-villain-name');
+            const villainDescInput = document.getElementById('drama-villain-desc');
+
+            if (titleInput && item.inputs.seriesTitle) titleInput.value = item.inputs.seriesTitle;
+            if (epInput && item.inputs.episodeNumber) epInput.value = item.inputs.episodeNumber;
+            if (genreSelect && item.inputs.genre) genreSelect.value = item.inputs.genre;
+            if (premiseInput && item.inputs.storyPremise) premiseInput.value = item.inputs.storyPremise;
+            if (heroNameInput && item.inputs.heroName) heroNameInput.value = item.inputs.heroName;
+            if (heroDescInput && item.inputs.heroDesc) heroDescInput.value = item.inputs.heroDesc;
+            if (villainNameInput && item.inputs.villainName) villainNameInput.value = item.inputs.villainName;
+            if (villainDescInput && item.inputs.villainDesc) villainDescInput.value = item.inputs.villainDesc;
+            if (item.inputs.sceneCount) setDramaScenes(item.inputs.sceneCount);
+        }
+
+        currentDramaEpisode = item.data;
+        renderDramaResults(item.data);
+        document.getElementById('drama-actions')?.classList.remove('hidden');
+    } else {
+        // Default UGC Affiliate
+        const navUgc = document.getElementById('nav-ugc');
+        navUgc?.click();
+
+        // Restore inputs
+        if (item.inputs) {
+            const urlInput = document.getElementById('ugc-url');
+            const nameInput = document.getElementById('ugc-name');
+            const nicheSelect = document.getElementById('ugc-niche');
+            const toneSelect = document.getElementById('ugc-tone');
+            const promoInput = document.getElementById('ugc-selling-points');
+
+            if (urlInput && item.inputs.productUrl) urlInput.value = item.inputs.productUrl;
+            if (nameInput && item.inputs.productName) nameInput.value = item.inputs.productName;
+            if (nicheSelect && item.inputs.productCategory) nicheSelect.value = item.inputs.productCategory;
+            if (toneSelect && item.inputs.tone) toneSelect.value = item.inputs.tone;
+            if (promoInput && item.inputs.sellingPoints) promoInput.value = item.inputs.sellingPoints;
+            if (item.inputs.videoDuration) setUgcDuration(item.inputs.videoDuration);
+        }
+
+        currentUgcCampaign = item.data;
+        renderUgcResults(item.data);
+        populateGoogleFlowStudio(item.data);
+    }
+
+    setLastActiveProjectId(item.id);
+    closeHistoryDrawer();
+
+    if (!quiet) {
+        showToast(`Project "${item.title}" berhasil dimuat kembali!`, 'success');
+    }
+}
+
+function initHistoryManager() {
+    // Buttons to open drawer
+    document.getElementById('btn-open-history')?.addEventListener('click', openHistoryDrawer);
+    document.getElementById('m-nav-history')?.addEventListener('click', openHistoryDrawer);
+
+    // Buttons to close drawer
+    document.getElementById('btn-close-history')?.addEventListener('click', closeHistoryDrawer);
+    document.getElementById('drawer-history-backdrop')?.addEventListener('click', closeHistoryDrawer);
+
+    // Search filter
+    const searchInput = document.getElementById('history-search-input');
+    searchInput?.addEventListener('input', (e) => {
+        renderHistoryList(e.target.value);
+    });
+
+    // Clear all history
+    document.getElementById('btn-clear-history')?.addEventListener('click', () => {
+        const count = getHistory().length;
+        if (count === 0) {
+            showToast('Riwayat masih kosong', 'info');
+            return;
+        }
+        if (confirm(`Yakin ingin menghapus seluruh ${count} riwayat project? Tindakan ini tidak dapat dibatalkan.`)) {
+            clearAllHistory();
+            renderHistoryList();
+            showToast('Seluruh riwayat project telah dibersihkan', 'info');
+        }
+    });
+
+    // Export backup JSON
+    document.getElementById('btn-export-history')?.addEventListener('click', () => {
+        const count = getHistory().length;
+        if (count === 0) {
+            showToast('Tidak ada riwayat untuk di-backup', 'info');
+            return;
+        }
+        exportHistoryJson();
+        showToast(`Backup ${count} riwayat berhasil diunduh!`, 'success');
+    });
+
+    updateHistoryBadge();
+
+    // Auto-restore project upon page refresh if a last active project exists!
+    const lastId = getLastActiveProjectId();
+    if (lastId) {
+        const lastProject = getHistoryById(lastId);
+        if (lastProject) {
+            loadProject(lastProject, true);
+            console.log(`[KawanDigi] Memulihkan project aktif dari riwayat: ${lastProject.title}`);
+        }
+    } else {
+        // Fallback: If no explicit lastId, load the latest item if available
+        const list = getHistory();
+        if (list.length > 0) {
+            loadProject(list[0], true);
+            console.log(`[KawanDigi] Memulihkan project terbaru dari riwayat: ${list[0].title}`);
+        }
+    }
+}
+
+// =========================================================================
 // APPLICATION INITIALIZATION
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -1807,6 +2140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initDramaCreator();
     initLicenseManager();
     initThemeToggle();
+    initHistoryManager();
 
     // Check if API Key is configured on launch
     if (!getSavedApiKey() && getActiveProvider() !== 'custom') {

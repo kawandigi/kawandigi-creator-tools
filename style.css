@@ -405,3 +405,46 @@ html:not(.dark) ::-webkit-scrollbar-thumb {
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+
+/* =========================================================================
+   History Slide-Over Drawer Styles
+   ========================================================================= */
+#drawer-history-panel {
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#drawer-history.open #drawer-history-panel {
+    transform: translateX(0);
+}
+
+#drawer-history-backdrop {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#drawer-history.open #drawer-history-backdrop {
+    opacity: 1;
+}
+
+html:not(.dark) #drawer-history-panel {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .history-item-card {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .history-item-card:hover {
+    border-color: #544ce7 !important;
+    background-color: #f8faff !important;
+}
+
+html:not(.dark) #history-search-input {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
