@@ -112,7 +112,7 @@ body {
 }
 
 /* ========================================================================= */
-/* LIGHT THEME (html:not(.dark)) OVERRIDES                                    */
+/* LIGHT THEME (html:not(.dark)) OVERRIDES - HIGH CONTRAST & SLEEK           */
 /* ========================================================================= */
 html:not(.dark) body {
     background-color: #f8fafc !important;
@@ -120,10 +120,12 @@ html:not(.dark) body {
 }
 
 html:not(.dark) header {
-    background-color: rgba(255, 255, 255, 0.9) !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
     border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
+/* Base Cards & Containers */
 html:not(.dark) .bg-slate-900,
 html:not(.dark) .bg-slate-900\/80,
 html:not(.dark) .bg-slate-900\/90,
@@ -134,27 +136,54 @@ html:not(.dark) .bg-slate-900\/60 {
 }
 
 html:not(.dark) .bg-slate-950,
+html:not(.dark) .bg-slate-950\/60,
 html:not(.dark) .bg-slate-950\/70,
-html:not(.dark) .bg-slate-950\/80 {
-    background-color: #f1f5f9 !important;
+html:not(.dark) .bg-slate-950\/80,
+html:not(.dark) .bg-slate-950\/90 {
+    background-color: #f8fafc !important;
     border-color: #cbd5e1 !important;
 }
 
 html:not(.dark) .bg-slate-800,
 html:not(.dark) .bg-slate-800\/60,
 html:not(.dark) .bg-slate-800\/80 {
-    background-color: #e2e8f0 !important;
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
     color: #1e293b !important;
 }
 
-html:not(.dark) .text-white {
+/* Light Luminous Hero Banners (Fix dark black/purple banner in light mode) */
+html:not(.dark) [class*="bg-gradient-to-r"][class*="from-brand-900"],
+html:not(.dark) [class*="bg-gradient-to-r"][class*="from-accent-900"],
+html:not(.dark) [class*="bg-gradient-to-r"][class*="from-slate-900"],
+html:not(.dark) [class*="bg-gradient-to-b"][class*="from-brand-950"] {
+    background: linear-gradient(135deg, #f0efff 0%, #ffffff 50%, #f5f3ff 100%) !important;
+    border-color: #c7c4fe !important;
+    box-shadow: 0 4px 15px -3px rgba(84, 76, 231, 0.08) !important;
+}
+
+html:not(.dark) [class*="bg-gradient-to-r"][class*="from-emerald-950"] {
+    background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 50%, #f0fdf4 100%) !important;
+    border-color: #a7f3d0 !important;
+    box-shadow: 0 4px 15px -3px rgba(16, 185, 129, 0.08) !important;
+}
+
+/* Typography & Headings */
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6 {
     color: #0f172a !important;
 }
 
-html:not(.dark) .text-slate-100 {
+html:not(.dark) label {
     color: #0f172a !important;
+    font-weight: 700 !important;
 }
 
+html:not(.dark) .text-slate-100,
 html:not(.dark) .text-slate-200 {
     color: #1e293b !important;
 }
@@ -163,12 +192,9 @@ html:not(.dark) .text-slate-300 {
     color: #334155 !important;
 }
 
-html:not(.dark) .text-slate-400 {
-    color: #64748b !important;
-}
-
+html:not(.dark) .text-slate-400,
 html:not(.dark) .text-slate-500 {
-    color: #64748b !important;
+    color: #475569 !important;
 }
 
 html:not(.dark) .border-slate-800,
@@ -177,15 +203,58 @@ html:not(.dark) .border-slate-800\/60,
 html:not(.dark) .border-slate-700,
 html:not(.dark) .border-slate-700\/80,
 html:not(.dark) .border-slate-700\/60 {
-    border-color: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
 }
 
+/* Fix "kawan" in header logo for light mode */
+html:not(.dark) .logo-kawan {
+    color: #0f172a !important;
+}
+
+/* General text-white override for body text only (exclude buttons!) */
+html:not(.dark) span.text-white,
+html:not(.dark) p.text-white,
+html:not(.dark) div.text-white {
+    color: #0f172a !important;
+}
+
+/* CRITICAL FIX: Ensure buttons & active badges with vibrant backgrounds RETAIN PURE WHITE TEXT */
+html:not(.dark) .nav-tab.active,
+html:not(.dark) .nav-tab.active *,
+html:not(.dark) #btn-generate-ugc,
+html:not(.dark) #btn-generate-ugc *,
+html:not(.dark) #btn-generate-drama,
+html:not(.dark) #btn-generate-drama *,
+html:not(.dark) #btn-analyze-screenshots,
+html:not(.dark) #btn-analyze-screenshots *,
+html:not(.dark) #btn-open-flow-popup,
+html:not(.dark) #btn-open-flow-popup *,
+html:not(.dark) #btn-flow-hero-popup,
+html:not(.dark) #btn-flow-hero-popup *,
+html:not(.dark) #btn-save-api-key,
+html:not(.dark) #btn-save-api-key *,
+html:not(.dark) #btn-flow-direct-action,
+html:not(.dark) #btn-flow-direct-action *,
+html:not(.dark) .btn-download-video,
+html:not(.dark) .btn-download-video *,
+html:not(.dark) .btn-flow-render,
+html:not(.dark) .btn-flow-render *,
+html:not(.dark) .btn-copy-flow-clip,
+html:not(.dark) .btn-copy-flow-clip *,
+html:not(.dark) .btn-render-inapp,
+html:not(.dark) .btn-render-inapp *,
+html:not(.dark) [class*="bg-gradient-"][class*="to-"]:not([class*="from-brand-9"]):not([class*="from-slate-"]):not([class*="from-accent-9"]):not([class*="from-emerald-9"]) {
+    color: #ffffff !important;
+}
+
+/* Form Inputs, Selects & Textareas */
 html:not(.dark) input,
 html:not(.dark) select,
 html:not(.dark) textarea {
     background-color: #ffffff !important;
     color: #0f172a !important;
     border-color: #cbd5e1 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 html:not(.dark) input:focus,
@@ -196,24 +265,135 @@ html:not(.dark) textarea:focus {
     box-shadow: 0 0 0 2px rgba(84, 76, 231, 0.2);
 }
 
-html:not(.dark) .logo-kawan {
-    color: #0f172a !important;
-}
-
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
-    color: #94a3b8 !important;
+    color: #64748b !important;
 }
 
+/* Duration Buttons */
+html:not(.dark) .btn-duration:not(.active),
+html:not(.dark) .btn-drama-duration:not(.active) {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+html:not(.dark) .btn-duration:not(.active):hover,
+html:not(.dark) .btn-drama-duration:not(.active):hover {
+    border-color: #544ce7 !important;
+    color: #544ce7 !important;
+    background-color: #f0efff !important;
+}
+
+html:not(.dark) .btn-duration.active {
+    background-color: #e0e7ff !important;
+    border-color: #544ce7 !important;
+    color: #352cb2 !important;
+}
+
+html:not(.dark) .btn-drama-duration.active {
+    background-color: #fce7f3 !important;
+    border-color: #db2777 !important;
+    color: #9d174d !important;
+}
+
+/* Navigation Tabs & Controls */
 html:not(.dark) .nav-tab:not(.active) {
-    color: #64748b;
+    color: #334155 !important;
+    font-weight: 600;
 }
 
 html:not(.dark) .nav-tab:not(.active):hover {
-    color: #0f172a;
-    background: #e2e8f0;
+    color: #0f172a !important;
+    background-color: #e2e8f0 !important;
 }
 
+html:not(.dark) #btn-api-key-modal,
+html:not(.dark) #btn-theme-toggle,
+html:not(.dark) #btn-scrape-url,
+html:not(.dark) #btn-ugc-preset-demo,
+html:not(.dark) #btn-drama-preset-demo,
+html:not(.dark) #btn-copy-all-prompts {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+html:not(.dark) #btn-api-key-modal:hover,
+html:not(.dark) #btn-theme-toggle:hover,
+html:not(.dark) #btn-scrape-url:hover,
+html:not(.dark) #btn-ugc-preset-demo:hover,
+html:not(.dark) #btn-copy-all-prompts:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+
+/* Voiceover Box High Contrast */
+html:not(.dark) .bg-amber-950\/20 {
+    background-color: #fffbeb !important;
+    border-color: #fde68a !important;
+}
+
+html:not(.dark) .text-amber-200 {
+    color: #78350f !important;
+    font-weight: 500 !important;
+}
+
+html:not(.dark) .btn-play-vo,
+html:not(.dark) .btn-play-vo-sc {
+    color: #b45309 !important;
+}
+
+/* Subtitle Safe Zone Badge High Contrast */
+html:not(.dark) .bg-brand-500\/20 {
+    background-color: #e0e7ff !important;
+    border-color: #c7c4fe !important;
+}
+
+html:not(.dark) .text-brand-300,
+html:not(.dark) .text-brand-400 {
+    color: #352cb2 !important;
+}
+
+/* Emerald Badges High Contrast */
+html:not(.dark) .bg-emerald-500\/20 {
+    background-color: #d1fae5 !important;
+    border-color: #6ee7b7 !important;
+}
+
+html:not(.dark) .text-emerald-300,
+html:not(.dark) .text-emerald-400 {
+    color: #065f46 !important;
+    font-weight: 700 !important;
+}
+
+/* Prompt Box High Contrast */
+html:not(.dark) .prompt-box,
+html:not(.dark) .prompt-text,
+html:not(.dark) #ugc-full-prompt-code {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* Dropzone High Contrast */
+html:not(.dark) #screenshot-dropzone {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) #screenshot-dropzone:hover {
+    background-color: #f0efff !important;
+    border-color: #544ce7 !important;
+}
+
+html:not(.dark) #screenshot-dropzone kbd {
+    background-color: #e2e8f0 !important;
+    color: #352cb2 !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Scrollbar */
 html:not(.dark) ::-webkit-scrollbar-track {
     background: #f1f5f9;
 }
@@ -224,9 +404,4 @@ html:not(.dark) ::-webkit-scrollbar-thumb {
 
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
-}
-
-html:not(.dark) .prompt-box {
-    background: #f8fafc;
-    border-color: #e2e8f0;
 }
