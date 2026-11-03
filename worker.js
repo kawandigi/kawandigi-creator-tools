@@ -107,7 +107,7 @@ export default {
             env.client_id ||
             env.OAUTH_CLIENT_ID ||
             globalThis.__kd_settings.google_client_id ||
-            ''
+            '172006612908-ah493a9uj6hm0csnv6q29q6apgvi1fm1.apps.googleusercontent.com'
           ).trim();
 
           let adminEmail = (
@@ -137,7 +137,7 @@ export default {
           return new Response(JSON.stringify({
             status: 'success',
             data: {
-              google_client_id: clientId,
+              google_client_id: clientId || '172006612908-ah493a9uj6hm0csnv6q29q6apgvi1fm1.apps.googleusercontent.com',
               admin_email: adminEmail
             }
           }), { headers: corsHeaders });

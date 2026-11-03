@@ -234,7 +234,8 @@ export function verifyAdminPin(inputPin) {
     return (inputPin || '').trim() === current;
 }
 
-let cachedGoogleClientId = localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || '';
+const DEFAULT_GOOGLE_CLIENT_ID = '172006612908-ah493a9uj6hm0csnv6q29q6apgvi1fm1.apps.googleusercontent.com';
+let cachedGoogleClientId = localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || DEFAULT_GOOGLE_CLIENT_ID;
 
 export async function fetchGoogleClientIdFromServer() {
     try {
@@ -260,7 +261,7 @@ export async function fetchGoogleClientIdFromServer() {
 }
 
 export function getGoogleClientId() {
-    return cachedGoogleClientId || localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || '';
+    return cachedGoogleClientId || localStorage.getItem(STORAGE_GOOGLE_CLIENT_ID) || '172006612908-ah493a9uj6hm0csnv6q29q6apgvi1fm1.apps.googleusercontent.com';
 }
 
 export async function saveGoogleClientIdToServer(clientId) {
