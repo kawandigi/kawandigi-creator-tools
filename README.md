@@ -1,4 +1,4 @@
-# KawanDigi Creator Studio 🎬✨
+# kawandigi CREATOR TOOLS 🎬✨
 
 > **AI UGC Video & Drama Series Generator Suite**
 > Dirancang khusus untuk Kreator Affiliate & Sutradara Micro-Drama dengan integrasi **Google Flow (Veo)** dan **Google Gemini / Imagen 3**.
@@ -64,24 +64,24 @@ Buka terminal di folder project ini:
 ```bash
 git init
 git add .
-git commit -m "Initial release: KawanDigi Creator Studio"
+git commit -m "Initial release: kawandigi CREATOR TOOLS"
 git branch -M main
-git remote add origin https://github.com/USERNAME/kawandigi-creator-studio.git
+git remote add origin https://github.com/USERNAME/kawandigi-creator-tools.git
 git push -u origin main
 ```
 
 ### Langkah 2: Hubungkan ke Cloudflare Pages
 1. Buka dashboard [Cloudflare Dashboard](https://dash.cloudflare.com/) > menu **Workers & Pages**.
 2. Klik tombol **Create Application** > pilih tab **Pages** > **Connect to Git**.
-3. Pilih repository GitHub `kawandigi-creator-studio`.
+3. Pilih repository GitHub `kawandigi-creator-tools`.
 4. Pada bagian **Build settings**:
    - **Framework preset**: `None`
    - **Build command**: Kosongkan (tidak perlu build script)
    - **Build output directory**: `/` (root folder)
 5. Klik **Save and Deploy**.
 
-Dalam 15–30 detik, webapp KawanDigi Creator Studio Anda sudah langsung aktif di domain gratis:
-`https://kawandigi-creator-studio.pages.dev` (atau custom domain Anda sendiri seperti `studio.kawandigi.com`).
+Dalam 15–30 detik, webapp kawandigi CREATOR TOOLS Anda sudah langsung aktif di domain gratis:
+`https://kawandigi-creator-tools.pages.dev` (atau custom domain Anda sendiri seperti `tools.kawandigi.com`).
 
 ---
 
