@@ -72,6 +72,14 @@ import {
 } from './modules/gamification_manager.js';
 
 // Global State
+// Super Admin Email Whitelist (Access Control)
+const SUPER_ADMIN_EMAIL = 'admin.kawandigi@gmail.com';
+
+function isSuperAdmin(user) {
+    if (!user || !user.email) return false;
+    return user.email.toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase();
+}
+
 let selectedUgcDuration = 10; // 10s Utama, 20s (2 Klip), 30s (3 Klip)
 let selectedDramaScenes = 3;  // 3 scenes (30s) or 6 scenes (60s)
 let currentUgcCampaign = null;
@@ -245,6 +253,12 @@ function switchTab(tabId) {
     } else if (tabId === 'tutorial') {
         renderTutorials();
     } else if (tabId === 'admin') {
+        const currentUser = getCurrentUser();
+        if (!isSuperAdmin(currentUser)) {
+            showToast('Akses Terbatas: Hanya Administrator Resmi yang dapat mengakses Console Admin.', 'error');
+            switchTab('catalog');
+            return;
+        }
         renderAdminMembers();
         renderAdminAnalytics();
         renderAdminFlags();
@@ -2799,7 +2813,7 @@ function initAuthManager() {
         const demoUser = {
             id: 'g_' + Date.now(),
             name: 'Kreator KawanDigi',
-            email: 'kreator@gmail.com',
+            email: 'admin.kawandigi@gmail.com',
             picture: 'assets/icons/favicon.png',
             joinedAt: new Date().toISOString(),
             totalGenerates: 15,
@@ -2842,6 +2856,22 @@ function updateHeaderAuthUI() {
     const xpVal = (user && typeof user.xp === 'number') ? user.xp : 1120;
     const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 94;
     const levelInfo = calculateLevel(xpVal);
+
+    // Toggle Admin Visibility (Only visible for admin.kawandigi@gmail.com)
+    const isAdmin = isSuperAdmin(user);
+    const navAdmin = document.getElementById('nav-admin');
+    const headerAdmin = document.getElementById('btn-header-admin');
+    const drawerAdmin = document.getElementById('drawer-admin-btn');
+
+    if (isAdmin) {
+        if (navAdmin) { navAdmin.classList.remove('hidden'); navAdmin.classList.add('flex'); }
+        if (headerAdmin) { headerAdmin.classList.remove('hidden'); headerAdmin.classList.add('flex'); }
+        if (drawerAdmin) { drawerAdmin.classList.remove('hidden'); drawerAdmin.classList.add('flex'); }
+    } else {
+        if (navAdmin) { navAdmin.classList.add('hidden'); navAdmin.classList.remove('flex'); }
+        if (headerAdmin) { headerAdmin.classList.add('hidden'); headerAdmin.classList.remove('flex'); }
+        if (drawerAdmin) { drawerAdmin.classList.add('hidden'); drawerAdmin.classList.remove('flex'); }
+    }
 
     if (user && user.email) {
         if (avatar) {
@@ -3419,6 +3449,11 @@ window.kdOpenDrawer = openDrawer;
 window.kdCloseDrawer = closeDrawer;
 window.kdOpenProfileModal = openUserProfileModal;
 window.kdOpenAdminConsole = () => {
+    const user = getCurrentUser();
+    if (!isSuperAdmin(user)) {
+        showToast('Akses Ditolak: Anda harus login menggunakan akun Google admin.kawandigi@gmail.com', 'error');
+        return;
+    }
     if (sessionStorage.getItem('kd_admin_unlocked') === '1') {
         openAdminConsole();
     } else {

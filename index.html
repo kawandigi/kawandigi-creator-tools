@@ -90,7 +90,7 @@
                 <button id="nav-license" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="key" class="w-3.5 h-3.5"></i> Lisensi
                 </button>
-                <button id="nav-admin" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-amber-400 hover:text-amber-300">
+                <button id="nav-admin" class="nav-tab hidden px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all items-center gap-1.5 text-amber-400 hover:text-amber-300">
                     <i data-lucide="shield" class="w-3.5 h-3.5"></i> Admin
                 </button>
             </nav>
@@ -121,7 +121,7 @@
                 </button>
 
                 <!-- Admin Button -->
-                <button id="btn-header-admin" class="hidden md:flex p-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 transition items-center gap-1.5 text-xs font-semibold" title="Console Admin KawanDigi">
+                <button id="btn-header-admin" class="hidden p-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 transition items-center gap-1.5 text-xs font-semibold" title="Console Admin KawanDigi">
                     <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
                     <span class="text-[11px] font-bold">Admin</span>
                 </button>
@@ -193,7 +193,7 @@
 
             <div class="py-2"><div class="border-t border-slate-800"></div></div>
 
-            <button type="button" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-300 hover:bg-amber-500/10 transition">
+            <button type="button" id="drawer-admin-btn" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item hidden w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-300 hover:bg-amber-500/10 transition">
                 <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
                 <span>Console Admin KawanDigi</span>
             </button>
