@@ -162,7 +162,7 @@ const FALLBACK_GEMINI_MODELS = [
 /**
  * Universal AI Caller (Gemini, DeepSeek, OpenRouter, Groq, Custom)
  */
-export async function callAiProvider(prompt, systemInstruction = '', preferredModel = '', tools = null, inlineData = null) {
+export async function callAiProvider(prompt, systemInstruction = '', preferredModel = '', tools = null, inlineData = null, options = {}) {
     const provider = getActiveProvider();
     const apiKey = getSavedApiKey(provider);
 
@@ -170,6 +170,8 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
         const providerName = AI_PROVIDERS[provider]?.name || provider;
         throw new Error(`API Key ${providerName} belum diisi. Silakan masukkan di menu Pengaturan API (pojok kanan atas).`);
     }
+
+    const isJsonMode = options?.jsonMode || /format JSON|HANYA dalam format JSON|\"product_analysis\"|\"scenes\"|\"storyboard\"/i.test(systemInstruction + prompt);
 
     // =========================================================================
     // 1. GOOGLE GEMINI PROVIDER
@@ -200,14 +202,20 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
             }
             parts.push({ text: prompt });
 
+            const generationConfig = {
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: 4096
+            };
+
+            if (isJsonMode) {
+                generationConfig.responseMimeType = 'application/json';
+            }
+
             const payload = {
                 contents: [{ role: 'user', parts: parts }],
-                generationConfig: {
-                    temperature: 0.7,
-                    topP: 0.95,
-                    topK: 40,
-                    maxOutputTokens: 4096
-                }
+                generationConfig: generationConfig
             };
 
             if (systemInstruction) {
