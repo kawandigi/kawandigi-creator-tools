@@ -266,6 +266,32 @@ function openGoogleFlowPopup() {
     showToast('Membuka Google Flow di samping layar...', 'info');
 }
 
+// =========================================================================
+// SLIDING SIDEBAR DRAWER (REFERENCE: AMBILTIKETNYA.ONLINE)
+// =========================================================================
+function openDrawer() {
+    const drawer = document.getElementById('sidebar-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (!drawer || !backdrop) return;
+    backdrop.classList.remove('hidden');
+    void backdrop.offsetWidth; // Force reflow
+    backdrop.classList.add('opacity-100');
+    drawer.classList.remove('-translate-x-full');
+    drawer.classList.add('translate-x-0');
+}
+
+function closeDrawer() {
+    const drawer = document.getElementById('sidebar-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (!drawer || !backdrop) return;
+    drawer.classList.remove('translate-x-0');
+    drawer.classList.add('-translate-x-full');
+    backdrop.classList.remove('opacity-100');
+    setTimeout(() => {
+        backdrop.classList.add('hidden');
+    }, 300);
+}
+
 function initNavigation() {
     // Desktop Nav buttons
     document.getElementById('nav-catalog')?.addEventListener('click', () => switchTab('catalog'));
@@ -291,6 +317,18 @@ function initNavigation() {
 
     // Brand logo returns to Catalog view
     document.getElementById('btn-brand-home')?.addEventListener('click', () => switchTab('catalog'));
+    
+    // Sliding Drawer Event Listeners
+    document.getElementById('btn-open-drawer')?.addEventListener('click', openDrawer);
+    document.getElementById('btn-close-drawer')?.addEventListener('click', closeDrawer);
+    document.getElementById('drawer-backdrop')?.addEventListener('click', closeDrawer);
+    document.getElementById('drawer-btn-api-key')?.addEventListener('click', () => {
+        closeDrawer();
+        document.getElementById('btn-api-key-modal')?.click();
+    });
+    document.getElementById('drawer-theme-toggle')?.addEventListener('click', () => {
+        document.getElementById('btn-theme-toggle')?.click();
+    });
 
     // Default view: Catalog
     switchTab('catalog');
@@ -2778,6 +2816,23 @@ function updateHeaderAuthUI() {
     const defaultIcon = document.getElementById('auth-default-icon');
     const nameEl = document.getElementById('auth-user-name');
 
+    // Home & Drawer Elements (Matching ambiltiketnya.online)
+    const greetingName = document.getElementById('home-greeting-name');
+    const greetingRole = document.getElementById('home-greeting-role');
+    const drawerName = document.getElementById('drawer-user-name');
+    const drawerAvatar = document.getElementById('drawer-user-avatar');
+    const drawerTier = document.getElementById('drawer-user-tier');
+    const heroXp = document.getElementById('home-hero-xp');
+    const heroPct = document.getElementById('home-hero-pct');
+    const heroProgress = document.getElementById('home-hero-progress');
+    const heroVids = document.getElementById('home-hero-vids');
+    const statVids = document.getElementById('stat-card-vids');
+    const statXp = document.getElementById('stat-card-xp');
+
+    const xpVal = (user && typeof user.xp === 'number') ? user.xp : 1120;
+    const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 94;
+    const levelInfo = calculateLevel(xpVal);
+
     if (user && user.email) {
         if (avatar) {
             avatar.src = user.picture || 'assets/icons/favicon.png';
@@ -2789,12 +2844,31 @@ function updateHeaderAuthUI() {
             nameEl.textContent = firstName;
         }
         if (btn) btn.title = `Akun: ${user.name} (${user.email})`;
+
+        if (greetingName) greetingName.textContent = user.name || 'IMANUEL PRAMANA';
+        if (greetingRole) greetingRole.textContent = `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`;
+        if (drawerName) drawerName.textContent = user.name || 'Imanuel Pramana';
+        if (drawerAvatar && user.picture) drawerAvatar.src = user.picture;
+        if (drawerTier) drawerTier.textContent = `${levelInfo.icon} ${levelInfo.title} • VIP`;
     } else {
         if (avatar) avatar.classList.add('hidden');
         if (defaultIcon) defaultIcon.classList.remove('hidden');
-        if (nameEl) nameEl.textContent = 'Masuk';
+        if (nameEl) nameEl.textContent = 'Akun';
         if (btn) btn.title = 'Masuk Akun Google';
+
+        if (greetingName) greetingName.textContent = 'IMANUEL PRAMANA';
+        if (greetingRole) greetingRole.textContent = 'MEMBER VIP (AKTIF)';
+        if (drawerName) drawerName.textContent = 'Imanuel Pramana';
+        if (drawerTier) drawerTier.textContent = '💎 Diamond Creator • VIP';
     }
+
+    if (heroXp) heroXp.textContent = xpVal.toLocaleString('id-ID');
+    const pct = Math.min(100, Math.round((xpVal / 1500) * 100));
+    if (heroPct) heroPct.textContent = `${pct}%`;
+    if (heroProgress) heroProgress.style.width = `${pct}%`;
+    if (heroVids) heroVids.textContent = `${vidsVal} Klip`;
+    if (statVids) statVids.textContent = vidsVal;
+    if (statXp) statXp.textContent = xpVal.toLocaleString('id-ID');
 }
 
 function openUserProfileModal() {
@@ -3328,6 +3402,16 @@ function saveTutorialFromEditor() {
 
 // Window global helper bindings for inline onclick handlers
 window.kdSwitchTab = switchTab;
+window.kdOpenDrawer = openDrawer;
+window.kdCloseDrawer = closeDrawer;
+window.kdOpenProfileModal = openUserProfileModal;
+window.kdOpenAdminConsole = () => {
+    document.getElementById('modal-admin-pin')?.classList.remove('hidden');
+};
+window.kdOpenHistory = () => {
+    document.getElementById('modal-history-center')?.classList.remove('hidden');
+    renderHistoryList();
+};
 window.kdDeleteMember = (email) => {
     if (confirm(`Hapus member ${email}?`)) {
         deleteMemberRecord(email);

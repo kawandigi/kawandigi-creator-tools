@@ -56,82 +56,186 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-500 selection:text-white">
 
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
-            <!-- Logo & Branding (Compact on mobile) -->
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink cursor-pointer" id="btn-brand-home" title="Kembali ke Katalog Tools">
-                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-lg shadow-brand-500/25 object-cover flex-shrink-0">
-                <div class="min-w-0">
-                    <h1 class="text-sm sm:text-lg font-black tracking-tight flex items-center gap-1.5 flex-nowrap">
-                        <span class="tracking-tight whitespace-nowrap"><span class="logo-kawan text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                        <span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider whitespace-nowrap">CREATOR TOOLS</span>
-                    </h1>
-                    <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium hidden sm:block truncate">Google Flow & Gemini Video Suite</p>
+    <header class="sticky top-0 z-40 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <!-- Logo & Brand Link -->
+            <div class="flex items-center gap-2.5 cursor-pointer" id="btn-brand-home" title="Kembali ke Beranda">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-cyan-400 p-[1.5px] shadow-lg shadow-brand-500/25 flex items-center justify-center">
+                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center overflow-hidden">
+                        <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-7 h-7 object-cover">
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-base sm:text-lg font-black tracking-tight text-white"><span class="logo-kawan text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span><span class="text-cyan-400 font-bold">.online</span></span>
                 </div>
             </div>
 
             <!-- Desktop Navigation Tabs -->
-            <nav class="hidden md:flex items-center gap-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 flex-shrink-0">
-                <button id="nav-catalog" class="nav-tab active px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="layout-grid" class="w-4 h-4 text-brand-400"></i>
-                    Katalog Tools
+            <nav class="hidden lg:flex items-center gap-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 flex-shrink-0">
+                <button id="nav-catalog" class="nav-tab active px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-brand-400"></i> Beranda
                 </button>
-                <button id="nav-leaderboard" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
-                    Peringkat
+                <button id="nav-leaderboard" class="nav-tab px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400"></i> Peringkat
                 </button>
-                <button id="nav-ugc" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                    UGC Affiliate
+                <button id="nav-ugc" class="nav-tab px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i> UGC Affiliate
                 </button>
-                <button id="nav-flow" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
-                    Google Flow
+                <button id="nav-flow" class="nav-tab px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="film" class="w-3.5 h-3.5 text-emerald-400"></i> Google Flow
                 </button>
                 <button id="nav-drama" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="clapperboard" class="w-4 h-4"></i>
-                    AI Drama
+                    <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-amber-400"></i> AI Drama
                 </button>
                 <button id="nav-tutorial" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
-                    Tutorial
+                    <i data-lucide="play-circle" class="w-3.5 h-3.5 text-indigo-400"></i> Tutorial
                 </button>
                 <button id="nav-license" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="key" class="w-4 h-4"></i>
-                    Lisensi
+                    <i data-lucide="key" class="w-3.5 h-3.5"></i> Lisensi
                 </button>
             </nav>
 
-            <!-- Right Controls: Auth, Admin, History, API Key & Theme -->
-            <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
-                <!-- User Profile / Google Sign-in Button -->
-                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-300 transition" title="Akun Pengguna & Paket Langganan">
+            <!-- Right Controls: Theme Toggle, Auth, Admin & Hamburger Drawer -->
+            <div class="flex items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button id="btn-theme-toggle" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm" title="Ganti Mode Gelap/Terang">
+                    <i data-lucide="sun" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Language / Engine Pill -->
+                <div class="hidden sm:inline-flex items-center px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-[11px] font-bold text-slate-300 tracking-wide">
+                    <span>EN</span>
+                </div>
+
+                <!-- API Key Modal Trigger -->
+                <button id="btn-api-key-modal" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Pengaturan AI API Key">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span id="api-status-text">AI Key</span>
+                </button>
+
+                <!-- User Profile / Auth Button -->
+                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-300 transition" title="Profil Akun Member">
                     <img id="auth-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="hidden w-5 h-5 rounded-full object-cover">
                     <i id="auth-default-icon" data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span id="auth-user-name" class="text-[11px] sm:text-xs font-bold hidden sm:inline">Masuk</span>
+                    <span id="auth-user-name" class="text-xs font-bold">Akun</span>
                 </button>
 
-                <!-- Admin Console Button -->
-                <button id="btn-header-admin" class="p-1.5 sm:px-2 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 transition flex items-center gap-1 text-xs font-semibold" title="Console Admin KawanDigi">
+                <!-- Admin Button -->
+                <button id="btn-header-admin" class="hidden md:flex p-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 transition items-center gap-1.5 text-xs font-semibold" title="Console Admin KawanDigi">
                     <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span class="hidden lg:inline text-[11px] font-bold">Admin</span>
+                    <span class="text-[11px] font-bold">Admin</span>
                 </button>
 
-                <button id="btn-open-history" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Buka Riwayat Project (Maks 20 Project)">
-                    <i data-lucide="history" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span class="font-bold">Riwayat</span>
-                    <span id="history-counter-badge" class="px-1.5 py-0.2 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/40 text-[10px] font-bold">0</span>
-                </button>
-                <button id="btn-api-key-modal" class="flex items-center gap-1.5 text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition whitespace-nowrap" title="Pengaturan Layanan AI">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
-                    <span id="api-status-text" class="text-[11px] sm:text-xs font-semibold">API Key</span>
-                </button>
-                <button id="btn-theme-toggle" class="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition flex-shrink-0" title="Toggle Theme">
-                    <i data-lucide="sun" class="w-4 h-4"></i>
+                <!-- Hamburger Drawer Trigger (Reference Design) -->
+                <button id="btn-open-drawer" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm" title="Buka Menu Lengkap">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
     </header>
+
+    <!-- ========================================================================= -->
+    <!-- SLIDING SIDEBAR DRAWER MENU (REFERENCE: AMBILTIKETNYA.ONLINE)               -->
+    <!-- ========================================================================= -->
+    <div id="drawer-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
+
+    <aside id="sidebar-drawer" class="fixed top-0 bottom-0 left-0 w-[84vw] max-w-sm bg-slate-900 border-r border-slate-800 z-50 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out">
+        <!-- Drawer Header -->
+        <div class="p-4 sm:p-5 border-b border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 p-[1.5px] flex items-center justify-center">
+                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center overflow-hidden">
+                        <img src="assets/icons/logo.png" alt="logo" class="w-6 h-6 object-cover">
+                    </div>
+                </div>
+                <span class="text-base font-black text-white">kawandigi<span class="text-cyan-400">.online</span></span>
+            </div>
+            <button id="btn-close-drawer" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 transition">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Navigation Items -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-1.5 text-xs font-semibold">
+            <button type="button" onclick="window.kdSwitchTab('catalog'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-brand-600 text-white font-bold shadow-md shadow-brand-500/25 transition">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>Overview & Beranda</span>
+            </button>
+            <button type="button" onclick="window.kdSwitchTab('ugc'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                <span>AI UGC Affiliate Creator</span>
+            </button>
+            <button type="button" onclick="window.kdSwitchTab('flow'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="film" class="w-4 h-4 text-emerald-400"></i>
+                <span>Google Flow Studio</span>
+            </button>
+            <button type="button" onclick="window.kdSwitchTab('drama'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="clapperboard" class="w-4 h-4 text-amber-400"></i>
+                    <span>AI Drama & Micro-Series</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">HOT</span>
+            </button>
+            <button type="button" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
+                <span>Peringkat & Gamifikasi</span>
+            </button>
+            <button type="button" onclick="window.kdSwitchTab('tutorial'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
+                <span>Tutorial & Panduan Video</span>
+            </button>
+            <button type="button" onclick="window.kdOpenHistory(); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+                    <span>Riwayat Project Saya</span>
+                </div>
+                <span id="drawer-history-badge" class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/30">0</span>
+            </button>
+
+            <div class="py-2"><div class="border-t border-slate-800"></div></div>
+
+            <button type="button" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-300 hover:bg-amber-500/10 transition">
+                <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+                <span>Console Admin KawanDigi</span>
+            </button>
+            <button type="button" onclick="window.kdSwitchTab('license'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+                <span>Paket Langganan & Lisensi</span>
+            </button>
+        </div>
+
+        <!-- Drawer Footer: User Profile & AI Key Button -->
+        <div class="p-4 border-t border-slate-800/90 bg-slate-950/60 space-y-3">
+            <div onclick="window.kdOpenProfileModal(); window.kdCloseDrawer();" class="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+                <img id="drawer-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-brand-500/40">
+                <div class="min-w-0 flex-1">
+                    <h5 id="drawer-user-name" class="text-xs font-bold text-white truncate">Kreator KawanDigi</h5>
+                    <p id="drawer-user-tier" class="text-[10px] text-brand-400 font-semibold truncate">Member VIP • Diamond</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+            </div>
+
+            <!-- Language & Theme Pills Row -->
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-[11px] font-bold text-slate-400">
+                    <button type="button" class="px-2 py-0.5 rounded-lg bg-brand-500/20 text-brand-300">ID</button>
+                    <button type="button" class="px-2 py-0.5 rounded-lg hover:text-white">EN</button>
+                </div>
+                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-slate-400">
+                    <button type="button" id="drawer-theme-toggle" class="px-2.5 py-1 rounded-lg hover:text-white flex items-center gap-1.5 text-xs font-semibold" title="Ganti Mode">
+                        <i data-lucide="sun" class="w-3.5 h-3.5"></i>
+                        <span>Tema</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Key Settings CTA Button -->
+            <button type="button" id="drawer-btn-api-key" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600/30 to-indigo-600/30 hover:from-brand-600/50 hover:to-indigo-600/50 border border-brand-500/40 text-brand-300 font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Pengaturan AI Key</span>
+            </button>
+        </div>
+    </aside>
 
     <!-- Main Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-8">
@@ -139,48 +243,169 @@
         <!-- ========================================== -->
         <!-- TAB 0: KATALOG TOOLS & PRODUK (DEFAULT VIEW) -->
         <!-- ========================================== -->
-        <section id="section-catalog" class="tab-content active space-y-6 sm:space-y-8">
-            <!-- Welcome Hero Banner -->
-            <div class="bg-gradient-to-r from-slate-900 via-brand-950/70 to-slate-900 border border-brand-500/30 rounded-2xl p-5 sm:p-7 relative overflow-hidden shadow-xl">
-                <div class="relative z-10 max-w-3xl space-y-3">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-bold border border-brand-500/30">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                        <span>KawanDigi Creator Studio Suite</span>
-                    </div>
-                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-                        Katalog Tools AI & Layanan Creator
-                    </h2>
-                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-                        Pilih tool produksi AI yang ingin Anda gunakan, tonton video tutorial panduan, atau miliki lisensi VIP dan paket mentoring untuk melejitkan komisi affiliate & views konten Anda.
-                    </p>
-                </div>
-                <!-- Background Glow -->
-                <div class="absolute -right-16 -top-16 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <section id="section-catalog" class="tab-content active space-y-5 sm:space-y-6">
+            <!-- Greeting & Role Pill -->
+            <div class="space-y-1">
+                <span id="home-greeting-role" class="inline-block px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase">
+                    MEMBER VIP (AKTIF)
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    HALO, <span id="home-greeting-name" class="uppercase">IMANUEL PRAMANA</span>
+                </h2>
             </div>
 
-            <!-- Section 1: AI Tools Collection -->
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                            <i data-lucide="layout-grid" class="w-5 h-5 text-brand-400"></i>
-                            Koleksi Tools AI KawanDigi
-                        </h3>
-                        <p class="text-xs text-slate-400">Pilih tool untuk mulai membuat konten video dan naskah otomatis</p>
-                    </div>
-                    <span id="catalog-tools-count" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                        5 Tools
+            <!-- HERO DASHBOARD CARD (BLUE GRADIENT AS IN AMBILTIKETNYA.ONLINE) -->
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-3xl p-5 sm:p-7 text-white shadow-xl shadow-blue-600/25 relative overflow-hidden">
+                <!-- Top Chips Row -->
+                <div class="flex items-center justify-between gap-2 relative z-10">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold border border-white/25 backdrop-blur-sm">
+                        <i data-lucide="target" class="w-3.5 h-3.5 text-rose-300"></i>
+                        <span>RINGKASAN GLOBAL</span>
                     </span>
+                    <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-900/50 border border-blue-400/30 text-xs font-bold text-blue-100">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-300"></i>
+                        <span id="home-engine-label">Gemini 2.5 Flash</span>
+                    </div>
                 </div>
 
-                <!-- Dynamic Grid for Tools -->
-                <div id="catalog-tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Populated dynamically by app.js -->
+                <!-- Metric Numbers & Progress -->
+                <div class="mt-4 sm:mt-5 space-y-2 relative z-10">
+                    <p class="text-xs text-blue-100 font-semibold tracking-wide">Video Dibuat / Target Peringkat</p>
+                    <div class="flex items-baseline gap-2">
+                        <span id="home-hero-xp" class="text-3xl sm:text-4xl font-black text-white">1.120</span>
+                        <span class="text-sm sm:text-base font-bold text-blue-200">/ 1.500 XP (<span id="home-hero-pct">75%</span>)</span>
+                    </div>
+
+                    <!-- Sleek Progress Bar -->
+                    <div class="w-full h-3 bg-blue-950/60 rounded-full overflow-hidden p-0.5 mt-2 border border-blue-400/20">
+                        <div id="home-hero-progress" class="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-400 transition-all duration-700 shadow-sm" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+                <!-- Bottom Stats Row -->
+                <div class="mt-4 pt-3 border-t border-blue-400/30 flex items-center justify-between text-xs text-blue-100 relative z-10 font-semibold">
+                    <div>Total Video: <strong id="home-hero-vids" class="text-white font-bold">94 Klip</strong></div>
+                    <div>Status Kuota: <strong class="text-cyan-200 font-bold">Unlimited</strong></div>
+                </div>
+
+                <!-- Background Subtle Glows -->
+                <div class="absolute -right-12 -top-12 w-48 h-48 bg-cyan-400/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -left-12 -bottom-12 w-48 h-48 bg-indigo-900/40 rounded-full blur-2xl pointer-events-none"></div>
+            </div>
+
+            <!-- QUICK ACTION / ANNOUNCEMENT BANNER (MATCHES IMAGE 1) -->
+            <div class="home-stat-card bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold flex-shrink-0">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Google Flow (Veo) & Video-FX Siap</span>
+                        </h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Generator prompt naskah 9:16 vertikal siap pakai instan</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.kdSwitchTab('ugc')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition flex items-center justify-center gap-1.5 self-start sm:self-auto">
+                    <span>BUAT SEKARANG →</span>
+                </button>
+            </div>
+
+            <!-- MENU UTAMA: CIRCULAR APP ICONS (MATCHES IMAGE 1) -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="text-base font-black text-white tracking-tight">Menu Utama</h3>
+                    <button type="button" onclick="window.kdOpenDrawer()" class="text-brand-400 hover:text-brand-300 text-xs font-bold transition flex items-center gap-0.5">
+                        <span>Menu Lengkap</span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <!-- 6 Circular App Buttons Grid -->
+                <div class="grid grid-cols-4 sm:grid-cols-6 gap-3 sm:gap-4 py-1">
+                    <!-- 1. UGC Affiliate (Purple) -->
+                    <button type="button" onclick="window.kdSwitchTab('ugc')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition">
+                            <i data-lucide="sparkles" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">UGC Affiliate</span>
+                    </button>
+
+                    <!-- 2. Google Flow (Blue) -->
+                    <button type="button" onclick="window.kdSwitchTab('flow')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition">
+                            <i data-lucide="film" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Google Flow</span>
+                    </button>
+
+                    <!-- 3. AI Drama (Orange/Amber with Badge) -->
+                    <button type="button" onclick="window.kdSwitchTab('drama')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:shadow-orange-500/40 transition relative">
+                            <i data-lucide="clapperboard" class="w-6 h-6"></i>
+                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[9px] font-black border border-slate-900 shadow">HOT</span>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">AI Drama</span>
+                    </button>
+
+                    <!-- 4. Peringkat (Pink/Rose) -->
+                    <button type="button" onclick="window.kdSwitchTab('leaderboard')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-pink-500/20 group-hover:shadow-pink-500/40 transition">
+                            <i data-lucide="trophy" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Peringkat</span>
+                    </button>
+
+                    <!-- 5. Tutorial Video (Violet) -->
+                    <button type="button" onclick="window.kdSwitchTab('tutorial')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition">
+                            <i data-lucide="play-circle" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Tutorial</span>
+                    </button>
+
+                    <!-- 6. Toko Digital (Emerald) -->
+                    <button type="button" onclick="window.kdSwitchTab('license')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition">
+                            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Toko VIP</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Section 2: Digital Products & Services Store -->
-            <div class="space-y-4 pt-4 border-t border-slate-800">
+            <!-- STATISTIK & AKTIVITAS: METRIC CARDS (MATCHES IMAGE 1) -->
+            <div class="space-y-3">
+                <h3 class="text-base font-black text-white tracking-tight px-1">Statistik & Aktivitas</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Card 1: Total Video Dibuat -->
+                    <div class="home-stat-card bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                        <div class="space-y-1">
+                            <h4 id="stat-card-vids" class="text-3xl font-black text-white">94</h4>
+                            <p class="text-xs font-semibold text-slate-300">Total Video Dibuat</p>
+                            <p class="text-[11px] text-slate-400">Dari batas kuota tanpa batas</p>
+                        </div>
+                        <div class="radial-ring text-xs font-black text-cyan-400" style="--ring-color: #06b6d4; --ring-pct: 89;">
+                            <span>89%</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Skor XP & Level -->
+                    <div class="home-stat-card bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                        <div class="space-y-1">
+                            <h4 id="stat-card-xp" class="text-3xl font-black text-emerald-400">1.120</h4>
+                            <p class="text-xs font-semibold text-slate-300">Total Skor XP</p>
+                            <p class="text-[11px] text-slate-400">Status: <strong class="text-amber-400">Diamond Creator</strong></p>
+                        </div>
+                        <div class="radial-ring text-xs font-black text-emerald-400" style="--ring-color: #10b981; --ring-pct: 75;">
+                            <span>75%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION PRODUK DIGITAL & MENTORING (TETAP TERSEDIA) -->
+            <div class="space-y-4 pt-3 border-t border-slate-800">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
@@ -1034,37 +1259,38 @@
     </main>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-2 z-40 flex justify-around items-center">
-        <button id="m-nav-catalog" class="mobile-nav-btn active flex flex-col items-center gap-1 text-[10px] font-semibold text-brand-400">
+    <!-- App Bottom Navigation Dock with Center Elevated FAB (Matches Image 1) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 z-40 px-3 py-1 flex items-center justify-between bottom-dock">
+        <!-- 1. Beranda -->
+        <button type="button" id="m-nav-catalog" onclick="window.kdSwitchTab('catalog')" class="mobile-nav-btn active flex flex-col items-center justify-center w-14 py-1 text-brand-400 font-bold transition">
             <i data-lucide="layout-grid" class="w-5 h-5"></i>
-            Katalog
+            <span class="text-[10px] mt-0.5">Beranda</span>
         </button>
-        <button id="m-nav-leaderboard" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <i data-lucide="trophy" class="w-5 h-5 text-amber-400"></i>
-            Peringkat
+
+        <!-- 2. Peringkat -->
+        <button type="button" id="m-nav-leaderboard" onclick="window.kdSwitchTab('leaderboard')" class="mobile-nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white font-medium transition">
+            <i data-lucide="trophy" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-0.5">Peringkat</span>
         </button>
-        <button id="m-nav-ugc" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-            UGC
+
+        <!-- 3. Center Elevated Glowing Floating Action Button (FAB) -->
+        <div class="relative flex flex-col items-center -top-1">
+            <button type="button" id="m-fab-create" onclick="window.kdSwitchTab('ugc')" class="bottom-fab-button flex flex-col items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition" title="Mulai Buat Video AI">
+                <i data-lucide="sparkles" class="w-6 h-6 animate-pulse"></i>
+            </button>
+            <span class="text-[9px] font-black text-cyan-400 -mt-2 tracking-wider uppercase">BUAT</span>
+        </div>
+
+        <!-- 4. Tutorial -->
+        <button type="button" id="m-nav-tutorial" onclick="window.kdSwitchTab('tutorial')" class="mobile-nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white font-medium transition">
+            <i data-lucide="play-circle" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-0.5">Tutorial</span>
         </button>
-        <button id="m-nav-flow" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <i data-lucide="sparkles" class="w-5 h-5 text-emerald-400"></i>
-            Flow
-        </button>
-        <button id="m-nav-drama" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <i data-lucide="clapperboard" class="w-5 h-5"></i>
-            Drama
-        </button>
-        <button id="m-nav-tutorial" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <i data-lucide="play-circle" class="w-5 h-5 text-indigo-400"></i>
-            Tutorial
-        </button>
-        <button id="m-nav-history" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <div class="relative">
-                <i data-lucide="history" class="w-5 h-5"></i>
-                <span id="m-history-badge" class="hidden absolute -top-1 -right-2 px-1 py-0.2 bg-brand-500 text-white rounded-full text-[8px] font-bold">0</span>
-            </div>
-            Riwayat
+
+        <!-- 5. Akun -->
+        <button type="button" id="m-nav-account" onclick="window.kdOpenProfileModal()" class="mobile-nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white font-medium transition">
+            <i data-lucide="user" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-0.5">Akun</span>
         </button>
     </nav>
 
