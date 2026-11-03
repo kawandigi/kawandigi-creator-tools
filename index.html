@@ -49,6 +49,8 @@
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Identity Services (GIS) for Google OAuth Sign-in -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-500 selection:text-white">
@@ -57,7 +59,7 @@
     <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             <!-- Logo & Branding (Compact on mobile) -->
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink cursor-pointer" id="btn-brand-home" title="Kembali ke Katalog Tools">
                 <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-lg shadow-brand-500/25 object-cover flex-shrink-0">
                 <div class="min-w-0">
                     <h1 class="text-sm sm:text-lg font-black tracking-tight flex items-center gap-1.5 flex-nowrap">
@@ -70,17 +72,25 @@
 
             <!-- Desktop Navigation Tabs -->
             <nav class="hidden md:flex items-center gap-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 flex-shrink-0">
-                <button id="nav-ugc" class="nav-tab active px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                <button id="nav-catalog" class="nav-tab active px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-brand-400"></i>
+                    Katalog Tools
+                </button>
+                <button id="nav-ugc" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="shopping-bag" class="w-4 h-4"></i>
                     UGC Affiliate
                 </button>
                 <button id="nav-flow" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
-                    Studio Google Flow
+                    Google Flow
                 </button>
                 <button id="nav-drama" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="clapperboard" class="w-4 h-4"></i>
-                    AI Drama Series
+                    AI Drama
+                </button>
+                <button id="nav-tutorial" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
+                    Tutorial
                 </button>
                 <button id="nav-license" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="key" class="w-4 h-4"></i>
@@ -88,14 +98,27 @@
                 </button>
             </nav>
 
-            <!-- Right Controls: History, API Key & Theme -->
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <!-- Right Controls: Auth, Admin, History, API Key & Theme -->
+            <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+                <!-- User Profile / Google Sign-in Button -->
+                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-300 transition" title="Akun Pengguna & Paket Langganan">
+                    <img id="auth-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="hidden w-5 h-5 rounded-full object-cover">
+                    <i id="auth-default-icon" data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i>
+                    <span id="auth-user-name" class="text-[11px] sm:text-xs font-bold hidden sm:inline">Masuk</span>
+                </button>
+
+                <!-- Admin Console Button -->
+                <button id="btn-header-admin" class="p-1.5 sm:px-2 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 transition flex items-center gap-1 text-xs font-semibold" title="Console Admin KawanDigi">
+                    <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span class="hidden lg:inline text-[11px] font-bold">Admin</span>
+                </button>
+
                 <button id="btn-open-history" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Buka Riwayat Project (Maks 20 Project)">
                     <i data-lucide="history" class="w-3.5 h-3.5 text-brand-400"></i>
                     <span class="font-bold">Riwayat</span>
                     <span id="history-counter-badge" class="px-1.5 py-0.2 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/40 text-[10px] font-bold">0</span>
                 </button>
-                <button id="btn-api-key-modal" class="flex items-center gap-1.5 text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition whitespace-nowrap" title="Pengaturan Layanan AI">
+                <button id="btn-api-key-modal" class="flex items-center gap-1.5 text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition whitespace-nowrap" title="Pengaturan Layanan AI">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>
                     <span id="api-status-text" class="text-[11px] sm:text-xs font-semibold">API Key</span>
                 </button>
@@ -110,11 +133,87 @@
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-8">
 
         <!-- ========================================== -->
+        <!-- TAB 0: KATALOG TOOLS & PRODUK (DEFAULT VIEW) -->
+        <!-- ========================================== -->
+        <section id="section-catalog" class="tab-content active space-y-6 sm:space-y-8">
+            <!-- Welcome Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-brand-950/70 to-slate-900 border border-brand-500/30 rounded-2xl p-5 sm:p-7 relative overflow-hidden shadow-xl">
+                <div class="relative z-10 max-w-3xl space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-bold border border-brand-500/30">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                        <span>KawanDigi Creator Studio Suite</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
+                        Katalog Tools AI & Layanan Creator
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+                        Pilih tool produksi AI yang ingin Anda gunakan, tonton video tutorial panduan, atau miliki lisensi VIP dan paket mentoring untuk melejitkan komisi affiliate & views konten Anda.
+                    </p>
+                </div>
+                <!-- Background Glow -->
+                <div class="absolute -right-16 -top-16 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            </div>
+
+            <!-- Section 1: AI Tools Collection -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="layout-grid" class="w-5 h-5 text-brand-400"></i>
+                            Koleksi Tools AI KawanDigi
+                        </h3>
+                        <p class="text-xs text-slate-400">Pilih tool untuk mulai membuat konten video dan naskah otomatis</p>
+                    </div>
+                    <span id="catalog-tools-count" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                        5 Tools
+                    </span>
+                </div>
+
+                <!-- Dynamic Grid for Tools -->
+                <div id="catalog-tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+            </div>
+
+            <!-- Section 2: Digital Products & Services Store -->
+            <div class="space-y-4 pt-4 border-t border-slate-800">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="shopping-bag" class="w-5 h-5 text-amber-400"></i>
+                            Produk Digital & Mentoring Eksklusif
+                        </h3>
+                        <p class="text-xs text-slate-400">Tingkatkan hasil dengan lisensi lifetime, paket API siap pakai, atau kelas privat mentoring</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        Official Store
+                    </span>
+                </div>
+
+                <!-- Dynamic Grid for Digital Products -->
+                <div id="catalog-products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
         <!-- TAB 1: AI UGC AFFILIATE VIDEO CREATOR -->
         <!-- ========================================== -->
-        <section id="section-ugc" class="tab-content active space-y-4 sm:space-y-6">
-            <!-- Hero Banner -->
-            <div class="bg-gradient-to-r from-brand-900/40 via-purple-900/30 to-slate-900 border border-brand-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden">
+        <section id="section-ugc" class="tab-content hidden space-y-4 sm:space-y-6">
+            <!-- Mobile Collapsible Bar for Tool Info -->
+            <div class="md:hidden flex justify-between items-center bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-300">
+                <div class="flex items-center gap-2 font-bold text-white text-xs">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 text-brand-400"></i>
+                    AI UGC Affiliate Video Creator
+                </div>
+                <button type="button" id="btn-toggle-ugc-banner" class="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1 bg-brand-500/10 px-2.5 py-1 rounded-lg border border-brand-500/30">
+                    <span id="btn-toggle-ugc-text">Panduan Tool ▾</span>
+                </button>
+            </div>
+
+            <!-- Hero Banner (Hidden by default on mobile to save vertical space) -->
+            <div id="ugc-hero-banner" class="hidden md:block bg-gradient-to-r from-brand-900/40 via-purple-900/30 to-slate-900 border border-brand-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden transition-all duration-300">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 text-[10px] sm:text-xs font-bold mb-2 sm:mb-3 border border-brand-500/30">
                         <i data-lucide="zap" class="w-3.5 h-3.5"></i>
@@ -364,174 +463,146 @@
 
 
         <!-- ========================================== -->
-        <!-- TAB: STUDIO GOOGLE FLOW (VEO WORKSPACE)    -->
-        <!-- ========================================== -->
         <!-- TAB: STUDIO GOOGLE FLOW (VEO AI VIDEO)    -->
         <!-- ========================================== -->
-        <section id="section-flow" class="tab-content hidden space-y-4">
-            <!-- Top Bar with status & quick actions -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/30">
-                        <i data-lucide="video" class="w-5 h-5"></i>
+        <section id="section-flow" class="tab-content hidden space-y-6">
+            <!-- Hero Card: Google Flow (Veo) -->
+            <div class="bg-gradient-to-r from-emerald-950/70 via-slate-900 to-teal-950/70 border border-emerald-500/30 rounded-2xl p-6 sm:p-8 shadow-xl">
+                <div class="max-w-3xl space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Google DeepMind • 100% Bebas Biaya</span>
                     </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                            Studio Google Flow (Veo)
-                            <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">100% Gratis</span>
-                        </h3>
-                        <p class="text-xs text-slate-400">Pilih prompt di panel kiri, lalu paste (<kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-emerald-300 font-mono">Ctrl + V</kbd>) di Google Flow.</p>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                        Google Flow (VideoFX by Veo)
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Generator video AI sinematik resmi dari Google DeepMind. Cukup salin prompt dari KawanDigi Studio, tempel di Google Flow, dan render video 10 detik kualitas FHD 1080p secara gratis tanpa perlu kartu kredit.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition transform active:scale-95">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                            <span>Buka Google Flow (Tab Baru)</span>
+                        </a>
+                        <button type="button" id="btn-open-flow-popup" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-sm rounded-xl flex items-center gap-2 transition">
+                            <i data-lucide="columns-2" class="w-4 h-4 text-emerald-400"></i>
+                            <span>Buka Mode Berdampingan</span>
+                        </button>
                     </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="btn-open-flow-popup" class="text-xs px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition transform active:scale-95" title="Buka Google Flow di jendela samping otomatis">
-                        <i data-lucide="columns-2" class="w-4 h-4"></i>
-                        <span>Buka Jendela Berdampingan</span>
-                    </button>
-                    <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="text-xs px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold flex items-center gap-1.5 transition" title="Buka di tab terpisah">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Tab Penuh
-                    </a>
                 </div>
             </div>
 
-            <!-- Main Workspace Split: Left (Prompt Drawer) + Right (Studio Hub & Companion) -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[640px]">
-                <!-- Left Panel: Prompt Drawer (5 Cols) -->
-                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col overflow-hidden shadow-sm">
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-800 mb-3">
-                        <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                            <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
-                            Daftar Prompt Video Siap Pakai
-                        </span>
-                        <span id="flow-prompt-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
-                            0 Adegan
-                        </span>
-                    </div>
-
-                    <!-- Scrollable Prompts List -->
-                    <div id="flow-prompt-list" class="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[750px]">
-                        <!-- Empty state if no campaign generated yet -->
-                        <div id="flow-empty-prompts" class="text-center py-16 text-slate-500 space-y-2">
-                            <i data-lucide="clapperboard" class="w-10 h-10 mx-auto text-slate-600"></i>
-                            <p class="text-xs font-semibold text-slate-400">Belum Ada Prompt Video</p>
-                            <p class="text-[11px] text-slate-500 max-w-xs mx-auto">Generate prompt di tab <strong>UGC Affiliate</strong> terlebih dahulu, prompt 10 detik per adegan akan otomatis tersusun rapi di sini!</p>
-                            <button type="button" onclick="document.getElementById('nav-ugc').click()" class="mt-2 px-3 py-1.5 bg-brand-600/30 hover:bg-brand-600/50 text-brand-300 border border-brand-500/40 rounded-lg text-xs font-bold transition">
-                                Buka Tab UGC Affiliate
-                            </button>
-                        </div>
-                    </div>
+            <!-- Alternative AI Video Engines Grid -->
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        <i data-lucide="layers" class="w-5 h-5 text-indigo-400"></i>
+                        Pilihan Generator Video AI Alternatif
+                    </h3>
+                    <p class="text-xs text-slate-400">Prompt KawanDigi 100% kompatibel dan siap pakai di seluruh generator video AI terkemuka berikut:</p>
                 </div>
 
-                <!-- Right Panel: Studio Video Hub & Companion Workstation (7 Cols) -->
-                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-sm space-y-6">
-                    <!-- Top Section: Google Security Notice & Primary Action -->
-                    <div class="space-y-4">
-                        <div class="bg-gradient-to-r from-emerald-950/60 via-slate-950 to-emerald-950/40 border border-emerald-500/40 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                            <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/30 flex-shrink-0">
-                                    <i data-lucide="sparkles" class="w-6 h-6"></i>
-                                </div>
-                                <div class="space-y-2 flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <h4 class="text-base font-bold text-white flex items-center gap-2">
-                                            Google Flow (VideoFX by Google DeepMind)
-                                        </h4>
-                                        <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">Resmi Bebas Biaya</span>
-                                    </div>
-                                    <p class="text-xs text-slate-300 leading-relaxed">
-                                        Google Flow adalah generator video AI sinematik resmi dari Google DeepMind (bertenaga model Veo) yang menghasilkan video 10 detik beresolusi FHD 1080p secara gratis.
-                                    </p>
-                                    
-                                    <!-- Google Security Note -->
-                                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 space-y-1">
-                                        <p class="text-amber-300 font-semibold flex items-center gap-1.5">
-                                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                                            Mengapa Muncul Pesan "403 Terjadi Error" Jika di dalam Web?
-                                        </p>
-                                        <p class="leading-relaxed">
-                                            Google melarang login akun dan pembukaan situs VideoFX di dalam bingkai (*iframe*) situs web lain demi keamanan data akun Google pengguna (*anti-clickjacking policy*). Oleh karena itu, gunakan <strong>Mode Berdampingan</strong> di bawah ini agar terbuka langsung berdampingan dengan KawanDigi tanpa error 403!
-                                        </p>
-                                    </div>
-
-                                    <!-- Launch Button -->
-                                    <div class="pt-2 flex flex-wrap gap-2.5">
-                                        <button id="btn-flow-hero-popup" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition transform active:scale-95">
-                                            <i data-lucide="columns-2" class="w-4 h-4"></i>
-                                            <span>Buka Google Flow (Mode Berdampingan)</span>
-                                        </button>
-                                        <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs rounded-xl flex items-center gap-1.5 transition">
-                                            <i data-lucide="external-link" class="w-4 h-4"></i>
-                                            <span>Buka di Tab Baru</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3-Step Production Workflow Guide -->
-                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
-                            <h5 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                                <i data-lucide="workflow" class="w-4 h-4 text-brand-400"></i>
-                                Alur Kerja Produksi 3 Langkah Cepat
-                            </h5>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-                                <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-3 space-y-1.5">
-                                    <div class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-black flex items-center justify-center">1</div>
-                                    <h6 class="text-xs font-bold text-slate-200">Buka Studio</h6>
-                                    <p class="text-[11px] text-slate-400 leading-relaxed">Klik tombol hijau di atas untuk membuka Google Flow di jendela samping kanan layar Anda.</p>
-                                </div>
-                                <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-3 space-y-1.5">
-                                    <div class="w-6 h-6 rounded-lg bg-brand-500/20 text-brand-400 text-xs font-black flex items-center justify-center">2</div>
-                                    <h6 class="text-xs font-bold text-slate-200">Salin Prompt</h6>
-                                    <p class="text-[11px] text-slate-400 leading-relaxed">Klik tombol <strong>Salin Prompt</strong> pada kartu adegan di panel kiri. Prompt otomatis tersalin ke clipboard.</p>
-                                </div>
-                                <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-3 space-y-1.5">
-                                    <div class="w-6 h-6 rounded-lg bg-accent-500/20 text-accent-400 text-xs font-black flex items-center justify-center">3</div>
-                                    <h6 class="text-xs font-bold text-slate-200">Tempel & Generate</h6>
-                                    <p class="text-[11px] text-slate-400 leading-relaxed">Tekan <kbd class="px-1 py-0.5 bg-slate-800 border border-slate-700 rounded text-[9px] text-brand-300 font-mono">Ctrl + V</kbd> di Google Flow dan klik Generate Video!</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Alternative AI Video Tools -->
-                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Kling AI -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group">
+                        <div class="space-y-2">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                                    <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
-                                    Pilihan Alternatif AI Video Generator (Prompt Sama Persis):
-                                </span>
-                                <span class="text-[10px] text-slate-400">Kompatibel 100%</span>
+                                <span class="text-sm font-bold text-white group-hover:text-brand-300">⚡ Kling AI</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-emerald-400 border border-slate-700 font-semibold">Free Tier Harian</span>
                             </div>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                <a href="https://klingai.com" target="_blank" rel="noopener noreferrer" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl p-2.5 text-center transition group">
-                                    <p class="text-xs font-bold text-white group-hover:text-brand-300">⚡ Kling AI</p>
-                                    <p class="text-[10px] text-slate-400">Tier Gratis Harian</p>
-                                </a>
-                                <a href="https://hailuoai.video" target="_blank" rel="noopener noreferrer" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl p-2.5 text-center transition group">
-                                    <p class="text-xs font-bold text-white group-hover:text-brand-300">🌟 Hailuo (Minimax)</p>
-                                    <p class="text-[10px] text-slate-400">Gerakan Sangat Halus</p>
-                                </a>
-                                <a href="https://lumalabs.ai/dream-machine" target="_blank" rel="noopener noreferrer" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl p-2.5 text-center transition group">
-                                    <p class="text-xs font-bold text-white group-hover:text-brand-300">🎬 Luma Dream</p>
-                                    <p class="text-[10px] text-slate-400">Sinematik Realistis</p>
-                                </a>
-                                <a href="https://runwayml.com" target="_blank" rel="noopener noreferrer" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl p-2.5 text-center transition group">
-                                    <p class="text-xs font-bold text-white group-hover:text-brand-300">🚀 Runway Gen-3</p>
-                                    <p class="text-[10px] text-slate-400">Standar Industri</p>
-                                </a>
-                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Sangat realistis untuk gerakan talent manusia, ekspresi wajah, dan konsistensi fisik produk.</p>
+                        </div>
+                        <div class="pt-4">
+                            <a href="https://klingai.com" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Kling AI</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </a>
                         </div>
                     </div>
 
-                    <!-- Bottom Quick Help -->
-                    <div class="text-[11px] text-slate-400 flex items-center justify-between pt-3 border-t border-slate-800">
-                        <span class="flex items-center gap-1.5">
-                            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
-                            Prompt KawanDigi sudah diformat khusus: 9:16 vertikal, FHD, Talent & Naskah Bahasa Indonesia.
-                        </span>
-                        <button type="button" onclick="document.getElementById('nav-ugc').click()" class="text-brand-400 hover:text-brand-300 font-bold underline">
-                            Buat Storyboard Baru →
-                        </button>
+                    <!-- Hailuo / MiniMax -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-white group-hover:text-brand-300">🌟 Hailuo (MiniMax)</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-brand-300 border border-slate-700 font-semibold">Gerakan Sangat Halus</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Model video paling halus untuk transisi adegan, demonstrasi produk, dan efek pencahayaan estetik.</p>
+                        </div>
+                        <div class="pt-4">
+                            <a href="https://hailuoai.video" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Hailuo AI</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Runway Gen-3 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-white group-hover:text-brand-300">🚀 Runway Gen-3 Alpha</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700 font-semibold">Standar Industri</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Kontrol kamera sinematik tingkat lanjut (zoom, pan, tilt) dan render hyper-realistic.</p>
+                        </div>
+                        <div class="pt-4">
+                            <a href="https://runwayml.com" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Runway</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Luma Dream Machine -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-white group-hover:text-brand-300">🎬 Luma Dream Machine</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-purple-300 border border-slate-700 font-semibold">Sinematik Cepat</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Kecepatan render kilat dengan pemahaman fisika dunia nyata yang sangat akurat.</p>
+                        </div>
+                        <div class="pt-4">
+                            <a href="https://lumalabs.ai/dream-machine" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Luma Labs</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Pika Art -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-white group-hover:text-brand-300">✨ Pika.art (Pika 2.0)</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-sky-300 border border-slate-700 font-semibold">Efek Kreatif</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Spesialis efek visual dinamis, modifikasi objek, dan penyesuaian gaya kreatif.</p>
+                        </div>
+                        <div class="pt-4">
+                            <a href="https://pika.art" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Pika</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Vidu AI -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-white group-hover:text-brand-300">📹 Vidu AI</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-teal-300 border border-slate-700 font-semibold">Generasi Kilat</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-relaxed">Video resolusi tinggi 1080p dalam hitungan 30 detik proses render.</p>
+                        </div>
+                        <div class="pt-4">
+                            <a href="https://vidu.studio" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Vidu AI</span>
+                                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -541,18 +612,29 @@
         <!-- ========================================== -->
         <!-- TAB 2: AI DRAMA & MICRO-SERIES CREATOR -->
         <!-- ========================================== -->
-        <section id="section-drama" class="tab-content hidden space-y-6">
-            <!-- Hero Banner -->
-            <div class="bg-gradient-to-r from-accent-900/40 via-purple-900/30 to-slate-900 border border-accent-500/20 rounded-2xl p-6 relative overflow-hidden">
+        <section id="section-drama" class="tab-content hidden space-y-4 sm:space-y-6">
+            <!-- Mobile Collapsible Bar for Tool Info -->
+            <div class="md:hidden flex justify-between items-center bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-300">
+                <div class="flex items-center gap-2 font-bold text-white text-xs">
+                    <i data-lucide="clapperboard" class="w-4 h-4 text-accent-400"></i>
+                    AI Drama & Series Creator
+                </div>
+                <button type="button" id="btn-toggle-drama-banner" class="text-[11px] text-accent-400 hover:text-accent-300 font-semibold flex items-center gap-1 bg-accent-500/10 px-2.5 py-1 rounded-lg border border-accent-500/30">
+                    <span id="btn-toggle-drama-text">Panduan Tool ▾</span>
+                </button>
+            </div>
+
+            <!-- Hero Banner (Hidden by default on mobile) -->
+            <div id="drama-hero-banner" class="hidden md:block bg-gradient-to-r from-accent-900/40 via-purple-900/30 to-slate-900 border border-accent-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden transition-all duration-300">
                 <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent-500/20 text-accent-300 text-xs font-bold mb-3 border border-accent-500/30">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent-500/20 text-accent-300 text-[10px] sm:text-xs font-bold mb-2 sm:mb-3 border border-accent-500/30">
                         <i data-lucide="film" class="w-3.5 h-3.5"></i>
                         Micro-Drama & Sinetron Pendek TikTok / ReelShort
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+                    <h2 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
                         AI Drama & Series Creator
                     </h2>
-                    <p class="text-sm text-slate-300 leading-relaxed">
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
                         Hasilkan naskah drama pendek bersambung dengan <strong>Kunci Konsistensi Karakter (*Character Lock*)</strong> dan cliffhanger dramatis di akhir episode.
                     </p>
                 </div>
@@ -567,16 +649,16 @@
                             <i data-lucide="book-open" class="w-4 h-4 text-accent-500"></i>
                             Plot & Karakter Episode
                         </h3>
-                        <button type="button" id="btn-drama-preset-demo" class="text-[11px] font-semibold text-accent-400 hover:text-accent-300 bg-accent-500/10 hover:bg-accent-500/20 border border-accent-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1 transition" title="Ganti dengan contoh cerita drama viral lainnya">
+                        <button type="button" id="btn-drama-preset-demo" class="text-[11px] font-semibold text-accent-400 hover:text-accent-300 bg-accent-500/10 hover:bg-accent-500/20 border border-accent-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1 transition" title="Isi form otomatis dengan contoh cerita drama viral">
                             <i data-lucide="wand-2" class="w-3 h-3 text-accent-400"></i>
-                            Ganti Contoh
+                            Contoh Demo
                         </button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 mb-1.5">Judul Serial Drama:</label>
-                            <input type="text" id="drama-title" placeholder="Contoh: Rahasia Bos Menyamar" value="Rahasia Bos Menyamar" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500">
+                            <input type="text" id="drama-title" placeholder="Contoh: Rahasia Bos Menyamar" value="" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 mb-1.5">Episode Ke:</label>
@@ -689,6 +771,32 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB: VIDEO TUTORIAL & PANDUAN PRAKTIS     -->
+        <!-- ========================================== -->
+        <section id="section-tutorial" class="tab-content hidden space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950/70 to-slate-900 border border-indigo-500/20 rounded-2xl p-5 sm:p-7 shadow-lg">
+                <div class="max-w-2xl space-y-2">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
+                        <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
+                        <span>Pusat Pembelajaran Creator</span>
+                    </div>
+                    <h2 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+                        Video Panduan & Studi Kasus Viral
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Tonton langkah demi langkah membuat video affiliate laris 100% dari HP dan PC dengan KawanDigi Studio, trik prompt Google Flow, dan editing CapCut.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tutorials Dynamic Grid -->
+            <div id="tutorial-videos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Rendered dynamically by app.js -->
             </div>
         </section>
 
@@ -836,8 +944,12 @@
     </main>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-4 py-2 z-40 flex justify-around">
-        <button id="m-nav-ugc" class="mobile-nav-btn active flex flex-col items-center gap-1 text-[10px] font-semibold text-brand-400">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-2 z-40 flex justify-around items-center">
+        <button id="m-nav-catalog" class="mobile-nav-btn active flex flex-col items-center gap-1 text-[10px] font-semibold text-brand-400">
+            <i data-lucide="layout-grid" class="w-5 h-5"></i>
+            Katalog
+        </button>
+        <button id="m-nav-ugc" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
             <i data-lucide="shopping-bag" class="w-5 h-5"></i>
             UGC
         </button>
@@ -849,16 +961,16 @@
             <i data-lucide="clapperboard" class="w-5 h-5"></i>
             Drama
         </button>
+        <button id="m-nav-tutorial" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
+            <i data-lucide="play-circle" class="w-5 h-5 text-indigo-400"></i>
+            Tutorial
+        </button>
         <button id="m-nav-history" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
             <div class="relative">
                 <i data-lucide="history" class="w-5 h-5"></i>
                 <span id="m-history-badge" class="hidden absolute -top-1 -right-2 px-1 py-0.2 bg-brand-500 text-white rounded-full text-[8px] font-bold">0</span>
             </div>
             Riwayat
-        </button>
-        <button id="m-nav-license" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
-            <i data-lucide="key" class="w-5 h-5"></i>
-            Lisensi
         </button>
     </nav>
 
@@ -1070,6 +1182,404 @@
                         Prompt scene sudah otomatis tersalin ke clipboard. Begitu Google Flow terbuka, cukup tekan <strong>Ctrl + V</strong> lalu klik Generate.
                     </p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: USER PROFILE & DASHBOARD (GOOGLE)  -->
+    <!-- ========================================== -->
+    <div id="modal-user-profile" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button id="btn-close-profile-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Profile Header -->
+            <div class="flex items-center gap-3.5 mb-5 pb-4 border-b border-slate-800">
+                <img id="profile-avatar" src="assets/icons/favicon.png" alt="User Avatar" class="w-12 h-12 rounded-2xl border-2 border-brand-500/40 object-cover shadow-md">
+                <div class="min-w-0">
+                    <h3 id="profile-name" class="text-base font-bold text-white truncate">Member KawanDigi</h3>
+                    <p id="profile-email" class="text-xs text-slate-400 truncate">user@gmail.com</p>
+                    <span id="profile-status-badge" class="inline-block mt-1 px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] font-bold">
+                        Akun Aktif
+                    </span>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <!-- Active Subscription Card -->
+                <div class="bg-gradient-to-r from-brand-950/50 via-slate-950 to-slate-900 border border-brand-500/30 rounded-xl p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 text-[11px] font-semibold">Paket Langganan Aktif:</span>
+                        <span id="profile-plan-badge" class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
+                            VIP Master Lifetime
+                        </span>
+                    </div>
+                    <div class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
+                        <span id="profile-plan-name">Akses Penuh Semua Tools</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">
+                        Termasuk generator naskah UGC affiliate, AI Drama micro-series, dan ekspor prompt Google Flow tanpa batas.
+                    </p>
+                </div>
+
+                <!-- WhatsApp Configuration -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 flex items-center justify-between">
+                        <span>Nomor WhatsApp (Wajib untuk Update):</span>
+                        <span class="text-[10px] text-brand-400">Format: 08xx / 628xx</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="tel" id="profile-input-whatsapp" placeholder="Contoh: 081234567890" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500">
+                        <button type="button" id="btn-save-profile-whatsapp" class="px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-1">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i> Simpan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Google OAuth Login & Alternative Fallback -->
+                <div id="google-login-container" class="pt-2 border-t border-slate-800 space-y-2">
+                    <p class="text-[11px] text-slate-400">Opsi Masuk Akun Google:</p>
+                    <div id="g_id_signin_button" class="w-full flex justify-center"></div>
+                    <button type="button" id="btn-demo-google-login" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition">
+                        <i data-lucide="log-in" class="w-3.5 h-3.5 text-brand-400"></i>
+                        <span>Masuk Instan (Google Demo / Sekali Klik)</span>
+                    </button>
+                </div>
+
+                <!-- Logout Button -->
+                <div id="profile-logout-container" class="pt-2 border-t border-slate-800">
+                    <button type="button" id="btn-logout-user" class="w-full py-2 bg-rose-950/30 hover:bg-rose-900/40 border border-rose-800/40 text-rose-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <span>Keluar dari Akun</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: WHATSAPP PROMPT MODAL (SETELAH OAUTH) -->
+    <!-- ========================================== -->
+    <div id="modal-whatsapp-prompt" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-brand-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+            <div class="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold border border-brand-500/30 mx-auto">
+                <i data-lucide="message-square" class="w-6 h-6"></i>
+            </div>
+            
+            <div class="text-center space-y-1.5">
+                <h3 class="text-lg font-bold text-white">Satu Langkah Lagi!</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Terima kasih telah masuk dengan Google. Mohon lengkapi <strong>Nomor WhatsApp</strong> aktif Anda untuk mendapatkan notifikasi update tools baru dan info penawaran spesial.
+                </p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-slate-300">Nomor WhatsApp Anda:</label>
+                <input type="tel" id="input-wa-prompt" placeholder="Contoh: 081234567890" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                <p class="text-[10px] text-slate-500">Privasi Anda aman bersama kami. Data tidak akan dibagikan ke pihak ketiga.</p>
+            </div>
+
+            <button type="button" id="btn-submit-wa-prompt" class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-brand-500/20 flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Simpan & Lanjutkan ke Dashboard</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: ADMIN PIN VERIFICATION              -->
+    <!-- ========================================== -->
+    <div id="modal-admin-pin" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative space-y-4">
+            <button id="btn-close-admin-pin" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold border border-amber-500/30 mx-auto">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+
+            <div class="text-center space-y-1">
+                <h3 class="text-base font-bold text-white">Akses Console Admin</h3>
+                <p class="text-xs text-slate-400">Masukkan PIN Admin untuk mengelola member, kendali tools, dan toko.</p>
+            </div>
+
+            <div>
+                <input type="password" id="input-admin-pin" placeholder="PIN Admin (Default: kawandigi88)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white text-center tracking-widest font-mono focus:outline-none focus:border-amber-500">
+            </div>
+
+            <button type="button" id="btn-submit-admin-pin" class="w-full py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="unlock" class="w-4 h-4"></i>
+                <span>Buka Console Admin</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: ADMIN MANAGEMENT CONSOLE            -->
+    <!-- ========================================== -->
+    <div id="modal-admin-console" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-5xl w-full h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
+            <!-- Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold border border-amber-500/30">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            Console Admin KawanDigi
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">Authorized</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Kelola database member, feature flags, katalog produk, dan tutorial</p>
+                    </div>
+                </div>
+                <button id="btn-close-admin-console" class="text-slate-400 hover:text-white p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Admin Navigation Subtabs -->
+            <div class="bg-slate-950/70 border-b border-slate-800 px-4 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
+                <button type="button" id="btn-atab-members" class="admin-tab active px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <i data-lucide="users" class="w-4 h-4"></i> Data Member (<span id="admin-member-count">0</span>)
+                </button>
+                <button type="button" id="btn-atab-flags" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="toggle-left" class="w-4 h-4"></i> Kendali Tools (Feature Flags)
+                </button>
+                <button type="button" id="btn-atab-products" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Produk Digital Toko
+                </button>
+                <button type="button" id="btn-atab-tutorials" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="video" class="w-4 h-4"></i> Kelola Tutorial Video
+                </button>
+                <button type="button" id="btn-atab-settings" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Pengaturan
+                </button>
+            </div>
+
+            <!-- Admin Content Body -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                <!-- TAB 1: MEMBERS DATABASE -->
+                <div id="admin-section-members" class="admin-panel space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="users" class="w-4 h-4 text-amber-400"></i>
+                                Database Member & Follow-Up Penawaran
+                            </h4>
+                            <p class="text-xs text-slate-400">Kontak member langsung melalui WhatsApp atau Email dengan 1-klik</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btn-export-members-csv" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV (Excel)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search / Filter -->
+                    <div class="relative">
+                        <input type="text" id="admin-search-members" placeholder="Cari nama, email, atau nomor whatsapp member..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <!-- Members Table -->
+                    <div class="border border-slate-800 rounded-xl overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="p-3">Member</th>
+                                    <th class="p-3">WhatsApp</th>
+                                    <th class="p-3">Paket Langganan</th>
+                                    <th class="p-3">Bergabung</th>
+                                    <th class="p-3 text-right">Tindakan Penawaran</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-member-table-body" class="divide-y divide-slate-800/60 font-sans">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: FEATURE FLAGS (TOOLS ACCESSIBILITY) -->
+                <div id="admin-section-flags" class="admin-panel hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
+                                Kendali Visibilitas & Akses Tools
+                            </h4>
+                            <p class="text-xs text-slate-400">Aktifkan atau nonaktifkan tools untuk member. Tool yang belum siap dapat diset ke non-aktif.</p>
+                        </div>
+                    </div>
+
+                    <div id="admin-flags-list" class="space-y-3">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: DIGITAL PRODUCTS (STORE MANAGER) -->
+                <div id="admin-section-products" class="admin-panel hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="shopping-bag" class="w-4 h-4 text-brand-400"></i>
+                                Manajemen Produk Digital di Katalog
+                            </h4>
+                            <p class="text-xs text-slate-400">Tambah, ubah harga, banner, atau hapus produk yang ingin Anda jual ke member</p>
+                        </div>
+                        <button type="button" id="btn-add-digital-product" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Produk Baru
+                        </button>
+                    </div>
+
+                    <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB 4: TUTORIAL VIDEOS MANAGER -->
+                <div id="admin-section-tutorials" class="admin-panel hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
+                                Manajemen Video Tutorial
+                            </h4>
+                            <p class="text-xs text-slate-400">Kelola video YouTube panduan yang tampil pada tab Tutorial untuk member</p>
+                        </div>
+                        <button type="button" id="btn-add-tutorial-video" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Video Tutorial
+                        </button>
+                    </div>
+
+                    <div id="admin-tutorials-list" class="space-y-3">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB 5: ADMIN SETTINGS -->
+                <div id="admin-section-settings" class="admin-panel hidden space-y-5 max-w-lg">
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-bold text-white">Ganti PIN Keamanan Admin</h4>
+                        <p class="text-xs text-slate-400">Amankan console admin dari akses yang tidak berwenang.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="password" id="admin-new-pin" placeholder="PIN Baru (min 4 karakter)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <button type="button" id="btn-save-admin-pin" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl">Simpan PIN</button>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 space-y-2">
+                        <h4 class="text-sm font-bold text-white">Google OAuth Client ID</h4>
+                        <p class="text-xs text-slate-400">Masukkan Google Client ID dari Google Cloud Console untuk aktivasi Google Sign-In asli.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="admin-google-client-id" placeholder="xxxx.apps.googleusercontent.com" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono">
+                            <button type="button" id="btn-save-google-client-id" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: ADD / EDIT DIGITAL PRODUCT          -->
+    <!-- ========================================== -->
+    <div id="modal-product-editor" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            <button id="btn-close-product-editor" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 id="product-editor-title" class="text-base font-bold text-white">Tambah Produk Digital Baru</h3>
+            <input type="hidden" id="prod-id">
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Judul Produk / Layanan:</label>
+                    <input type="text" id="prod-title" placeholder="Contoh: Paket Lisensi VIP Lifetime" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Harga Jual (Rp):</label>
+                        <input type="number" id="prod-price" placeholder="199000" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Harga Asli Coret (Rp):</label>
+                        <input type="number" id="prod-orig-price" placeholder="499000" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Badge Tag Promo:</label>
+                        <input type="text" id="prod-badge" placeholder="Contoh: 🔥 Diskon 50%" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">URL Thumbnail / Banner:</label>
+                        <input type="text" id="prod-thumbnail" placeholder="assets/icons/logo.png" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Deskripsi Singkat:</label>
+                    <textarea id="prod-desc" rows="3" placeholder="Jelaskan manfaat produk ini bagi kreator..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white"></textarea>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Nomor WhatsApp Checkout:</label>
+                    <input type="tel" id="prod-wa" placeholder="081234567890" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" id="btn-save-product-editor" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl transition">
+                    Simpan Produk
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: ADD / EDIT TUTORIAL VIDEO           -->
+    <!-- ========================================== -->
+    <div id="modal-tutorial-editor" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            <button id="btn-close-tutorial-editor" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 id="tutorial-editor-title" class="text-base font-bold text-white">Tambah Video Tutorial Baru</h3>
+            <input type="hidden" id="tut-id">
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Judul Video Tutorial:</label>
+                    <input type="text" id="tut-title" placeholder="Contoh: Cara Riset Produk Terlaris Shopee" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Kategori:</label>
+                        <input type="text" id="tut-category" placeholder="Contoh: Affiliate / Google Flow" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Durasi Video (e.g. 08:25):</label>
+                        <input type="text" id="tut-duration" placeholder="08:25" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">YouTube Embed URL / Video Link:</label>
+                    <input type="text" id="tut-embed" placeholder="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                    <p class="text-[10px] text-slate-500 mt-1">Bisa format https://www.youtube.com/embed/VIDEO_ID atau link watch YouTube biasa.</p>
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Ringkasan / Catatan Penting:</label>
+                    <textarea id="tut-summary" rows="3" placeholder="Poin-poin penting yang dipelajari pada video ini..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white"></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" id="btn-save-tutorial-editor" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition">
+                    Simpan Tutorial
+                </button>
             </div>
         </div>
     </div>

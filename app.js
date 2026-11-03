@@ -33,6 +33,37 @@ import {
     exportHistoryJson, 
     formatRelativeTime 
 } from './modules/history_manager.js';
+import {
+    decodeJwtResponse,
+    getCurrentUser,
+    saveCurrentUser,
+    updateCurrentUserProfile,
+    logoutUser,
+    getMemberList,
+    upsertMemberRecord,
+    deleteMemberRecord,
+    generateWhatsAppOfferUrl,
+    generateEmailOfferUrl,
+    exportMembersToCsv,
+    getAdminPin,
+    setAdminPin,
+    verifyAdminPin,
+    getGoogleClientId,
+    saveGoogleClientId
+} from './modules/auth_manager.js';
+import {
+    getFeatureFlags,
+    toggleToolStatus,
+    isToolEnabled,
+    getDigitalProducts,
+    upsertDigitalProduct,
+    deleteDigitalProduct,
+    formatRupiah,
+    generateProductWaLink,
+    getTutorialVideos,
+    upsertTutorialVideo,
+    deleteTutorialVideo
+} from './modules/catalog_manager.js';
 
 // Global State
 let selectedUgcDuration = 10; // 10s Utama, 20s (2 Klip), 30s (3 Klip)
@@ -139,27 +170,47 @@ function initVideoTierModal() {
 function switchTab(tabId) {
     // Desktop Nav
     const desktopTabs = {
+        'catalog': document.getElementById('nav-catalog'),
         'ugc': document.getElementById('nav-ugc'),
         'flow': document.getElementById('nav-flow'),
         'drama': document.getElementById('nav-drama'),
+        'tutorial': document.getElementById('nav-tutorial'),
         'license': document.getElementById('nav-license')
     };
 
     // Mobile Nav
     const mobileTabs = {
+        'catalog': document.getElementById('m-nav-catalog'),
         'ugc': document.getElementById('m-nav-ugc'),
         'flow': document.getElementById('m-nav-flow'),
         'drama': document.getElementById('m-nav-drama'),
+        'tutorial': document.getElementById('m-nav-tutorial'),
         'license': document.getElementById('m-nav-license')
     };
 
     // Sections
     const sections = {
+        'catalog': document.getElementById('section-catalog'),
         'ugc': document.getElementById('section-ugc'),
         'flow': document.getElementById('section-flow'),
         'drama': document.getElementById('section-drama'),
+        'tutorial': document.getElementById('section-tutorial'),
         'license': document.getElementById('section-license')
     };
+
+    // Feature Flag protection
+    if (tabId === 'ugc' && !isToolEnabled('ugc')) {
+        showToast('Tool AI UGC Affiliate sedang dalam pemeliharaan/dinonaktifkan oleh Admin.', 'warning');
+        return;
+    }
+    if (tabId === 'drama' && !isToolEnabled('drama')) {
+        showToast('Tool AI Drama Series sedang dalam pemeliharaan/dinonaktifkan oleh Admin.', 'warning');
+        return;
+    }
+    if (tabId === 'flow' && !isToolEnabled('flow')) {
+        showToast('Studio Google Flow sedang dalam pemeliharaan/dinonaktifkan oleh Admin.', 'warning');
+        return;
+    }
 
     Object.keys(sections).forEach(id => {
         if (!sections[id]) return;
@@ -176,9 +227,14 @@ function switchTab(tabId) {
         }
     });
 
-    if (tabId === 'flow') {
-        populateGoogleFlowStudio(currentUgcCampaign);
+    if (tabId === 'catalog') {
+        renderCatalog();
+    } else if (tabId === 'tutorial') {
+        renderTutorials();
     }
+
+    // Smooth scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (window.lucide) window.lucide.createIcons();
 }
@@ -201,20 +257,30 @@ function openGoogleFlowPopup() {
 
 function initNavigation() {
     // Desktop Nav buttons
+    document.getElementById('nav-catalog')?.addEventListener('click', () => switchTab('catalog'));
     document.getElementById('nav-ugc')?.addEventListener('click', () => switchTab('ugc'));
     document.getElementById('nav-flow')?.addEventListener('click', () => switchTab('flow'));
     document.getElementById('nav-drama')?.addEventListener('click', () => switchTab('drama'));
+    document.getElementById('nav-tutorial')?.addEventListener('click', () => switchTab('tutorial'));
     document.getElementById('nav-license')?.addEventListener('click', () => switchTab('license'));
 
     // Mobile Nav buttons
+    document.getElementById('m-nav-catalog')?.addEventListener('click', () => switchTab('catalog'));
     document.getElementById('m-nav-ugc')?.addEventListener('click', () => switchTab('ugc'));
     document.getElementById('m-nav-flow')?.addEventListener('click', () => switchTab('flow'));
     document.getElementById('m-nav-drama')?.addEventListener('click', () => switchTab('drama'));
+    document.getElementById('m-nav-tutorial')?.addEventListener('click', () => switchTab('tutorial'));
     document.getElementById('m-nav-license')?.addEventListener('click', () => switchTab('license'));
 
     // Studio Google Flow side-by-side popup buttons
     document.getElementById('btn-open-flow-popup')?.addEventListener('click', openGoogleFlowPopup);
     document.getElementById('btn-flow-hero-popup')?.addEventListener('click', openGoogleFlowPopup);
+
+    // Brand logo returns to Catalog view
+    document.getElementById('btn-brand-home')?.addEventListener('click', () => switchTab('catalog'));
+
+    // Default view: Catalog
+    switchTab('catalog');
 }
 
 /**
@@ -2268,23 +2334,834 @@ function initHistoryManager() {
 
     updateHistoryBadge();
 
-    // Auto-restore project upon page refresh if a last active project exists!
-    const lastId = getLastActiveProjectId();
-    if (lastId) {
-        const lastProject = getHistoryById(lastId);
-        if (lastProject) {
-            loadProject(lastProject, true);
-            console.log(`[KawanDigi] Memulihkan project aktif dari riwayat: ${lastProject.title}`);
-        }
-    } else {
-        // Fallback: If no explicit lastId, load the latest item if available
-        const list = getHistory();
-        if (list.length > 0) {
-            loadProject(list[0], true);
-            console.log(`[KawanDigi] Memulihkan project terbaru dari riwayat: ${list[0].title}`);
-        }
+    // Start with a clean/fresh project slate upon refresh as requested by user.
+    // Existing projects remain fully accessible in the Riwayat drawer.
+    console.log('[KawanDigi] Kanvas bersih diinisialisasi. Riwayat tersimpan rapi di drawer.');
+}
+
+
+// =========================================================================
+// COLLAPSIBLE HERO BANNERS (MOBILE OPTIMIZATION)
+// =========================================================================
+function initCollapsibleBanners() {
+    // UGC Hero Banner Toggle
+    const btnToggleUgc = document.getElementById('btn-toggle-ugc-banner');
+    const ugcBanner = document.getElementById('ugc-hero-banner');
+    const ugcText = document.getElementById('btn-toggle-ugc-text');
+    if (btnToggleUgc && ugcBanner) {
+        btnToggleUgc.addEventListener('click', () => {
+            const isHidden = ugcBanner.classList.contains('hidden');
+            if (isHidden) {
+                ugcBanner.classList.remove('hidden');
+                if (ugcText) ugcText.textContent = 'Tutup Info ▴';
+            } else {
+                ugcBanner.classList.add('hidden');
+                if (ugcText) ugcText.textContent = 'Panduan Tool ▾';
+            }
+        });
+    }
+
+    // Drama Hero Banner Toggle
+    const btnToggleDrama = document.getElementById('btn-toggle-drama-banner');
+    const dramaBanner = document.getElementById('drama-hero-banner');
+    const dramaText = document.getElementById('btn-toggle-drama-text');
+    if (btnToggleDrama && dramaBanner) {
+        btnToggleDrama.addEventListener('click', () => {
+            const isHidden = dramaBanner.classList.contains('hidden');
+            if (isHidden) {
+                dramaBanner.classList.remove('hidden');
+                if (dramaText) dramaText.textContent = 'Tutup Info ▴';
+            } else {
+                dramaBanner.classList.add('hidden');
+                if (dramaText) dramaText.textContent = 'Panduan Tool ▾';
+            }
+        });
     }
 }
+
+// =========================================================================
+// CATALOG & STORE RENDERING
+// =========================================================================
+function renderCatalog() {
+    renderToolsCatalog();
+    renderProductsCatalog();
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function renderToolsCatalog() {
+    const grid = document.getElementById('catalog-tools-grid');
+    const countBadge = document.getElementById('catalog-tools-count');
+    if (!grid) return;
+
+    const tools = getFeatureFlags();
+    if (countBadge) countBadge.textContent = `${tools.length} Tools`;
+
+    grid.innerHTML = tools.map(tool => {
+        const enabled = tool.enabled;
+        const iconName = tool.icon || 'sparkles';
+        const badgeColor = enabled 
+            ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' 
+            : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+
+        const actionButton = enabled && tool.actionTab
+            ? `<button type="button" onclick="window.kdSwitchTab('${tool.actionTab}')" class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-brand-500/20 flex items-center justify-center gap-1.5 transition">
+                <span>Buka Tool</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+               </button>`
+            : `<button type="button" disabled class="w-full py-2.5 bg-slate-800 text-slate-500 cursor-not-allowed font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 border border-slate-700/60">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span>${tool.badge || 'Segera Hadir'}</span>
+               </button>`;
+
+        return `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition group shadow-sm ${!enabled ? 'opacity-75' : ''}">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold border border-brand-500/30">
+                            <i data-lucide="${iconName}" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeColor}">
+                            ${tool.badge}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-medium">${tool.category}</span>
+                        <h4 class="text-sm font-bold text-white group-hover:text-brand-300 transition">${tool.name}</h4>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">${tool.description}</p>
+                </div>
+                <div class="pt-4 border-t border-slate-800/80 mt-4">
+                    ${actionButton}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderProductsCatalog() {
+    const grid = document.getElementById('catalog-products-grid');
+    if (!grid) return;
+
+    const products = getDigitalProducts();
+    grid.innerHTML = products.map(prod => {
+        const waLink = generateProductWaLink(prod);
+        return `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-amber-500/40 transition group shadow-md">
+                <div class="space-y-3">
+                    <div class="relative w-full h-36 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center">
+                        <img src="${prod.thumbnail || 'assets/icons/logo.png'}" alt="${prod.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='assets/icons/logo.png'">
+                        ${prod.badge ? `<span class="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black shadow-md">${prod.badge}</span>` : ''}
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white group-hover:text-amber-300 transition leading-snug">${prod.title}</h4>
+                        <div class="flex items-baseline gap-2 mt-1.5">
+                            <span class="text-base font-black text-emerald-400">${formatRupiah(prod.price)}</span>
+                            ${prod.originalPrice ? `<span class="text-xs text-slate-500 line-through">${formatRupiah(prod.originalPrice)}</span>` : ''}
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">${prod.description}</p>
+                </div>
+                <div class="pt-4 border-t border-slate-800/80 mt-4">
+                    <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span>Beli via WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// =========================================================================
+// TUTORIALS RENDERING
+// =========================================================================
+function renderTutorials() {
+    const grid = document.getElementById('tutorial-videos-grid');
+    if (!grid) return;
+
+    const tutorials = getTutorialVideos();
+    grid.innerHTML = tutorials.map(tut => {
+        let embed = tut.embedUrl || '';
+        if (embed.includes('watch?v=')) {
+            embed = embed.replace('watch?v=', 'embed/');
+        }
+        return `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-indigo-500/40 transition group shadow-md">
+                <div>
+                    <div class="relative w-full aspect-video bg-black">
+                        <iframe src="${embed}" title="${tut.title}" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${tut.category || 'Tutorial'}</span>
+                            <span class="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${tut.duration || '08:00'}
+                            </span>
+                        </div>
+                        <h4 class="text-sm font-bold text-white group-hover:text-indigo-300 transition leading-snug">${tut.title}</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">${tut.summary || ''}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    if (window.lucide) window.lucide.createIcons();
+}
+
+// =========================================================================
+// USER AUTHENTICATION & GOOGLE OAUTH / GIS
+// =========================================================================
+function initAuthManager() {
+    updateHeaderAuthUI();
+
+    document.getElementById('btn-header-auth')?.addEventListener('click', () => {
+        openUserProfileModal();
+    });
+
+    document.getElementById('btn-close-profile-modal')?.addEventListener('click', () => {
+        document.getElementById('modal-user-profile')?.classList.add('hidden');
+    });
+
+    document.getElementById('btn-save-profile-whatsapp')?.addEventListener('click', () => {
+        const wa = document.getElementById('profile-input-whatsapp')?.value.trim();
+        if (!wa) {
+            showToast('Masukkan nomor WhatsApp yang valid.', 'warning');
+            return;
+        }
+        updateCurrentUserProfile({ whatsapp: wa });
+        showToast('Nomor WhatsApp profil berhasil diperbarui!', 'success');
+        updateHeaderAuthUI();
+    });
+
+    document.getElementById('btn-logout-user')?.addEventListener('click', () => {
+        logoutUser();
+        document.getElementById('modal-user-profile')?.classList.add('hidden');
+        updateHeaderAuthUI();
+        showToast('Anda telah keluar dari akun.', 'info');
+    });
+
+    document.getElementById('btn-submit-wa-prompt')?.addEventListener('click', () => {
+        const wa = document.getElementById('input-wa-prompt')?.value.trim();
+        if (!wa || wa.length < 8) {
+            showToast('Mohon masukkan nomor WhatsApp yang valid (min. 8 digit).', 'warning');
+            return;
+        }
+        updateCurrentUserProfile({ whatsapp: wa });
+        document.getElementById('modal-whatsapp-prompt')?.classList.add('hidden');
+        showToast('Nomor WhatsApp berhasil disimpan! Selamat datang di KawanDigi.', 'success');
+        updateHeaderAuthUI();
+    });
+
+    document.getElementById('btn-demo-google-login')?.addEventListener('click', () => {
+        const demoUser = {
+            id: 'g_' + Date.now(),
+            name: 'Kreator KawanDigi',
+            email: 'kreator@gmail.com',
+            picture: 'assets/icons/favicon.png',
+            whatsapp: '',
+            joinedAt: new Date().toISOString(),
+            subscription: {
+                plan: 'VIP Master Lifetime',
+                active: true
+            }
+        };
+        saveCurrentUser(demoUser);
+        document.getElementById('modal-user-profile')?.classList.add('hidden');
+        updateHeaderAuthUI();
+
+        if (!demoUser.whatsapp) {
+            document.getElementById('modal-whatsapp-prompt')?.classList.remove('hidden');
+        }
+        showToast('Berhasil masuk dengan akun Google Demo!', 'success');
+    });
+
+    initGoogleIdentityServices();
+}
+
+function updateHeaderAuthUI() {
+    const user = getCurrentUser();
+    const btn = document.getElementById('btn-header-auth');
+    const avatar = document.getElementById('auth-user-avatar');
+    const defaultIcon = document.getElementById('auth-default-icon');
+    const nameEl = document.getElementById('auth-user-name');
+
+    if (user && user.email) {
+        if (avatar) {
+            avatar.src = user.picture || 'assets/icons/favicon.png';
+            avatar.classList.remove('hidden');
+        }
+        if (defaultIcon) defaultIcon.classList.add('hidden');
+        if (nameEl) {
+            const firstName = (user.name || 'Member').split(' ')[0];
+            nameEl.textContent = firstName;
+        }
+        if (btn) btn.title = `Akun: ${user.name} (${user.email})`;
+    } else {
+        if (avatar) avatar.classList.add('hidden');
+        if (defaultIcon) defaultIcon.classList.remove('hidden');
+        if (nameEl) nameEl.textContent = 'Masuk';
+        if (btn) btn.title = 'Masuk Akun Google';
+    }
+}
+
+function openUserProfileModal() {
+    const modal = document.getElementById('modal-user-profile');
+    if (!modal) return;
+
+    const user = getCurrentUser();
+    const avatarEl = document.getElementById('profile-avatar');
+    const nameEl = document.getElementById('profile-name');
+    const emailEl = document.getElementById('profile-email');
+    const waInput = document.getElementById('profile-input-whatsapp');
+    const planBadge = document.getElementById('profile-plan-badge');
+    const planName = document.getElementById('profile-plan-name');
+    const logoutContainer = document.getElementById('profile-logout-container');
+
+    if (user && user.email) {
+        if (avatarEl) avatarEl.src = user.picture || 'assets/icons/favicon.png';
+        if (nameEl) nameEl.textContent = user.name || 'Member KawanDigi';
+        if (emailEl) emailEl.textContent = user.email;
+        if (waInput) waInput.value = user.whatsapp || '';
+        if (planBadge) planBadge.textContent = user.subscription?.plan || 'VIP Master Lifetime';
+        if (planName) planName.textContent = user.subscription?.plan || 'Akses Penuh Semua Tools';
+        if (logoutContainer) logoutContainer.classList.remove('hidden');
+    } else {
+        if (avatarEl) avatarEl.src = 'assets/icons/favicon.png';
+        if (nameEl) nameEl.textContent = 'Tamu / Belum Masuk';
+        if (emailEl) emailEl.textContent = 'Silakan masuk akun Google Anda di bawah.';
+        if (waInput) waInput.value = '';
+        if (planBadge) planBadge.textContent = 'Trial Pengunjung';
+        if (planName) planName.textContent = 'Fitur Terbatas';
+        if (logoutContainer) logoutContainer.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function initGoogleIdentityServices() {
+    const clientId = getGoogleClientId();
+    if (!clientId || !window.google?.accounts?.id) return;
+
+    try {
+        window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response) => {
+                const payload = decodeJwtResponse(response.credential);
+                if (payload) {
+                    const currentUser = getCurrentUser() || {};
+                    const user = {
+                        id: payload.sub,
+                        name: payload.name || 'Member Google',
+                        email: payload.email,
+                        picture: payload.picture || 'assets/icons/favicon.png',
+                        whatsapp: currentUser.whatsapp || '',
+                        joinedAt: currentUser.joinedAt || new Date().toISOString(),
+                        subscription: currentUser.subscription || { plan: 'VIP Master Lifetime' }
+                    };
+                    saveCurrentUser(user);
+                    updateHeaderAuthUI();
+                    document.getElementById('modal-user-profile')?.classList.add('hidden');
+
+                    if (!user.whatsapp) {
+                        document.getElementById('modal-whatsapp-prompt')?.classList.remove('hidden');
+                    }
+                    showToast(`Selamat datang, ${user.name}!`, 'success');
+                }
+            }
+        });
+
+        const btnContainer = document.getElementById('g_id_signin_button');
+        if (btnContainer) {
+            window.google.accounts.id.renderButton(btnContainer, {
+                theme: 'filled_blue',
+                size: 'large',
+                text: 'continue_with',
+                shape: 'pill',
+                width: 280
+            });
+        }
+    } catch (e) {
+        console.warn('[KawanDigi] Google Identity Services init error:', e);
+    }
+}
+
+// =========================================================================
+// ADMIN CONSOLE MANAGEMENT
+// =========================================================================
+function initAdminConsole() {
+    document.getElementById('btn-header-admin')?.addEventListener('click', () => {
+        document.getElementById('modal-admin-pin')?.classList.remove('hidden');
+        const pinInput = document.getElementById('input-admin-pin');
+        if (pinInput) {
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    });
+
+    document.getElementById('btn-close-admin-pin')?.addEventListener('click', () => {
+        document.getElementById('modal-admin-pin')?.classList.add('hidden');
+    });
+
+    document.getElementById('btn-submit-admin-pin')?.addEventListener('click', () => {
+        const pin = document.getElementById('input-admin-pin')?.value;
+        if (verifyAdminPin(pin)) {
+            document.getElementById('modal-admin-pin')?.classList.add('hidden');
+            openAdminConsole();
+        } else {
+            showToast('PIN Admin salah. Coba lagi.', 'error');
+        }
+    });
+
+    document.getElementById('btn-close-admin-console')?.addEventListener('click', () => {
+        document.getElementById('modal-admin-console')?.classList.add('hidden');
+    });
+
+    const atabs = {
+        'members': { btn: document.getElementById('btn-atab-members'), panel: document.getElementById('admin-section-members') },
+        'flags': { btn: document.getElementById('btn-atab-flags'), panel: document.getElementById('admin-section-flags') },
+        'products': { btn: document.getElementById('btn-atab-products'), panel: document.getElementById('admin-section-products') },
+        'tutorials': { btn: document.getElementById('btn-atab-tutorials'), panel: document.getElementById('admin-section-tutorials') },
+        'settings': { btn: document.getElementById('btn-atab-settings'), panel: document.getElementById('admin-section-settings') }
+    };
+
+    function switchAdminTab(targetTab) {
+        Object.keys(atabs).forEach(key => {
+            const item = atabs[key];
+            if (key === targetTab) {
+                item.panel?.classList.remove('hidden');
+                item.btn?.classList.add('active', 'bg-amber-500/20', 'text-amber-300', 'border', 'border-amber-500/30');
+                item.btn?.classList.remove('text-slate-400');
+            } else {
+                item.panel?.classList.add('hidden');
+                item.btn?.classList.remove('active', 'bg-amber-500/20', 'text-amber-300', 'border', 'border-amber-500/30');
+                item.btn?.classList.add('text-slate-400');
+            }
+        });
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    document.getElementById('btn-atab-members')?.addEventListener('click', () => {
+        switchAdminTab('members');
+        renderAdminMembers();
+    });
+    document.getElementById('btn-atab-flags')?.addEventListener('click', () => {
+        switchAdminTab('flags');
+        renderAdminFlags();
+    });
+    document.getElementById('btn-atab-products')?.addEventListener('click', () => {
+        switchAdminTab('products');
+        renderAdminProducts();
+    });
+    document.getElementById('btn-atab-tutorials')?.addEventListener('click', () => {
+        switchAdminTab('tutorials');
+        renderAdminTutorials();
+    });
+    document.getElementById('btn-atab-settings')?.addEventListener('click', () => {
+        switchAdminTab('settings');
+        loadAdminSettings();
+    });
+
+    document.getElementById('admin-search-members')?.addEventListener('input', (e) => {
+        renderAdminMembers(e.target.value);
+    });
+    document.getElementById('btn-export-members-csv')?.addEventListener('click', () => {
+        exportMembersToCsv();
+        showToast('Database member berhasil di-export ke CSV!', 'success');
+    });
+
+    document.getElementById('btn-save-admin-pin')?.addEventListener('click', () => {
+        const newPin = document.getElementById('admin-new-pin')?.value;
+        if (setAdminPin(newPin)) {
+            showToast('PIN Admin berhasil diperbarui!', 'success');
+            document.getElementById('admin-new-pin').value = '';
+        } else {
+            showToast('PIN minimal 4 karakter.', 'warning');
+        }
+    });
+
+    document.getElementById('btn-save-google-client-id')?.addEventListener('click', () => {
+        const cid = document.getElementById('admin-google-client-id')?.value;
+        saveGoogleClientId(cid);
+        showToast('Google Client ID berhasil disimpan!', 'success');
+        initGoogleIdentityServices();
+    });
+
+    document.getElementById('btn-add-digital-product')?.addEventListener('click', () => {
+        openProductEditor();
+    });
+    document.getElementById('btn-close-product-editor')?.addEventListener('click', () => {
+        document.getElementById('modal-product-editor')?.classList.add('hidden');
+    });
+    document.getElementById('btn-save-product-editor')?.addEventListener('click', saveProductFromEditor);
+
+    document.getElementById('btn-add-tutorial-video')?.addEventListener('click', () => {
+        openTutorialEditor();
+    });
+    document.getElementById('btn-close-tutorial-editor')?.addEventListener('click', () => {
+        document.getElementById('modal-tutorial-editor')?.classList.add('hidden');
+    });
+    document.getElementById('btn-save-tutorial-editor')?.addEventListener('click', saveTutorialFromEditor);
+}
+
+function openAdminConsole() {
+    document.getElementById('modal-admin-console')?.classList.remove('hidden');
+    renderAdminMembers();
+    renderAdminFlags();
+    renderAdminProducts();
+    renderAdminTutorials();
+    loadAdminSettings();
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function renderAdminMembers(filter = '') {
+    const tbody = document.getElementById('admin-member-table-body');
+    const badgeCount = document.getElementById('admin-member-count');
+    if (!tbody) return;
+
+    let members = getMemberList();
+    if (badgeCount) badgeCount.textContent = members.length;
+
+    if (filter) {
+        const q = filter.toLowerCase();
+        members = members.filter(m => 
+            (m.name || '').toLowerCase().includes(q) || 
+            (m.email || '').toLowerCase().includes(q) || 
+            (m.whatsapp || '').includes(q)
+        );
+    }
+
+    if (members.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Tidak ada member yang cocok dengan pencarian.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = members.map(m => {
+        const waPromo = generateWhatsAppOfferUrl(m.whatsapp, m.name, 'promo');
+        const waTut = generateWhatsAppOfferUrl(m.whatsapp, m.name, 'tutorial');
+        const emailUrl = generateEmailOfferUrl(m.email, m.name, 'promo');
+        const dateStr = m.joinedAt ? new Date(m.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+
+        return `
+            <tr class="hover:bg-slate-800/40 transition">
+                <td class="p-3">
+                    <div class="font-bold text-white">${m.name}</div>
+                    <div class="text-[11px] text-slate-400 font-mono">${m.email}</div>
+                </td>
+                <td class="p-3 font-mono text-emerald-400">
+                    ${m.whatsapp || '<span class="text-slate-500 text-[10px] italic">Belum diisi</span>'}
+                </td>
+                <td class="p-3">
+                    <span class="px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] font-bold">
+                        ${m.plan || 'Free Trial'}
+                    </span>
+                </td>
+                <td class="p-3 text-[11px] text-slate-400">${dateStr}</td>
+                <td class="p-3 text-right">
+                    <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                        ${m.whatsapp ? `
+                            <a href="${waPromo}" target="_blank" class="px-2 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Penawaran Promo via WA">
+                                <i data-lucide="message-square" class="w-3 h-3"></i> WA Promo
+                            </a>
+                            <a href="${waTut}" target="_blank" class="px-2 py-1 bg-teal-600/30 hover:bg-teal-600/50 text-teal-300 border border-teal-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Info Tutorial Baru via WA">
+                                <i data-lucide="video" class="w-3 h-3"></i> WA Info
+                            </a>
+                        ` : ''}
+                        <a href="${emailUrl}" class="px-2 py-1 bg-brand-600/30 hover:bg-brand-600/50 text-brand-300 border border-brand-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Email Penawaran">
+                            <i data-lucide="mail" class="w-3 h-3"></i> Email
+                        </a>
+                        <button type="button" onclick="window.kdDeleteMember('${m.email}')" class="p-1 hover:text-rose-400 text-slate-500 transition" title="Hapus Member">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function renderAdminFlags() {
+    const list = document.getElementById('admin-flags-list');
+    if (!list) return;
+
+    const flags = getFeatureFlags();
+    list.innerHTML = flags.map(f => {
+        return `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-slate-900 text-brand-400 flex items-center justify-center font-bold border border-slate-800">
+                        <i data-lucide="${f.icon || 'sparkles'}" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h5 class="text-xs font-bold text-white">${f.name}</h5>
+                            <span class="text-[9px] px-1.5 py-0.2 rounded-full ${f.enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}">${f.category}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 max-w-lg mt-0.5">${f.description}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-[10px] font-bold ${f.enabled ? 'text-emerald-400' : 'text-slate-500'}">
+                        ${f.enabled ? 'AKTIF (Dapat Diakses)' : 'NON-AKTIF (Segera Hadir)'}
+                    </span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" ${f.enabled ? 'checked' : ''} onchange="window.kdToggleFlag('${f.id}', this.checked)" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function renderAdminProducts() {
+    const list = document.getElementById('admin-products-list');
+    if (!list) return;
+
+    const products = getDigitalProducts();
+    list.innerHTML = products.map(p => {
+        return `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                <div class="flex items-start gap-3">
+                    <img src="${p.thumbnail || 'assets/icons/logo.png'}" class="w-16 h-16 rounded-lg object-cover border border-slate-800 flex-shrink-0" onerror="this.src='assets/icons/logo.png'">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <h5 class="text-xs font-bold text-white truncate">${p.title}</h5>
+                        </div>
+                        <div class="text-xs font-bold text-emerald-400 mt-1">${formatRupiah(p.price)}</div>
+                        <p class="text-[11px] text-slate-400 line-clamp-2 mt-1">${p.description}</p>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-slate-800 flex items-center justify-end gap-2">
+                    <button type="button" onclick="window.kdEditProduct('${p.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg flex items-center gap-1 transition">
+                        <i data-lucide="edit" class="w-3.5 h-3.5"></i> Edit
+                    </button>
+                    <button type="button" onclick="window.kdDeleteProduct('${p.id}')" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 text-xs font-semibold rounded-lg flex items-center gap-1 transition">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function renderAdminTutorials() {
+    const list = document.getElementById('admin-tutorials-list');
+    if (!list) return;
+
+    const tutorials = getTutorialVideos();
+    list.innerHTML = tutorials.map(t => {
+        return `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <h5 class="text-xs font-bold text-white">${t.title}</h5>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">${t.category || 'Tutorial'}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">${t.duration || ''}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 max-w-xl">${t.summary || ''}</p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button type="button" onclick="window.kdEditTutorial('${t.id}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg flex items-center gap-1 transition">
+                        <i data-lucide="edit" class="w-3.5 h-3.5"></i> Edit
+                    </button>
+                    <button type="button" onclick="window.kdDeleteTutorial('${t.id}')" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 text-xs font-semibold rounded-lg flex items-center gap-1 transition">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function loadAdminSettings() {
+    const cidInput = document.getElementById('admin-google-client-id');
+    if (cidInput) cidInput.value = getGoogleClientId();
+}
+
+function openProductEditor(product = null) {
+    const modal = document.getElementById('modal-product-editor');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('product-editor-title');
+    const idEl = document.getElementById('prod-id');
+    const titleIn = document.getElementById('prod-title');
+    const priceIn = document.getElementById('prod-price');
+    const origPriceIn = document.getElementById('prod-orig-price');
+    const badgeIn = document.getElementById('prod-badge');
+    const thumbIn = document.getElementById('prod-thumbnail');
+    const descIn = document.getElementById('prod-desc');
+    const waIn = document.getElementById('prod-wa');
+
+    if (product) {
+        if (titleEl) titleEl.textContent = 'Edit Produk Digital';
+        idEl.value = product.id;
+        titleIn.value = product.title || '';
+        priceIn.value = product.price || '';
+        origPriceIn.value = product.originalPrice || '';
+        badgeIn.value = product.badge || '';
+        thumbIn.value = product.thumbnail || '';
+        descIn.value = product.description || '';
+        waIn.value = product.contactWa || '';
+    } else {
+        if (titleEl) titleEl.textContent = 'Tambah Produk Digital Baru';
+        idEl.value = '';
+        titleIn.value = '';
+        priceIn.value = '';
+        origPriceIn.value = '';
+        badgeIn.value = '🔥 Promo Baru';
+        thumbIn.value = 'assets/icons/logo.png';
+        descIn.value = '';
+        waIn.value = '081234567890';
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function saveProductFromEditor() {
+    const id = document.getElementById('prod-id')?.value;
+    const title = document.getElementById('prod-title')?.value.trim();
+    const price = parseInt(document.getElementById('prod-price')?.value, 10) || 0;
+    const origPrice = parseInt(document.getElementById('prod-orig-price')?.value, 10) || 0;
+    const badge = document.getElementById('prod-badge')?.value.trim();
+    const thumbnail = document.getElementById('prod-thumbnail')?.value.trim() || 'assets/icons/logo.png';
+    const description = document.getElementById('prod-desc')?.value.trim();
+    const contactWa = document.getElementById('prod-wa')?.value.trim();
+
+    if (!title || price <= 0) {
+        showToast('Judul dan harga jual wajib diisi.', 'warning');
+        return;
+    }
+
+    upsertDigitalProduct({
+        id: id || undefined,
+        title,
+        price,
+        originalPrice: origPrice,
+        badge,
+        thumbnail,
+        description,
+        contactWa
+    });
+
+    document.getElementById('modal-product-editor')?.classList.add('hidden');
+    renderAdminProducts();
+    renderProductsCatalog();
+    showToast('Produk digital berhasil disimpan ke katalog!', 'success');
+}
+
+function openTutorialEditor(tutorial = null) {
+    const modal = document.getElementById('modal-tutorial-editor');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('tutorial-editor-title');
+    const idEl = document.getElementById('tut-id');
+    const titleIn = document.getElementById('tut-title');
+    const catIn = document.getElementById('tut-category');
+    const durIn = document.getElementById('tut-duration');
+    const embedIn = document.getElementById('tut-embed');
+    const sumIn = document.getElementById('tut-summary');
+
+    if (tutorial) {
+        if (titleEl) titleEl.textContent = 'Edit Video Tutorial';
+        idEl.value = tutorial.id;
+        titleIn.value = tutorial.title || '';
+        catIn.value = tutorial.category || '';
+        durIn.value = tutorial.duration || '';
+        embedIn.value = tutorial.embedUrl || '';
+        sumIn.value = tutorial.summary || '';
+    } else {
+        if (titleEl) titleEl.textContent = 'Tambah Video Tutorial Baru';
+        idEl.value = '';
+        titleIn.value = '';
+        catIn.value = 'Affiliate & Flow';
+        durIn.value = '08:00';
+        embedIn.value = '';
+        sumIn.value = '';
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function saveTutorialFromEditor() {
+    const id = document.getElementById('tut-id')?.value;
+    const title = document.getElementById('tut-title')?.value.trim();
+    const category = document.getElementById('tut-category')?.value.trim() || 'Tutorial';
+    const duration = document.getElementById('tut-duration')?.value.trim() || '05:00';
+    let embedUrl = document.getElementById('tut-embed')?.value.trim();
+    const summary = document.getElementById('tut-summary')?.value.trim();
+
+    if (!title || !embedUrl) {
+        showToast('Judul dan embed link YouTube wajib diisi.', 'warning');
+        return;
+    }
+
+    if (embedUrl.includes('watch?v=')) {
+        embedUrl = embedUrl.replace('watch?v=', 'embed/');
+    }
+
+    upsertTutorialVideo({
+        id: id || undefined,
+        title,
+        category,
+        duration,
+        embedUrl,
+        summary
+    });
+
+    document.getElementById('modal-tutorial-editor')?.classList.add('hidden');
+    renderAdminTutorials();
+    renderTutorials();
+    showToast('Video tutorial berhasil disimpan!', 'success');
+}
+
+// Window global helper bindings for inline onclick handlers
+window.kdSwitchTab = switchTab;
+window.kdDeleteMember = (email) => {
+    if (confirm(`Hapus member ${email}?`)) {
+        deleteMemberRecord(email);
+        renderAdminMembers();
+        showToast('Member dihapus.', 'info');
+    }
+};
+window.kdToggleFlag = (toolId, state) => {
+    toggleToolStatus(toolId, state);
+    renderAdminFlags();
+    renderToolsCatalog();
+    showToast(`Status tool diperbarui: ${state ? 'Aktif' : 'Non-Aktif'}`, 'info');
+};
+window.kdEditProduct = (prodId) => {
+    const p = getDigitalProducts().find(item => item.id === prodId);
+    if (p) openProductEditor(p);
+};
+window.kdDeleteProduct = (prodId) => {
+    if (confirm('Hapus produk ini dari katalog toko?')) {
+        deleteDigitalProduct(prodId);
+        renderAdminProducts();
+        renderProductsCatalog();
+        showToast('Produk dihapus.', 'info');
+    }
+};
+window.kdEditTutorial = (tutId) => {
+    const t = getTutorialVideos().find(item => item.id === tutId);
+    if (t) openTutorialEditor(t);
+};
+window.kdDeleteTutorial = (tutId) => {
+    if (confirm('Hapus tutorial ini?')) {
+        deleteTutorialVideo(tutId);
+        renderAdminTutorials();
+        renderTutorials();
+        showToast('Tutorial dihapus.', 'info');
+    }
+};
+
 
 // =========================================================================
 // APPLICATION INITIALIZATION
@@ -2307,6 +3184,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initLicenseManager();
     initThemeToggle();
     initHistoryManager();
+    initCollapsibleBanners();
+    initAuthManager();
+    initAdminConsole();
+    renderCatalog();
 
     // Check if API Key is configured on launch
     if (!getSavedApiKey() && getActiveProvider() !== 'custom') {
