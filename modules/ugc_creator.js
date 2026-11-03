@@ -166,7 +166,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     }
 
     try {
-        const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-3.8-flash');
+        const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-2.5-flash', null, null, { jsonMode: true, disableThinking: true });
         if (rawResponse) {
             const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -230,7 +230,7 @@ Ekstrak informasi yang terbaca dari seluruh gambar dan kembalikan HANYA format J
         data: img.base64
     }));
 
-    const rawResponse = await callGemini(prompt, systemPrompt, 'gemini-3.8-flash', null, inlineDataPayload);
+    const rawResponse = await callGemini(prompt, systemPrompt, 'gemini-2.5-flash', null, inlineDataPayload, { jsonMode: true, disableThinking: true });
 
     if (rawResponse) {
         const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
@@ -254,7 +254,7 @@ export const scrapeProductFromUrl = fetchPageContent;
 /**
  * Sanitize & translate any rogue English terms to pure natural Bahasa Indonesia
  */
-function sanitizeIndonesianUgc(campaign, targetDuration = 10) {
+function sanitizeIndonesianUgc(campaign, targetDuration = 10, includeTextOverlay = false) {
     if (!campaign || !Array.isArray(campaign.scenes)) return campaign;
     const dur = parseInt(targetDuration, 10) || campaign.duration_seconds || 10;
     const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
@@ -339,7 +339,21 @@ function sanitizeIndonesianUgc(campaign, targetDuration = 10) {
 
             // Ensure explicit Indonesian voiceover directive is present
             if (!/voiceover bahasa indonesia/i.test(s.google_flow_prompt) && s.voiceover_script) {
-                s.google_flow_prompt += `. Voiceover bahasa Indonesia: "${s.voiceover_script}". Percakapan dan teks wajib Bahasa Indonesia, tanpa kata bahasa Inggris.`;
+                s.google_flow_prompt += `. Voiceover bahasa Indonesia: "${s.voiceover_script}". Percakapan wajib Bahasa Indonesia, tanpa kata bahasa Inggris.`;
+            }
+
+            // Opsi Teks Overlay: Jika dimatikan (default), bersihkan teks subtitle dan kunci ke clean footage
+            if (!includeTextOverlay) {
+                s.google_flow_prompt = s.google_flow_prompt
+                    .replace(/\.?\s*Teks subtitle di layar[^.]*(\.|$)/gi, '.')
+                    .replace(/\.?\s*Teks overlay[^.]*(\.|$)/gi, '.')
+                    .replace(/dan tulisan/gi, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                if (!/clean footage|tanpa teks di layar/i.test(s.google_flow_prompt)) {
+                    s.google_flow_prompt += ' Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks.';
+                }
+                s.caption_overlay = '-';
             }
         }
     });
@@ -412,6 +426,17 @@ function sanitizeIndonesianUgc(campaign, targetDuration = 10) {
             if (p.google_flow_prompt && !/voiceover bahasa indonesia/i.test(p.google_flow_prompt) && p.narasi_part) {
                 p.google_flow_prompt += `. Voiceover bahasa Indonesia: "${p.narasi_part}". Wajib Bahasa Indonesia, tanpa watermark.`;
             }
+            if (!includeTextOverlay && p.google_flow_prompt) {
+                p.google_flow_prompt = p.google_flow_prompt
+                    .replace(/\.?\s*Teks subtitle di layar[^.]*(\.|$)/gi, '.')
+                    .replace(/\.?\s*Teks overlay[^.]*(\.|$)/gi, '.')
+                    .replace(/dan tulisan/gi, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                if (!/clean footage|tanpa teks di layar/i.test(p.google_flow_prompt)) {
+                    p.google_flow_prompt += ' Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks.';
+                }
+            }
         });
     }
 
@@ -466,7 +491,7 @@ function parseJsonSafely(rawText) {
  * Instant Fast Synthesizer: Generates ideal UGC campaign directly from existing form inputs
  * Guarantees zero latency and 0% failure even if external AI connection fluctuates
  */
-function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints, videoDuration, tone, talentPreference = 'auto' }) {
+function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints, videoDuration, tone, talentPreference = 'auto', includeTextOverlay = false }) {
     const dur = parseInt(videoDuration, 10) || 10;
     const pName = productName || 'Produk Rekomendasi Pilihan';
     const sPoints = sellingPoints || 'Kualitas terbaik, nyaman digunakan, dan sangat terjangkau.';
@@ -499,6 +524,18 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
         scene6Visual = `Talent pria tersenyum ramah menunjuk ke arah bawah video mengajak penonton klik keranjang.`;
     }
 
+    const makeFlowPrompt = (tLabel, visual, camera, vo, sub) => {
+        let p = `Video UGC vertikal 9:16 kualitas FHD. Talent: ${tLabel}. Visual adegan: ${visual} Pergerakan kamera: ${camera}. Voiceover bahasa Indonesia: "${vo}".`;
+        if (includeTextOverlay && sub) {
+            p += ` Teks subtitle di layar: "${sub}".`;
+        } else {
+            p += ` Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks.`;
+        }
+        p += ` Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`;
+        return p;
+    };
+    const makeOverlay = (sub) => (includeTextOverlay && sub ? sub : '-');
+
     const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
     let parts = [];
     let scenes = [];
@@ -512,7 +549,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 1: HOOK & PROBLEM RELATABLE",
                 duration_seconds: 10,
                 scenes_included: "Adegan 1 - 2 (0–10 Detik)",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Tangan membuka paket kemasan rapi ${pName} di atas meja kayu minimalis, membandingkannya dengan produk lama yang rusak.` : `Talent menunjukkan ${pName} ke arah kamera dengan ekspresi penasaran lalu membandingkannya dengan produk lama.`} Pergerakan kamera: Zoom cepat ke arah produk lalu pan perlahan ke kiri. Voiceover bahasa Indonesia: "Lagi cari ${pName} yang beneran berkualitas dan awet? Sering kecewa sama produk gampang rusak?". Teks subtitle di layar: "Lagi Cari Yang Awet?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
+                google_flow_prompt: makeFlowPrompt(
+                    talentLabel,
+                    isFaceless ? `Tangan membuka paket kemasan rapi ${pName} di atas meja kayu minimalis, membandingkannya dengan produk lama yang rusak.` : `Talent menunjukkan ${pName} ke arah kamera dengan ekspresi penasaran lalu membandingkannya dengan produk lama.`,
+                    "Zoom cepat ke arah produk lalu pan perlahan ke kiri",
+                    `Lagi cari ${pName} yang beneran berkualitas dan awet? Sering kecewa sama produk gampang rusak?`,
+                    "Lagi Cari Yang Awet?"
+                ),
                 narasi_part: `Lagi cari ${pName} yang beneran berkualitas dan awet? Sering kecewa sama produk gampang rusak?`
             },
             {
@@ -520,7 +563,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 2: PENGENALAN PRODUK & DEMONSTRASI FITUR",
                 duration_seconds: 10,
                 scenes_included: "Adegan 3 - 4 (10–20 Detik)",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Close up tangan memperlihatkan tekstur bahan ${pName}, jahitan rapi, dan mendemonstrasikan keunggulan praktisnya.` : `Talent memperlihatkan detail fisik ${pName} lalu memperagakan keunggulannya dengan senyum puas.`} Pergerakan kamera: Kamera statis jarak dekat fokus detail bahan lalu maju perlahan. Voiceover bahasa Indonesia: "Untung langsung ketemu ${pName} ini! ${sPoints.slice(0, 80)}.". Teks subtitle di layar: "Solusi Terbaik & Awet!". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
+                google_flow_prompt: makeFlowPrompt(
+                    talentLabel,
+                    isFaceless ? `Close up tangan memperlihatkan tekstur bahan ${pName}, jahitan rapi, dan mendemonstrasikan keunggulan praktisnya.` : `Talent memperlihatkan detail fisik ${pName} lalu memperagakan keunggulannya dengan senyum puas.`,
+                    "Kamera statis jarak dekat fokus detail bahan lalu maju perlahan",
+                    `Untung langsung ketemu ${pName} ini! ${sPoints.slice(0, 80)}.`,
+                    "Solusi Terbaik & Awet!"
+                ),
                 narasi_part: `Untung langsung ketemu ${pName} ini! ${sPoints.slice(0, 80)}.`
             },
             {
@@ -528,7 +577,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 3: HONEST REVIEW & CALL TO ACTION",
                 duration_seconds: 10,
                 scenes_included: "Adegan 5 - 6 (20–30 Detik)",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Flatlay estetik ${pName} bersama perlengkapan harian di ruangan terang, lalu tangan menunjuk ke arah tombol keranjang di bawah video.` : `Talent tersenyum puas mengacungkan jempol sambil mengenakan ${pName}, lalu menunjuk ramah ke arah bawah video.`} Pergerakan kamera: Orbit pan mengelilingi objek lalu sejajar mata fokus ke bawah. Voiceover bahasa Indonesia: "Dipakai seharian tetep nyaman dan bikin makin percaya diri! Yuk, langsung klik keranjang di bawah video ini ya!". Teks subtitle di layar: "Klik Keranjang di Bawah Video!". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
+                google_flow_prompt: makeFlowPrompt(
+                    talentLabel,
+                    isFaceless ? `Flatlay estetik ${pName} bersama perlengkapan harian di ruangan terang, lalu tangan menunjuk ke arah tombol keranjang di bawah video.` : `Talent tersenyum puas mengacungkan jempol sambil mengenakan ${pName}, lalu menunjuk ramah ke arah bawah video.`,
+                    "Orbit pan mengelilingi objek lalu sejajar mata fokus ke bawah",
+                    `Dipakai seharian tetep nyaman dan bikin makin percaya diri! Yuk, langsung klik keranjang di bawah video ini ya!`,
+                    "Klik Keranjang di Bawah Video!"
+                ),
                 narasi_part: `Dipakai seharian tetep nyaman dan bikin makin percaya diri! Yuk, langsung klik keranjang di bawah video ini ya!`
             }
         ];
@@ -543,8 +598,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene1Visual,
                 camera_movement: "Zoom cepat ke arah produk",
                 voiceover_script: `Lagi cari ${pName} yang beneran berkualitas dan awet?`,
-                caption_overlay: "Lagi Cari Yang Beneran Awet?",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene1Visual} Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: "Lagi cari ${pName} yang beneran berkualitas dan awet?". Teks subtitle di layar: "Lagi Cari Yang Beneran Awet?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Lagi Cari Yang Beneran Awet?"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene1Visual, "Zoom cepat ke arah produk", `Lagi cari ${pName} yang beneran berkualitas dan awet?`, "Lagi Cari Yang Beneran Awet?")
             },
             {
                 scene_number: 2,
@@ -555,8 +610,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene2Visual,
                 camera_movement: "Kamera bergerak perlahan ke kiri",
                 voiceover_script: `Sering banget kecewa beli produk yang gampang rusak padahal baru dipakai sebentar?`,
-                caption_overlay: "Sering Kecewa Cepat Rusak?",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene2Visual} Pergerakan kamera: Kamera bergerak perlahan ke kiri. Voiceover bahasa Indonesia: "Sering banget kecewa beli produk yang gampang rusak padahal baru dipakai sebentar?". Teks subtitle di layar: "Sering Kecewa?". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Sering Kecewa Cepat Rusak?"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene2Visual, "Kamera bergerak perlahan ke kiri", `Sering banget kecewa beli produk yang gampang rusak padahal baru dipakai sebentar?`, "Sering Kecewa?")
             },
             {
                 scene_number: 3,
@@ -567,8 +622,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: `Close-up detail fisik ${pName}, memperlihatkan jahitan, tekstur bahan, dan logo resmi dengan pencahayaan jelas.`,
                 camera_movement: "Kamera statis jarak dekat fokus detail bahan",
                 voiceover_script: `Untung sekarang nemu ${pName} ini, kualitas bahannya kerasa beda banget sejak pertama pegang!`,
-                caption_overlay: "Solusi Terbaik Buat Kamu!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Visual adegan: Close up detail bahan dan jahitan ${pName} sangat rapi. Pergerakan kamera: Kamera statis jarak dekat fokus detail bahan. Voiceover bahasa Indonesia: "Untung sekarang nemu ${pName} ini, kualitas bahannya kerasa beda banget sejak pertama pegang!". Teks subtitle di layar: "Solusi Terbaik!". Wajib Bahasa Indonesia, tanpa watermark.`
+                caption_overlay: makeOverlay("Solusi Terbaik Buat Kamu!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, `Close up detail bahan dan jahitan ${pName} sangat rapi.`, "Kamera statis jarak dekat fokus detail bahan", `Untung sekarang nemu ${pName} ini, kualitas bahannya kerasa beda banget sejak pertama pegang!`, "Solusi Terbaik!")
             },
             {
                 scene_number: 4,
@@ -579,8 +634,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene4Visual,
                 camera_movement: "Kamera maju perlahan ke arah objek",
                 voiceover_script: `${sPoints.slice(0, 90)}.`,
-                caption_overlay: "Keunggulan Nyata & Praktis!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene4Visual} Pergerakan kamera: Kamera maju perlahan ke arah objek. Voiceover bahasa Indonesia: "${sPoints.slice(0, 90)}.". Teks subtitle di layar: "Keunggulan Nyata!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Keunggulan Nyata & Praktis!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene4Visual, "Kamera maju perlahan ke arah objek", `${sPoints.slice(0, 90)}.`, "Keunggulan Nyata!")
             },
             {
                 scene_number: 5,
@@ -591,8 +646,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene5Visual,
                 camera_movement: "Kamera berputar mengelilingi model (orbit pan)",
                 voiceover_script: `Dipakai seharian bener-bener nyaman, adem, dan bikin makin percaya diri saat hangout!`,
-                caption_overlay: "Nyaman & Bikin Pede!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene5Visual} Pergerakan kamera: Kamera berputar mengelilingi model (orbit pan). Voiceover bahasa Indonesia: "Dipakai seharian bener-bener nyaman, adem, dan bikin makin percaya diri saat hangout!". Teks subtitle di layar: "Nyaman & Bikin Pede!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Nyaman & Bikin Pede!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene5Visual, "Kamera berputar mengelilingi model (orbit pan)", `Dipakai seharian bener-bener nyaman, adem, dan bikin makin percaya diri saat hangout!`, "Nyaman & Bikin Pede!")
             },
             {
                 scene_number: 6,
@@ -603,8 +658,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene6Visual,
                 camera_movement: "Kamera sejajar mata fokus menunjuk ke bawah",
                 voiceover_script: `Yuk, langsung klik keranjang di bawah video ini sebelum kehabisan promonya ya!`,
-                caption_overlay: "Klik Keranjang di Bawah Video!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene6Visual} Pergerakan kamera: Kamera sejajar mata fokus menunjuk ke bawah. Voiceover bahasa Indonesia: "Yuk, langsung klik keranjang di bawah video ini sebelum kehabisan promonya ya!". Teks subtitle di layar: "Klik Keranjang di Bawah!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Klik Keranjang di Bawah Video!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene6Visual, "Kamera sejajar mata fokus menunjuk ke bawah", `Yuk, langsung klik keranjang di bawah video ini sebelum kehabisan promonya ya!`, "Klik Keranjang di Bawah!")
             }
         ];
     } else if (dur === 20) {
@@ -615,7 +670,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 1: HOOK, PROBLEM & PENGENALAN SOLUSI",
                 duration_seconds: 10,
                 scenes_included: "Adegan 1 - 3 (0–10 Detik)",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Tangan memperlihatkan kemasan ${pName} di atas meja, unboxing rapi, dan membandingkannya dengan produk lama.` : `Menunjukkan ${pName} ke arah kamera dengan senyum ceria lalu membandingkannya antusias.`} Pergerakan kamera: Zoom cepat lalu pan ke kiri dan fokus detail bahan. Voiceover bahasa Indonesia: "Lagi cari ${pName} yang awet dan stylish? Sering kecewa sama produk gampang rusak? Untung nemu ini!". Teks subtitle di layar: "Solusi Awet & Stylish!". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
+                google_flow_prompt: makeFlowPrompt(
+                    talentLabel,
+                    isFaceless ? `Tangan memperlihatkan kemasan ${pName} di atas meja, unboxing rapi, dan membandingkannya dengan produk lama.` : `Menunjukkan ${pName} ke arah kamera dengan senyum ceria lalu membandingkannya antusias.`,
+                    "Zoom cepat lalu pan ke kiri dan fokus detail bahan",
+                    `Lagi cari ${pName} yang awet dan stylish? Sering kecewa sama produk gampang rusak? Untung nemu ini!`,
+                    "Solusi Awet & Stylish!"
+                ),
                 narasi_part: `Lagi cari ${pName} yang awet dan stylish? Sering kecewa sama produk gampang rusak? Untung nemu ini!`
             },
             {
@@ -623,7 +684,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 2: DEMONSTRASI, REVIEW & CALL TO ACTION",
                 duration_seconds: 10,
                 scenes_included: "Adegan 4 - 6 (10–20 Detik)",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Tangan mendemonstrasikan fitur ${pName}, flatlay estetik, lalu menunjuk ke arah bawah video.` : `Talent memperagakan cara pakai ${pName}, tersenyum puas mengacungkan jempol, lalu menunjuk ramah ke bawah video.`} Pergerakan kamera: Kamera maju perlahan, orbit pan, lalu sejajar mata fokus ke bawah. Voiceover bahasa Indonesia: "${sPoints.slice(0, 60)}. Dipakai seharian nyaman banget! Yuk klik keranjang di bawah video ya!". Teks subtitle di layar: "Klik Keranjang di Bawah!". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
+                google_flow_prompt: makeFlowPrompt(
+                    talentLabel,
+                    isFaceless ? `Tangan mendemonstrasikan fitur ${pName}, flatlay estetik, lalu menunjuk ke arah bawah video.` : `Talent memperagakan cara pakai ${pName}, tersenyum puas mengacungkan jempol, lalu menunjuk ramah ke bawah video.`,
+                    "Kamera maju perlahan, orbit pan, lalu sejajar mata fokus ke bawah",
+                    `${sPoints.slice(0, 60)}. Dipakai seharian nyaman banget! Yuk klik keranjang di bawah video ya!`,
+                    "Klik Keranjang di Bawah!"
+                ),
                 narasi_part: `${sPoints.slice(0, 60)}. Dipakai seharian nyaman banget! Yuk klik keranjang di bawah video ya!`
             }
         ];
@@ -638,8 +705,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene1Visual,
                 camera_movement: "Zoom cepat ke arah produk",
                 voiceover_script: `Beneran nemu ${pName} sebagus dan sekeren ini?`,
-                caption_overlay: "Beneran Sebagus Ini?",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene1Visual} Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: "Beneran nemu ${pName} sebagus dan sekeren ini?". Teks subtitle di layar: "Beneran Sebagus Ini?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Beneran Sebagus Ini?"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene1Visual, "Zoom cepat ke arah produk", `Beneran nemu ${pName} sebagus dan sekeren ini?`, "Beneran Sebagus Ini?")
             },
             {
                 scene_number: 2,
@@ -650,8 +717,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene2Visual,
                 camera_movement: "Kamera bergerak perlahan ke kiri",
                 voiceover_script: `Sering kecewa sama produk yang gampang rusak padahal baru dipakai?`,
-                caption_overlay: "Sering Kecewa Cepat Rusak?",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene2Visual} Pergerakan kamera: Kamera bergerak perlahan ke kiri. Voiceover bahasa Indonesia: "Sering kecewa sama produk yang gampang rusak padahal baru dipakai?". Teks subtitle di layar: "Sering Kecewa?". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Sering Kecewa Cepat Rusak?"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene2Visual, "Kamera bergerak perlahan ke kiri", `Sering kecewa sama produk yang gampang rusak padahal baru dipakai?`, "Sering Kecewa?")
             },
             {
                 scene_number: 3,
@@ -662,8 +729,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: `Close-up detail fisik ${pName}, memperlihatkan jahitan, tekstur bahan, dan logo resmi dengan pencahayaan jelas.`,
                 camera_movement: "Kamera statis jarak dekat fokus detail bahan",
                 voiceover_script: `Untung langsung ketemu ${pName} ini, bahannya beneran premium!`,
-                caption_overlay: "Solusi Terbaik Buat Kamu!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Visual adegan: Close up detail bahan dan jahitan ${pName} sangat rapi. Pergerakan kamera: Kamera statis jarak dekat fokus detail bahan. Voiceover bahasa Indonesia: "Untung langsung ketemu ${pName} ini, bahannya beneran premium!". Teks subtitle di layar: "Solusi Terbaik!". Wajib Bahasa Indonesia, tanpa watermark.`
+                caption_overlay: makeOverlay("Solusi Terbaik Buat Kamu!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, `Close up detail bahan dan jahitan ${pName} sangat rapi.`, "Kamera statis jarak dekat fokus detail bahan", `Untung langsung ketemu ${pName} ini, bahannya beneran premium!`, "Solusi Terbaik!")
             },
             {
                 scene_number: 4,
@@ -674,8 +741,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene4Visual,
                 camera_movement: "Kamera maju perlahan ke arah objek",
                 voiceover_script: `${sPoints.slice(0, 75)}.`,
-                caption_overlay: "Kualitas Nyata & Awet!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene4Visual} Pergerakan kamera: Kamera maju perlahan ke arah objek. Voiceover bahasa Indonesia: "${sPoints.slice(0, 75)}.". Teks subtitle di layar: "Kualitas Nyata!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Kualitas Nyata & Awet!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene4Visual, "Kamera maju perlahan ke arah objek", `${sPoints.slice(0, 75)}.`, "Kualitas Nyata!")
             },
             {
                 scene_number: 5,
@@ -686,8 +753,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene5Visual,
                 camera_movement: "Kamera berputar mengelilingi model (orbit pan)",
                 voiceover_script: `Dipakai seharian tetep nyaman dan bikin makin percaya diri!`,
-                caption_overlay: "Nyaman & Bikin Pede!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene5Visual} Pergerakan kamera: Kamera berputar mengelilingi model (orbit pan). Voiceover bahasa Indonesia: "Dipakai seharian tetep nyaman dan bikin makin percaya diri!". Teks subtitle di layar: "Nyaman & Bikin Pede!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Nyaman & Bikin Pede!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene5Visual, "Kamera berputar mengelilingi model (orbit pan)", `Dipakai seharian tetep nyaman dan bikin makin percaya diri!`, "Nyaman & Bikin Pede!")
             },
             {
                 scene_number: 6,
@@ -698,8 +765,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene6Visual,
                 camera_movement: "Kamera sejajar mata fokus menunjuk ke bawah",
                 voiceover_script: `Yuk, langsung klik keranjang di bawah video ini ya!`,
-                caption_overlay: "Klik Keranjang di Bawah Video!",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene6Visual} Pergerakan kamera: Kamera sejajar mata fokus menunjuk ke bawah. Voiceover bahasa Indonesia: "Yuk, langsung klik keranjang di bawah video ini ya!". Teks subtitle di layar: "Klik Keranjang di Bawah!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Klik Keranjang di Bawah Video!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene6Visual, "Kamera sejajar mata fokus menunjuk ke bawah", `Yuk, langsung klik keranjang di bawah video ini ya!`, "Klik Keranjang di Bawah!")
             }
         ];
     } else {
@@ -711,7 +778,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 1: HOOK & PENGENALAN SOLUSI LENGKAP",
                 duration_seconds: 10,
                 scenes_included: "Adegan 1 - 6 (0–10 Detik)",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Tangan memperlihatkan ${pName} secara estetik di atas meja, unboxing membuka kemasan rapi, demonstrasi detail bahan secara close-up.` : `Menunjukkan ${pName} ke arah kamera dengan senyum ceria dan gestur antusias.`} Pergerakan kamera: Zoom perlahan ke arah produk. Voiceover bahasa Indonesia: "Lagi cari ${pName} yang awet dan stylish? Ini solusinya!". Teks subtitle di layar: "Lagi Cari Yang Awet & Keren?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
+                google_flow_prompt: makeFlowPrompt(
+                    talentLabel,
+                    isFaceless ? `Tangan memperlihatkan ${pName} secara estetik di atas meja, unboxing membuka kemasan rapi, demonstrasi detail bahan secara close-up.` : `Menunjukkan ${pName} ke arah kamera dengan senyum ceria dan gestur antusias.`,
+                    "Zoom perlahan ke arah produk",
+                    `Lagi cari ${pName} yang awet dan stylish? Ini solusinya!`,
+                    "Lagi Cari Yang Awet & Keren?"
+                ),
                 narasi_part: `Lagi cari ${pName} yang awet dan stylish? Ini solusinya!`
             }
         ];
@@ -726,8 +799,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene1Visual,
                 camera_movement: "Zoom cepat ke arah produk",
                 voiceover_script: `Beneran nemu ${pName} sebagus ini?`,
-                caption_overlay: `Beneran Sebagus Ini?`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene1Visual} Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: "Beneran nemu ${pName} sebagus ini?". Teks subtitle di layar: "Beneran Sebagus Ini?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Beneran Sebagus Ini?"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene1Visual, "Zoom cepat ke arah produk", `Beneran nemu ${pName} sebagus ini?`, "Beneran Sebagus Ini?")
             },
             {
                 scene_number: 2,
@@ -738,8 +811,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene2Visual,
                 camera_movement: "Kamera bergerak perlahan ke kiri",
                 voiceover_script: `Sering kecewa sama produk yang gampang rusak?`,
-                caption_overlay: `Sering Kecewa Cepat Rusak?`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene2Visual} Pergerakan kamera: Kamera bergerak perlahan ke kiri. Voiceover bahasa Indonesia: "Sering kecewa sama produk yang gampang rusak?". Teks subtitle di layar: "Sering Kecewa?". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Sering Kecewa Cepat Rusak?"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene2Visual, "Kamera bergerak perlahan ke kiri", `Sering kecewa sama produk yang gampang rusak?`, "Sering Kecewa?")
             },
             {
                 scene_number: 3,
@@ -750,8 +823,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: `Close-up detail fisik ${pName}, memperlihatkan jahitan, tekstur bahan, dan logo resmi dengan pencahayaan jelas.`,
                 camera_movement: "Kamera statis jarak dekat fokus detail bahan",
                 voiceover_script: `Untung langsung ketemu ${pName} ini!`,
-                caption_overlay: `Solusi Terbaik Buat Kamu!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Visual adegan: Close up detail bahan dan jahitan ${pName} sangat rapi. Pergerakan kamera: Kamera statis jarak dekat fokus detail bahan. Voiceover bahasa Indonesia: "Untung langsung ketemu ${pName} ini!". Teks subtitle di layar: "Solusi Terbaik!". Wajib Bahasa Indonesia, tanpa watermark.`
+                caption_overlay: makeOverlay("Solusi Terbaik Buat Kamu!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, `Close up detail bahan dan jahitan ${pName} sangat rapi.`, "Kamera statis jarak dekat fokus detail bahan", `Untung langsung ketemu ${pName} ini!`, "Solusi Terbaik!")
             },
             {
                 scene_number: 4,
@@ -762,8 +835,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene4Visual,
                 camera_movement: "Kamera maju perlahan ke arah objek",
                 voiceover_script: `${sPoints.slice(0, 70)}.`,
-                caption_overlay: `Kapasitas Lega & Awet!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene4Visual} Pergerakan kamera: Kamera maju perlahan ke arah objek. Voiceover bahasa Indonesia: "${sPoints.slice(0, 70)}.". Teks subtitle di layar: "Kapasitas Lega!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Kapasitas Lega & Awet!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene4Visual, "Kamera maju perlahan ke arah objek", `${sPoints.slice(0, 70)}.`, "Kapasitas Lega!")
             },
             {
                 scene_number: 5,
@@ -774,8 +847,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene5Visual,
                 camera_movement: "Kamera berputar mengelilingi model (orbit pan)",
                 voiceover_script: `Dipakai seharian tetep nyaman dan bikin makin percaya diri!`,
-                caption_overlay: `Nyaman & Bikin Pede!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene5Visual} Pergerakan kamera: Kamera berputar mengelilingi model (orbit pan). Voiceover bahasa Indonesia: "Dipakai seharian tetep nyaman dan bikin makin percaya diri!". Teks subtitle di layar: "Nyaman & Bikin Pede!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Nyaman & Bikin Pede!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene5Visual, "Kamera berputar mengelilingi model (orbit pan)", `Dipakai seharian tetep nyaman dan bikin makin percaya diri!`, "Nyaman & Bikin Pede!")
             },
             {
                 scene_number: 6,
@@ -786,8 +859,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 visual_description: scene6Visual,
                 camera_movement: "Kamera sejajar mata fokus menunjuk ke bawah",
                 voiceover_script: `Yuk, langsung klik keranjang di bawah video ini ya!`,
-                caption_overlay: `Klik Keranjang di Bawah Video!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene6Visual} Pergerakan kamera: Kamera sejajar mata fokus menunjuk ke bawah. Voiceover bahasa Indonesia: "Yuk, langsung klik keranjang di bawah video ini ya!". Teks subtitle di layar: "Klik Keranjang di Bawah!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
+                caption_overlay: makeOverlay("Klik Keranjang di Bawah Video!"),
+                google_flow_prompt: makeFlowPrompt(talentLabel, scene6Visual, "Kamera sejajar mata fokus menunjuk ke bawah", `Yuk, langsung klik keranjang di bawah video ini ya!`, "Klik Keranjang di Bawah!")
             }
         ];
     }
@@ -851,7 +924,8 @@ export async function generateUgcCampaign({
     tone = 'Casual & Ceria (Gen Z)',
     voiceGender = 'Cewek Ceria',
     talentPreference = 'auto',
-    imageAnalysis = null
+    imageAnalysis = null,
+    includeTextOverlay = false
 }) {
     // 1. License / Trial Check
     const access = hasToolAccess('ugc');
@@ -871,7 +945,7 @@ ATURAN WAJIB FORMAT FACELESS (TANPA MODEL WAJAH / FOKUS PRESENTASI PRODUK / UNBO
 - Visual adegan HARUS fokus penuh pada presentasi produk secara profesional & estetik.
 - Visual adegan harus berupa POV orang pertama (first-person POV): tangan unboxing membuka paket/kemasan, tangan memegang produk, demonstrasi close-up tekstur bahan dan fungsi secara detail, serta flatlay estetik di atas meja dengan pencahayaan alami kamar estetik.
 - Di seluruh scene dan "google_flow_prompt", WAJIB menggunakan struktur:
-  "Video UGC vertikal 9:16 kualitas FHD. Gaya: Faceless aesthetic product presentation, hands-only POV unboxing. Visual adegan: Tangan memperlihatkan [nama produk] secara estetik di atas meja minimalis, unboxing membuka kemasan rapi, demonstrasi detail bahan secara close-up... Pergerakan kamera: [pergerakan kamera]. Voiceover bahasa Indonesia: '[naskah suara]'. Teks subtitle di layar bahasa Indonesia: '[teks overlay]'. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark, tanpa menampakkan wajah model."
+  "Video UGC vertikal 9:16 kualitas FHD. Gaya: Faceless aesthetic product presentation, hands-only POV unboxing. Visual adegan: Tangan memperlihatkan [nama produk] secara estetik di atas meja minimalis, unboxing membuka kemasan rapi, demonstrasi detail bahan secara close-up... Pergerakan kamera: [pergerakan kamera]. Voiceover bahasa Indonesia: '[naskah suara]'. ${includeTextOverlay ? "Teks subtitle di layar bahasa Indonesia: '[teks overlay]'." : "Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks."} Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark, tanpa menampakkan wajah model."
 `;
     } else if (talentPreference === 'female') {
         talentDirective = `
@@ -892,11 +966,25 @@ GAYA VISUAL & MODEL (BEBAS / REKOMENDASI AI):
 `;
     }
 
+    const textOverlayRule = includeTextOverlay ? `
+ATURAN TEKS/SUBTITLE DI LAYAR VIDEO (OPSI PENGGUNA DIAKTIFKAN):
+- Pengguna memilih menyertakan teks overlay di dalam video.
+- "google_flow_prompt" menyertakan: "Teks subtitle di layar bahasa Indonesia: '[teks overlay ringkas]'".
+- Field "caption_overlay" diisi teks safe-zone ringkas yang akan muncul.
+` : `
+ATURAN WAJIB PROMPT VIDEO BERSIH TANPA TEKS (DEFAULT: CLEAN FOOTAGE):
+- DILARANG KERAS memunculkan tulisan teks, subtitle, safe-zone caption, watermark, tipografi, logo, atau banner overlay di dalam video!
+- Generator video AI menghasilkan rekaman jauh lebih jernih dan bebas glitch bila tidak dipaksa menulis teks. Karena itu rekaman video HARUS 100% BERSIH (CLEAN FOOTAGE).
+- Di setiap "google_flow_prompt", WAJIB gunakan akhiran: "Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks. Wajib percakapan Bahasa Indonesia, tanpa kata bahasa Inggris."
+- Field "caption_overlay" WAJIB diisi "-" (strip) karena footage bersih tanpa tulisan di layar.
+`;
+
     // 2. Construct prompt for Gemini according to Kawan Digital Skill v2.0
     const systemPrompt = `Kamu adalah Kawan Digital, asisten pembuat konten affiliate dan review berbahasa Indonesia kelas dunia.
 Tugasmu adalah menghasilkan Storyboard UGC ideal (Hook, Problem, Pengenalan, Demonstrasi, Honest Review, CTA), prompt video Google Flow / Veo per klip 10 detik, dan 3 template caption siap pakai untuk TikTok & Shopee Video.
 
 ${talentDirective}
+${textOverlayRule}
 
 ATURAN STRUKTUR SCENE (WAJIB TEPAT 6 TAHAPAN INI, BERAPAPUN DURASINYA):
 1. Hook — menarik perhatian di detik awal
@@ -942,7 +1030,9 @@ ${partCount === 1 ? `
 ATURAN BAHASA & PROMPT GOOGLE FLOW (WAJIB 100% BAHASA INDONESIA):
 - SEMUA teks output HARUS 100% BAHASA INDONESIA! DILARANG KERAS MENGGUNAKAN BAHASA INGGRIS!
 - Agar AI video generator menghasilkan video dengan talent Indonesia dan audio bahasa Indonesia (bukan bahasa Inggris), setiap "google_flow_prompt" WAJIB MENGIKUTI STRUKTUR SPESIFIK BERIKUT:
-  "Video UGC vertikal 9:16 kualitas FHD. Talent: wanita muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: [deskripsi visual detail adegan dalam bahasa Indonesia]. Pergerakan kamera: [kamera bahasa Indonesia]. Voiceover bahasa Indonesia: '[naskah suara adegan ini]'. Teks subtitle di layar bahasa Indonesia: '[teks overlay]'. Wajib percakapan dan tulisan Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark."
+  ${includeTextOverlay 
+    ? `"Video UGC vertikal 9:16 kualitas FHD. Talent: [deskripsi talent]. Visual adegan: [deskripsi visual detail adegan dalam bahasa Indonesia]. Pergerakan kamera: [kamera bahasa Indonesia]. Voiceover bahasa Indonesia: '[naskah suara adegan ini]'. Teks subtitle di layar bahasa Indonesia: '[teks overlay]'. Wajib percakapan dan tulisan Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark."` 
+    : `"Video UGC vertikal 9:16 kualitas FHD. Talent: [deskripsi talent]. Visual adegan: [deskripsi visual detail adegan dalam bahasa Indonesia]. Pergerakan kamera: [kamera bahasa Indonesia]. Voiceover bahasa Indonesia: '[naskah suara adegan ini]'. Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks. Wajib percakapan Bahasa Indonesia, tanpa kata bahasa Inggris."`}
 
 ATURAN PERGERAKAN KAMERA (WAJIB BAHASA INDONESIA):
 Contoh: "Zoom cepat ke arah produk", "Kamera bergerak ke kiri perlahan, close-up sedang", "Kamera statis jarak dekat fokus detail bahan", "Kamera meregangkan produk secara dekat", "Kamera berputar mengelilingi model (orbit pan)", "Kamera sejajar mata fokus menunjuk ke bawah".
@@ -1018,7 +1108,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
       "visual_description": "Deskripsi visual adegan 1",
       "camera_movement": "Zoom cepat ke arah produk",
       "voiceover_script": "Naskah voiceover adegan 1",
-      "caption_overlay": "Teks safe zone",
+      "caption_overlay": "${includeTextOverlay ? 'Teks safe zone' : '-'}",
       "google_flow_prompt": "Video UGC vertikal 9:16 kualitas FHD..."
     }
   ],
@@ -1057,14 +1147,15 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     userPrompt += `- Gaya Bahasa / Tone: ${tone}\n`;
     userPrompt += `- Tipe Voiceover: ${voiceGender}\n`;
     userPrompt += `- Preferensi Model / Talent: ${talentPreference.toUpperCase()} (${talentPreference === 'faceless' ? 'WAJIB FACELESS / TANPA MODEL WAJAH / FOKUS UNBOXING HANDS ONLY' : (talentPreference === 'female' ? 'WAJIB MODEL WANITA' : (talentPreference === 'male' ? 'WAJIB MODEL PRIA' : 'BEBAS REKOMENDASI AI'))})\n`;
+    userPrompt += `- Format Teks Video: ${includeTextOverlay ? 'Sertakan teks safe-zone overlay di layar' : 'PROMPT WAJIB BERSIH TANPA TEKS DI LAYAR (Clean Footage)'}\n`;
 
     try {
-        const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-3.8-flash', null, null, { jsonMode: true });
+        const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-2.5-flash', null, null, { jsonMode: true, disableThinking: true });
         const parsed = parseJsonSafely(rawResponse);
         if (!parsed || !Array.isArray(parsed.scenes) || parsed.scenes.length === 0) {
             throw new Error('Format adegan tidak lengkap');
         }
-        const campaign = sanitizeIndonesianUgc(parsed, dur);
+        const campaign = sanitizeIndonesianUgc(parsed, dur, includeTextOverlay);
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');
         }
@@ -1077,7 +1168,8 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
             sellingPoints,
             videoDuration: dur,
             tone,
-            talentPreference
+            talentPreference,
+            includeTextOverlay
         });
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');

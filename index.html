@@ -664,6 +664,17 @@
                     </div>
 
                     <!-- Submit Button -->
+                    <!-- Pilihan Teks / Tipografi di Video (Default: Mati / Bersih Tanpa Teks) -->
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 flex items-start gap-3">
+                        <div class="pt-0.5">
+                            <input type="checkbox" id="ugc-include-text-overlay" class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer">
+                        </div>
+                        <label for="ugc-include-text-overlay" class="text-xs text-slate-300 cursor-pointer select-none leading-relaxed">
+                            <span class="font-semibold text-white block">Sertakan Teks / Caption di Dalam Video</span>
+                            <span class="text-[11px] text-slate-400">Default <strong>tidak aktif (Clean Footage tanpa teks/subtitle)</strong> agar video hasil render AI tidak glitch dan jernih. Centang opsi ini jika Anda ingin prompt video menyertakan teks overlay di layar.</span>
+                        </label>
+                    </div>
+
                     <button id="btn-generate-ugc" class="w-full py-3 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
                         <span>Generate Storyboard & Naskah Iklan</span>

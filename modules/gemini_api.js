@@ -16,12 +16,11 @@ export const AI_PROVIDERS = {
         name: 'Google Gemini',
         tagline: 'Google AI Studio • Tier Gratis 15 RPM • Multimodal Teks & Gambar',
         badge: '✨ Gemini',
-        defaultModel: 'gemini-3.8-flash',
+        defaultModel: 'gemini-2.5-flash',
         models: [
-            { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash (Cepat, Cerdas & Stabil — Rekomendasi)' },
-            { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash' },
-            { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite' },
-            { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite' }
+            { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (Super Cepat, Multimodal & Akurat — Rekomendasi)' },
+            { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite (Ultra Cepat & Ringan)' },
+            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' }
         ],
         keyUrl: 'https://aistudio.google.com/app/apikey',
         keyUrlLabel: 'Ambil API Key Gratis di Google AI Studio',
@@ -122,7 +121,13 @@ export function saveApiKey(key, providerId = null) {
 export function getSelectedModel(providerId = null) {
     const p = providerId || getActiveProvider();
     const saved = localStorage.getItem(STORAGE_MODELS_PREFIX + p);
-    if (saved) return saved;
+    if (saved) {
+        if (p === 'gemini' && (saved.startsWith('gemini-3.') || saved === 'gemini-3.8-flash')) {
+            localStorage.setItem(STORAGE_MODELS_PREFIX + 'gemini', 'gemini-2.5-flash');
+            return 'gemini-2.5-flash';
+        }
+        return saved;
+    }
     return AI_PROVIDERS[p]?.defaultModel || '';
 }
 
@@ -153,10 +158,10 @@ export function saveCustomModel(model) {
  * Multi-tier model fallback list for Google Gemini
  */
 const FALLBACK_GEMINI_MODELS = [
-    'gemini-3.8-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite'
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash'
 ];
 
 /**
@@ -177,9 +182,14 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
     // 1. GOOGLE GEMINI PROVIDER
     // =========================================================================
     if (provider === 'gemini') {
-        const activeModel = (preferredModel && preferredModel.startsWith('gemini'))
+        let activeModel = (preferredModel && preferredModel.startsWith('gemini'))
             ? preferredModel
-            : (getSelectedModel('gemini') || 'gemini-3.8-flash');
+            : (getSelectedModel('gemini') || 'gemini-2.5-flash');
+
+        // Normalisasi model warisan / non-existent
+        if (activeModel.startsWith('gemini-3.') || activeModel === 'gemini-3.8-flash') {
+            activeModel = 'gemini-2.5-flash';
+        }
 
         const modelsToTry = [
             activeModel,
@@ -209,9 +219,11 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
                 maxOutputTokens: 4096
             };
 
-            // Optimasi Kecepatan: Minimalkan thinking budget untuk respons naskah cepat (latency < 3 detik)
+            // Optimasi Kecepatan: Matikan thinking budget untuk respon super kilat (1-3 detik)
             if (options?.disableThinking !== false) {
-                generationConfig.thinkingConfig = { thinkingBudget: 0 };
+                if (currentModel.includes('2.5') || currentModel.includes('flash')) {
+                    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+                }
             }
 
             if (isJsonMode) {
@@ -234,8 +246,9 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
             }
 
             try {
+                // Batas timeout dipercepat menjadi 25 detik agar tidak menggantung lama
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 60000);
+                const timeoutId = setTimeout(() => controller.abort(), 25000);
 
                 let response = await fetch(endpoint, {
                     signal: controller.signal,
@@ -312,7 +325,7 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
             const geminiKey = getSavedApiKey('gemini');
             if (geminiKey) {
                 console.info('[KawanDigi] Ekstraksi gambar dialihkan sementara ke Google Gemini Multimodal.');
-                return callAiWithSpecificProvider('gemini', prompt, systemInstruction, 'gemini-3.8-flash', tools, inlineData);
+                return callAiWithSpecificProvider('gemini', prompt, systemInstruction, 'gemini-2.5-flash', tools, inlineData);
             }
             throw new Error('DeepSeek API resmi adalah model teks. Masukkan Nama Produk / link etalase secara langsung, atau pasang API Key Gemini/OpenRouter untuk menganalisis screenshot gambar.');
         }

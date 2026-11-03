@@ -928,7 +928,7 @@ function formatFullPromptVideoText(campaign) {
         // Single 10-second Unified Prompt
         const singlePrompt = (campaign.parts && campaign.parts[0]?.google_flow_prompt)
             || (campaign.scenes && campaign.scenes[0]?.google_flow_prompt)
-            || `Video UGC vertikal 9:16 kualitas FHD. Talent: orang muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: Gadis muda Indonesia tersenyum ceria menunjukkan ${title} ke arah kamera, ekspresi antusias mencoba produk, detail fitur unggulan, dan gestur ramah mengajak klik keranjang. Voiceover bahasa Indonesia: "${(campaign.scenes || []).map(s => s.voiceover_script).filter(Boolean).join(' ')}". Teks subtitle di layar bahasa Indonesia. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark.`;
+            || `Video UGC vertikal 9:16 kualitas FHD. Talent: orang muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: Gadis muda Indonesia tersenyum ceria menunjukkan ${title} ke arah kamera, ekspresi antusias mencoba produk, detail fitur unggulan, dan gestur ramah mengajak klik keranjang. Voiceover bahasa Indonesia: "${(campaign.scenes || []).map(s => s.voiceover_script).filter(Boolean).join(' ')}". Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris.`;
 
         text += `🎬 PROMPT UTUH SIAP PAKAI GOOGLE FLOW (10 DETIK):\n`;
         text += `(Salin prompt di bawah ini lalu tempel / Ctrl+V di Google Flow / Veo)\n\n`;
@@ -949,7 +949,7 @@ function formatFullPromptVideoText(campaign) {
             text += `Kamera: ${s.camera_movement}\n`;
         }
         text += `Voiceover (Naskah Suara): "${s.voiceover_script || '-'}"\n`;
-        if (s.caption_overlay) {
+        if (s.caption_overlay && s.caption_overlay !== '-') {
             text += `Teks di Layar (Safe Zone): ${s.caption_overlay}\n`;
         }
         text += `\n`;
@@ -1007,7 +1007,7 @@ function renderScreenshotsGallery() {
 /**
  * Append multiple screenshot files to the reference pool
  */
-function compressImageFile(file, maxDimension = 1280, quality = 0.8) {
+function compressImageFile(file, maxDimension = 800, quality = 0.75) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1402,7 +1402,8 @@ async function handleGenerateUgc() {
             sellingPoints,
             videoDuration: selectedUgcDuration,
             tone,
-            talentPreference
+            talentPreference,
+            includeTextOverlay: document.getElementById('ugc-include-text-overlay')?.checked || false
         });
 
         currentUgcCampaign = campaign;
@@ -1425,6 +1426,7 @@ async function handleGenerateUgc() {
                 productCategory,
                 tone,
                 talentPreference,
+                includeTextOverlay: document.getElementById('ugc-include-text-overlay')?.checked || false,
                 videoDuration: selectedUgcDuration,
                 sellingPoints
             },
@@ -1567,7 +1569,7 @@ function renderUgcResults(campaign) {
             </div>
 
             <!-- Caption / Overlay Text -->
-            ${scene.caption_overlay ? `
+            ${scene.caption_overlay && scene.caption_overlay !== '-' ? `
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Teks di Layar (Subtitle Safe Zone):</label>
                 <div class="inline-block px-2.5 py-1 bg-brand-500/20 text-brand-300 border border-brand-500/40 rounded-lg text-xs font-black">
