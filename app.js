@@ -50,7 +50,9 @@ import {
     getGoogleClientId,
     saveGoogleClientId,
     fetchGoogleClientIdFromServer,
-    saveGoogleClientIdToServer
+    saveGoogleClientIdToServer,
+    getAdminEmail,
+    saveAdminEmail
 } from './modules/auth_manager.js';
 import {
     getFeatureFlags,
@@ -79,7 +81,8 @@ const SUPER_ADMIN_EMAIL = 'admin.kawandigi@gmail.com';
 
 function isSuperAdmin(user) {
     if (!user || !user.email) return false;
-    return user.email.toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase();
+    const adminEmail = (typeof getAdminEmail === 'function' ? getAdminEmail() : SUPER_ADMIN_EMAIL).toLowerCase().trim();
+    return user.email.toLowerCase().trim() === adminEmail;
 }
 
 let selectedUgcDuration = 10; // 10s Utama, 20s (2 Klip), 30s (3 Klip)
@@ -3077,9 +3080,9 @@ function initGoogleIdentityServices() {
 
                         if (isAdminUser) {
                             sessionStorage.setItem('kd_admin_unlocked', '1');
-                            showToast(Selamat datang Superadmin, !, 'success');
+                            showToast(`Selamat datang Superadmin, ${user.name}!`, 'success');
                         } else {
-                            showToast(Selamat datang, !, 'success');
+                            showToast(`Selamat datang, ${user.name}!`, 'success');
                         }
                     }
                 }

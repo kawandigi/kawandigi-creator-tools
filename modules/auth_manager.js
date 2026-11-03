@@ -241,9 +241,15 @@ export async function fetchGoogleClientIdFromServer() {
         const res = await fetch('/api/settings');
         if (res.ok) {
             const json = await res.json();
-            if (json.status === 'success' && json.data && json.data.google_client_id) {
-                cachedGoogleClientId = json.data.google_client_id.trim();
-                localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, cachedGoogleClientId);
+            if (json.status === 'success' && json.data) {
+                if (json.data.google_client_id) {
+                    cachedGoogleClientId = json.data.google_client_id.trim();
+                    localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, cachedGoogleClientId);
+                }
+                if (json.data.admin_email) {
+                    cachedAdminEmail = json.data.admin_email.trim().toLowerCase();
+                    localStorage.setItem(STORAGE_ADMIN_EMAIL, cachedAdminEmail);
+                }
                 return cachedGoogleClientId;
             }
         }
@@ -282,4 +288,19 @@ export function saveGoogleClientId(clientId) {
     cachedGoogleClientId = clean;
     localStorage.setItem(STORAGE_GOOGLE_CLIENT_ID, clean);
     saveGoogleClientIdToServer(clean).catch(() => {});
+}
+
+const STORAGE_ADMIN_EMAIL = 'kawandigi_admin_email';
+const DEFAULT_SUPER_ADMIN_EMAIL = 'admin.kawandigi@gmail.com';
+let cachedAdminEmail = localStorage.getItem(STORAGE_ADMIN_EMAIL) || DEFAULT_SUPER_ADMIN_EMAIL;
+
+export function getAdminEmail() {
+    return cachedAdminEmail || localStorage.getItem(STORAGE_ADMIN_EMAIL) || DEFAULT_SUPER_ADMIN_EMAIL;
+}
+
+export function saveAdminEmail(email) {
+    const clean = (email || '').trim().toLowerCase();
+    if (!clean) return;
+    cachedAdminEmail = clean;
+    localStorage.setItem(STORAGE_ADMIN_EMAIL, clean);
 }

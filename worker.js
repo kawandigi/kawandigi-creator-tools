@@ -98,12 +98,17 @@ export default {
         globalThis.__kd_settings = globalThis.__kd_settings || {};
         if (request.method === 'GET') {
           let clientId = env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || '';
+          let adminEmail = env.ADMIN_EMAIL || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com';
           if (db) {
             try {
               await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
-              const row = await db.prepare("SELECT value FROM app_settings WHERE key = 'google_client_id'").first();
-              if (row && row.value) {
-                clientId = row.value;
+              const rowClient = await db.prepare("SELECT value FROM app_settings WHERE key = 'google_client_id'").first();
+              if (rowClient && rowClient.value) {
+                clientId = rowClient.value;
+              }
+              const rowAdmin = await db.prepare("SELECT value FROM app_settings WHERE key = 'admin_email'").first();
+              if (rowAdmin && rowAdmin.value) {
+                adminEmail = rowAdmin.value;
               }
             } catch (e) {
               console.error("D1 app_settings read error:", e);
@@ -112,7 +117,8 @@ export default {
           return new Response(JSON.stringify({
             status: 'success',
             data: {
-              google_client_id: clientId || env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || ''
+              google_client_id: (clientId || env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || '').trim(),
+              admin_email: (adminEmail || env.ADMIN_EMAIL || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com').trim()
             }
           }), { headers: corsHeaders });
         }
@@ -121,19 +127,33 @@ export default {
           try {
             const body = await request.json();
             const newClientId = (body.google_client_id || '').trim();
-            globalThis.__kd_settings.google_client_id = newClientId;
+            const newAdminEmail = (body.admin_email || '').trim();
+
+            if (newClientId) globalThis.__kd_settings.google_client_id = newClientId;
+            if (newAdminEmail) globalThis.__kd_settings.admin_email = newAdminEmail;
+
             if (db) {
               await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
-              await db.prepare(`
-                INSERT INTO app_settings (key, value, updated_at)
-                VALUES ('google_client_id', ?, CURRENT_TIMESTAMP)
-                ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
-              `).bind(newClientId).run();
+              if (newClientId) {
+                await db.prepare(`
+                  INSERT INTO app_settings (key, value, updated_at)
+                  VALUES ('google_client_id', ?, CURRENT_TIMESTAMP)
+                  ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+                `).bind(newClientId).run();
+              }
+              if (newAdminEmail) {
+                await db.prepare(`
+                  INSERT INTO app_settings (key, value, updated_at)
+                  VALUES ('admin_email', ?, CURRENT_TIMESTAMP)
+                  ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+                `).bind(newAdminEmail).run();
+              }
             }
             return new Response(JSON.stringify({
               status: 'success',
-              message: 'Google OAuth Client ID tersimpan di Cloudflare',
-              google_client_id: newClientId
+              message: 'Pengaturan berhasil disimpan di Cloudflare',
+              google_client_id: newClientId || globalThis.__kd_settings.google_client_id || '',
+              admin_email: newAdminEmail || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com'
             }), { headers: corsHeaders });
           } catch (e) {
             return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
