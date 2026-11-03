@@ -796,6 +796,68 @@ function addScreenshotFiles(fileList) {
     }
 }
 
+// Helper: Deteksi & Pilih Kategori Niche secara Cerdas
+function autoSelectNicheCategory(detectedCategory, productName) {
+    const catSelect = document.getElementById('ugc-category');
+    if (!catSelect) return;
+
+    const textToMatch = `${detectedCategory || ''} ${productName || ''}`.toLowerCase();
+
+    // 1. Keyword-based classification patterns (Akurasi Tinggi)
+    const patterns = [
+        {
+            value: '👗 Fashion & OOTD',
+            regex: /\b(tas|ransel|backpack|tote|sling|baju|kaos|kemeja|celana|rok|dress|jaket|hoodie|sweater|sepatu|sandal|sneakers|heels|dompet|hijab|jilbab|kerudung|pakaian|fashion|ootd|outfit|jam tangan|kacamata|ikat pinggang|gesper|topi|distro|t-shirt)\b/i
+        },
+        {
+            value: '💄 Skincare & Kecantikan',
+            regex: /\b(skincare|serum|brightening|glowing|sunscreen|toner|facial|cleanser|sabun|lotion|moisturizer|lip|lipstick|lipbalm|liptint|cushion|bedak|foundation|concealer|masker|eye cream|body wash|body lotion|shampoo|parfum|perfume|kecantikan|beauty|kosmetik|niacinamide|retinol)\b/i
+        },
+        {
+            value: '📱 Gadget & Elektronik',
+            regex: /\b(hp|smartphone|case|casing|pelindung layar|tempered glass|charger|kabel data|powerbank|headset|headphone|earphone|tws|earbuds|speaker|bluetooth|wireless|laptop|mouse|keyboard|gadget|elektronik|smartwatch|kamera|tripod)\b/i
+        },
+        {
+            value: '🍔 Kuliner & Makanan',
+            regex: /\b(makanan|kuliner|snack|cemilan|keripik|biskuit|cookies|kopi|coffee|teh|tea|minuman|bumbu|sambal|pedas|frozen food|mie|noodle|cokelat|chocolate|abon|basreng|keju|rendang)\b/i
+        },
+        {
+            value: '🏠 Kebutuhan Rumah Tangga',
+            regex: /\b(rumah|tangga|dapur|sprei|bedcover|bantal|guling|selimut|sapu|pel|wajan|panci|blender|pisau|botol|tumbler|rak|gantungan|lampu|diffuser|aromaterapi|kebersihan|storage|organizer)\b/i
+        },
+        {
+            value: '✨ Kesehatan & Kebugaran',
+            regex: /\b(kesehatan|wellness|suplemen|vitamin|herbal|madu|jamu|obat|fitness|gym|olahraga|matras|dumbbell|protein)\b/i
+        },
+        {
+            value: '🍼 Ibu & Anak',
+            regex: /\b(bayi|baby|anak|kids|mainan|toy|popok|diaper|pampers|stroller|botol susu|pompa asi|baju bayi)\b/i
+        },
+        {
+            value: '🚗 Otomotif & Aksesoris',
+            regex: /\b(motor|mobil|otomotif|helm|oli|wiper|sarung motor|cover mobil|knalpot|spion|velg|ban|intercom|parfum mobil)\b/i
+        }
+    ];
+
+    for (const p of patterns) {
+        if (p.regex.test(textToMatch)) {
+            catSelect.value = p.value;
+            console.log(`[KawanDigi] Niche otomatis terdeteksi: ${p.value}`);
+            return;
+        }
+    }
+
+    // 2. Direct string matching against options
+    if (detectedCategory) {
+        for (const opt of catSelect.options) {
+            if (opt.value.toLowerCase().includes(detectedCategory.toLowerCase()) || detectedCategory.toLowerCase().includes(opt.value.toLowerCase())) {
+                catSelect.value = opt.value;
+                return;
+            }
+        }
+    }
+}
+
 function initUgcCreator() {
     // Preset Demo Button
     const btnUgcPreset = document.getElementById('btn-ugc-preset-demo');
@@ -906,14 +968,8 @@ function initUgcCreator() {
                 }
                 sellingInput.value = sText;
             }
-            if (details.category && catSelect) {
-                for (const opt of catSelect.options) {
-                    if (opt.value === details.category || opt.text.includes(details.category) || details.category.includes(opt.value)) {
-                        catSelect.value = opt.value;
-                        break;
-                    }
-                }
-            }
+            // Otomatis tentukan niche kategori secara cerdas
+            autoSelectNicheCategory(details.category, details.product_name);
             if (details.suggested_tone && toneSelect) {
                 for (const opt of toneSelect.options) {
                     if (opt.value === details.suggested_tone || opt.text.includes(details.suggested_tone)) {
@@ -964,17 +1020,8 @@ function initUgcCreator() {
             if (product.product_name) nameInput.value = product.product_name;
             if (product.selling_points) sellingInput.value = product.selling_points;
 
-            if (product.category) {
-                const catSelect = document.getElementById('ugc-category');
-                if (catSelect) {
-                    for (const opt of catSelect.options) {
-                        if (opt.value === product.category || opt.text.includes(product.category) || product.category.includes(opt.value)) {
-                            catSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                }
-            }
+            // Otomatis tentukan niche kategori secara cerdas
+            autoSelectNicheCategory(product.category, product.product_name);
 
             if (product.suggested_tone) {
                 const toneSelect = document.getElementById('ugc-tone');
@@ -999,6 +1046,28 @@ function initUgcCreator() {
     // Generate Campaign Storyboard
     const btnGenerate = document.getElementById('btn-generate-ugc');
     btnGenerate?.addEventListener('click', handleGenerateUgc);
+
+    // Model / Visual Talent Preference Listener
+    const talentSelect = document.getElementById('ugc-talent');
+    const talentBadge = document.getElementById('talent-preference-badge');
+    const talentHint = document.getElementById('ugc-talent-hint');
+
+    talentSelect?.addEventListener('change', () => {
+        const val = talentSelect.value;
+        if (val === 'faceless') {
+            if (talentBadge) talentBadge.textContent = '📦 Faceless (Unboxing / Hands Only)';
+            if (talentHint) talentHint.innerHTML = '💡 Video berfokus penuh pada presentasi produk, POV tangan unboxing, dan close-up tanpa wajah model.';
+        } else if (val === 'female') {
+            if (talentBadge) talentBadge.textContent = '👩 Model Wanita Indonesia';
+            if (talentHint) talentHint.innerHTML = '💡 Menggunakan talent wanita muda Indonesia yang natural, ceria, dan ekspresif.';
+        } else if (val === 'male') {
+            if (talentBadge) talentBadge.textContent = '👨 Model Pria Indonesia';
+            if (talentHint) talentHint.innerHTML = '💡 Menggunakan talent pria muda Indonesia yang kasual, rapi, dan komunikatif.';
+        } else {
+            if (talentBadge) talentBadge.textContent = '🤖 Bebas / Rekomendasi AI';
+            if (talentHint) talentHint.innerHTML = '💡 AI bebas berkreasi memilih gaya yang paling menjual sesuai jenis produk.';
+        }
+    });
 
     // Copy All Prompts
     const btnCopyAll = document.getElementById('btn-copy-all-prompts');
@@ -1030,6 +1099,7 @@ async function handleGenerateUgc() {
     const productUrl = document.getElementById('ugc-url').value.trim();
     const productCategory = document.getElementById('ugc-category').value;
     const tone = document.getElementById('ugc-tone').value;
+    const talentPreference = document.getElementById('ugc-talent')?.value || 'auto';
     const sellingPoints = document.getElementById('ugc-selling').value.trim();
 
     if (!productName && !productUrl) {
@@ -1057,7 +1127,8 @@ async function handleGenerateUgc() {
             productCategory,
             sellingPoints,
             videoDuration: selectedUgcDuration,
-            tone
+            tone,
+            talentPreference
         });
 
         currentUgcCampaign = campaign;
@@ -1071,6 +1142,20 @@ async function handleGenerateUgc() {
             title: campaign.product_analysis?.product_name || productName || 'Produk Pilihan',
             category: campaign.product_analysis?.category || productCategory || 'Affiliate',
             duration: selectedUgcDuration || 10,
+            tone: tone,
+            talentPreference: talentPreference,
+            previewText: campaign.scenes?.[0]?.voiceover_script || campaign.scenes?.[0]?.visual_description || '',
+            inputs: {
+                productUrl,
+                productName,
+                productCategory,
+                tone,
+                talentPreference,
+                videoDuration: selectedUgcDuration,
+                sellingPoints
+            },
+            data: campaign
+        });
             tone: tone,
             previewText: campaign.scenes?.[0]?.voiceover_script || campaign.scenes?.[0]?.visual_description || '',
             inputs: {
@@ -2035,14 +2120,19 @@ function loadProject(item, quiet = false) {
         if (item.inputs) {
             const urlInput = document.getElementById('ugc-url');
             const nameInput = document.getElementById('ugc-name');
-            const nicheSelect = document.getElementById('ugc-niche');
+            const catSelect = document.getElementById('ugc-category');
             const toneSelect = document.getElementById('ugc-tone');
-            const promoInput = document.getElementById('ugc-selling-points');
+            const talentSelect = document.getElementById('ugc-talent');
+            const promoInput = document.getElementById('ugc-selling');
 
             if (urlInput && item.inputs.productUrl) urlInput.value = item.inputs.productUrl;
             if (nameInput && item.inputs.productName) nameInput.value = item.inputs.productName;
-            if (nicheSelect && item.inputs.productCategory) nicheSelect.value = item.inputs.productCategory;
+            if (catSelect && item.inputs.productCategory) catSelect.value = item.inputs.productCategory;
             if (toneSelect && item.inputs.tone) toneSelect.value = item.inputs.tone;
+            if (talentSelect && item.inputs.talentPreference) {
+                talentSelect.value = item.inputs.talentPreference;
+                talentSelect.dispatchEvent(new Event('change'));
+            }
             if (promoInput && item.inputs.sellingPoints) promoInput.value = item.inputs.sellingPoints;
             if (item.inputs.videoDuration) setUgcDuration(item.inputs.videoDuration);
         }

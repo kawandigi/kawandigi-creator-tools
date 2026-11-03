@@ -132,12 +132,15 @@ export async function extractProductDetails(url) {
     const systemPrompt = `Anda adalah Spesialis Analisis Produk E-Commerce & Affiliate Marketing (Shopee, TikTok Shop, Tokopedia, Lazada).
 Tugas Anda adalah mengekstrak data produk yang akurat dari isi halaman etalase atau URL produk yang diberikan.
 
-PILIHAN KATEGORI (Pilih salah satu):
-- 💄 Skincare & Kecantikan
-- 👗 Fashion & OOTD
-- 📱 Gadget & Elektronik
-- 🍔 Kuliner & Makanan
-- 🏠 Kebutuhan Rumah Tangga
+PILIHAN KATEGORI (PILIH SALAH SATU YANG PALING TEPAT):
+- 👗 Fashion & OOTD (pakaian, baju, celana, jaket, tas, ransel, sepatu, sandal, dompet, hijab, jam tangan, kacamata)
+- 💄 Skincare & Kecantikan (skincare, serum, sunscreen, lotion, sabun, toner, kosmetik, makeup, parfum, perawatan kulit/rambut)
+- 📱 Gadget & Elektronik (hp, casing hp, powerbank, headset, TWS, earphone, charger, kabel, speaker, aksesoris komputer/elektronik)
+- 🍔 Kuliner & Makanan (makanan, cemilan, snack, frozen food, kopi, teh, minuman, bumbu dapur, sambal)
+- 🏠 Kebutuhan Rumah Tangga (perabot rumah, perlengkapan dapur, sprei, bantal, sapu, wadah, dekorasi kamar)
+- ✨ Kesehatan & Kebugaran (suplemen, vitamin, madu herbal, alat fitness/olahraga)
+- 🍼 Ibu & Anak (perlengkapan bayi, mainan anak, popok, susu formula)
+- 🚗 Otomotif & Aksesoris (perlengkapan motor, mobil, helm, oli, aksesoris kendaraan)
 
 PILIHAN GAYA BAHASA (TONE):
 - Casual & Ceria (Gen Z)
@@ -148,7 +151,7 @@ PILIHAN GAYA BAHASA (TONE):
 Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
 {
   "product_name": "Nama produk lengkap yang bersih, mudah dipahami, tanpa karakter/simbol sampah",
-  "category": "💄 Skincare & Kecantikan",
+  "category": "PILIH PERSIS SALAH SATU DARI 8 KATEGORI DI ATAS (misal '👗 Fashion & OOTD')",
   "selling_points": "Poin-poin keunggulan utama, manfaat, aroma/spesifikasi, atau promo menarik dari produk ini (2-3 kalimat padat)",
   "target_audience": "Target calon pembeli ideal produk ini",
   "suggested_tone": "Casual & Ceria (Gen Z)"
@@ -198,10 +201,20 @@ export async function extractDetailsFromMultipleImages(images) {
     const systemPrompt = `Kamu adalah Kawan Digital, asisten AI spesialis analisis multi-gambar screenshot etalase marketplace (Shopee, TikTok Shop, Tokopedia, Lazada), detail ulasan pembeli, atau menu kuliner.
 Tugasmu adalah menganalisis seluruh gambar referensi yang diunggah secara objektif, akurat, dan menyeluruh tanpa mengarang fakta. Gabungkan informasi dari seluruh gambar (nama produk, varian, harga, bahan, keunggulan, ulasan).
 
+WAJIB KLASIFIKASIKAN KATEGORI NICHE KE SALAH SATU PILIHAN BERIKUT:
+- "👗 Fashion & OOTD" (jika produk pakaian, baju, celana, jaket, tas, ransel, backpack, sepatu, sandal, dompet, hijab, jam tangan, kacamata)
+- "💄 Skincare & Kecantikan" (jika produk skincare, serum, sunscreen, lotion, sabun, toner, kosmetik, makeup, parfum, perawatan kulit/rambut)
+- "📱 Gadget & Elektronik" (jika produk hp, casing hp, powerbank, headset, TWS, earphone, charger, kabel, speaker, aksesoris komputer/elektronik)
+- "🍔 Kuliner & Makanan" (jika produk makanan, cemilan, snack, frozen food, kopi, teh, minuman, bumbu dapur, sambal)
+- "🏠 Kebutuhan Rumah Tangga" (jika perabot rumah, perlengkapan dapur, sprei, bantal, sapu, wadah, dekorasi kamar)
+- "✨ Kesehatan & Kebugaran" (jika suplemen, vitamin, madu herbal, alat fitness/olahraga)
+- "🍼 Ibu & Anak" (jika perlengkapan bayi, mainan anak, popok, susu formula)
+- "🚗 Otomotif & Aksesoris" (jika perlengkapan motor, mobil, helm, oli, aksesoris kendaraan)
+
 Ekstrak informasi yang terbaca dari seluruh gambar dan kembalikan HANYA format JSON valid berikut (tanpa markdown backtick):
 {
   "product_name": "Nama produk lengkap yang bersih, mudah dipahami, tanpa karakter sampah",
-  "category": "🛍️ Konten Affiliate Produk",
+  "category": "PILIH PERSIS SALAH SATU DARI 8 KATEGORI DI ATAS (misal '👗 Fashion & OOTD')",
   "variant": "Warna & varian yang terlihat di gambar (atau 'Standar')",
   "visual_details": "Detail visual yang terlihat dari gambar (bahan, bentuk, kemasan, warna, dsb.)",
   "price": "Harga / diskon / rating jika terbaca jelas, atau 'belum terdeteksi'",
@@ -348,11 +361,42 @@ function parseJsonSafely(rawText) {
  * Instant Fast Synthesizer: Generates ideal UGC campaign directly from existing form inputs
  * Guarantees zero latency and 0% failure even if external AI connection fluctuates
  */
-function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints, videoDuration, tone }) {
+/**
+ * Instant Fast Synthesizer: Generates ideal UGC campaign directly from existing form inputs
+ * Guarantees zero latency and 0% failure even if external AI connection fluctuates
+ */
+function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints, videoDuration, tone, talentPreference = 'auto' }) {
     const dur = parseInt(videoDuration, 10) || 10;
     const pName = productName || 'Produk Rekomendasi Pilihan';
     const sPoints = sellingPoints || 'Kualitas terbaik, nyaman digunakan, dan sangat terjangkau.';
     const cat = productCategory || 'Affiliate Produk';
+    const isFaceless = talentPreference === 'faceless';
+    const isMale = talentPreference === 'male';
+
+    let talentLabel = 'wanita muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik';
+    let visualStyle = 'Talent';
+    let scene1Visual = `Seorang talent wanita muda Indonesia tersenyum ceria menunjukkan ${pName} di depan kamera dengan pencahayaan alami estetik.`;
+    let scene2Visual = `Talent memasang ekspresi bingung membandingkan produk lama yang kurang memuaskan.`;
+    let scene4Visual = `Talent memperagakan cara pakai dan fitur unggulan ${pName} dengan antusias.`;
+    let scene5Visual = `Talent tersenyum puas mengacungkan jempol sambil mengenakan ${pName} dengan percaya diri di ruangan terang.`;
+    let scene6Visual = `Talent tersenyum ramah menunjuk ke arah bawah video mengajak penonton mengecek keranjang.`;
+
+    if (isFaceless) {
+        talentLabel = 'Gaya: Faceless aesthetic product presentation, hands-only POV unboxing, tanpa menampakkan wajah';
+        visualStyle = 'Tangan (Hands-only POV)';
+        scene1Visual = `Tangan membuka kemasan rapi ${pName} secara estetik di atas meja kayu minimalis dengan pencahayaan alami kamar estetik.`;
+        scene2Visual = `Close-up perbandingan tangan memegang produk lama yang rusak vs ${pName} yang kokoh dan presisi.`;
+        scene4Visual = `Tangan mendemonstrasikan keunggulan fitur ${pName} secara close-up dan praktis.`;
+        scene5Visual = `Flatlay estetik ${pName} ditata rapi bersama aksesoris pelengkap dari sudut atas (top-down view) dengan pencahayaan alami.`;
+        scene6Visual = `Tangan menunjuk ke arah tombol keranjang di bawah video dengan gestur estetik mengajak checkout.`;
+    } else if (isMale) {
+        talentLabel = 'pria muda Indonesia berpenampilan kasual keren dan rapi, pencahayaan alami kamar estetik';
+        scene1Visual = `Seorang talent pria muda Indonesia tersenyum ceria menunjukkan ${pName} ke arah kamera dengan gaya kasual.`;
+        scene2Visual = `Talent pria memasang ekspresi bingung membandingkan produk lama yang kurang memuaskan.`;
+        scene4Visual = `Talent pria mendemonstrasikan kepraktisan ${pName} dengan antusias.`;
+        scene5Visual = `Talent pria tersenyum puas mengacungkan jempol sambil mengenakan ${pName} dengan percaya diri.`;
+        scene6Visual = `Talent pria tersenyum ramah menunjuk ke arah bawah video mengajak penonton klik keranjang.`;
+    }
 
     return {
         product_analysis: {
@@ -369,7 +413,7 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 part_title: "KLIP 1: HOOK & PENGENALAN SOLUSI",
                 duration_seconds: 10,
                 scenes_included: "Adegan 1 - 3",
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: orang muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: Menunjukkan ${pName} ke arah kamera dengan senyum ceria. Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: "Lagi cari ${pName} yang awet dan stylish? Ini solusinya!". Teks subtitle di layar: "Lagi Cari Yang Awet & Keren?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark.`,
+                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${isFaceless ? `Tangan memperlihatkan ${pName} secara estetik di atas meja, unboxing membuka kemasan rapi, demonstrasi detail bahan secara close-up.` : `Menunjukkan ${pName} ke arah kamera dengan senyum ceria dan gestur antusias.`} Pergerakan kamera: Zoom perlahan ke arah produk. Voiceover bahasa Indonesia: "Lagi cari ${pName} yang awet dan stylish? Ini solusinya!". Teks subtitle di layar: "Lagi Cari Yang Awet & Keren?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`,
                 narasi_part: `Lagi cari ${pName} yang awet dan stylish? Ini solusinya!`
             }
         ],
@@ -379,22 +423,22 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 time_range: "0–1,5 detik",
                 duration_seconds: 1.5,
                 scene_title: "HOOK",
-                visual_description: `Seorang talent Indonesia tersenyum ceria menunjukkan ${pName} di depan kamera dengan pencahayaan alami estetik.`,
+                visual_description: scene1Visual,
                 camera_movement: "Zoom cepat ke arah produk",
                 voiceover_script: `Beneran nemu ${pName} sebagus ini?`,
                 caption_overlay: `Beneran Sebagus Ini?`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: orang Indonesia ramah, pencahayaan alami. Visual adegan: Menunjukkan ${pName} ke depan kamera. Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: "Beneran nemu ${pName} sebagus ini?". Teks subtitle di layar: "Beneran Sebagus Ini?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark.`
+                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene1Visual} Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: "Beneran nemu ${pName} sebagus ini?". Teks subtitle di layar: "Beneran Sebagus Ini?". Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
             },
             {
                 scene_number: 2,
                 time_range: "1,5–3 detik",
                 duration_seconds: 1.5,
                 scene_title: "PROBLEM",
-                visual_description: `Talent memperlihatkan ekspresi bingung membandingkan produk lama yang cepat rusak atau kurang memuaskan.`,
+                visual_description: scene2Visual,
                 camera_movement: "Kamera bergerak perlahan ke kiri",
                 voiceover_script: `Sering kecewa sama produk yang gampang rusak?`,
                 caption_overlay: `Sering Kecewa Cepat Rusak?`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: orang Indonesia berekspresi bingung. Visual adegan: Membandingkan produk lama. Pergerakan kamera: Kamera bergerak perlahan ke kiri. Voiceover bahasa Indonesia: "Sering kecewa sama produk yang gampang rusak?". Teks subtitle di layar: "Sering Kecewa?". Wajib Bahasa Indonesia, tanpa watermark.`
+                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene2Visual} Pergerakan kamera: Kamera bergerak perlahan ke kiri. Voiceover bahasa Indonesia: "Sering kecewa sama produk yang gampang rusak?". Teks subtitle di layar: "Sering Kecewa?". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
             },
             {
                 scene_number: 3,
@@ -412,33 +456,33 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 time_range: "4,5–6,5 detik",
                 duration_seconds: 2.0,
                 scene_title: "DEMONSTRASI",
-                visual_description: `Demonstrasi nyata penggunaan ${pName}: membuka kompartemen, mencoba ketahanan, atau memakai langsung dengan nyaman.`,
+                visual_description: scene4Visual,
                 camera_movement: "Kamera maju perlahan ke arah objek",
                 voiceover_script: `${sPoints.slice(0, 70)}.`,
                 caption_overlay: `Kapasitas Lega & Awet!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: orang Indonesia memperagakan penggunaan ${pName}. Pergerakan kamera: Kamera maju perlahan ke arah objek. Voiceover bahasa Indonesia: "${sPoints.slice(0, 70)}.". Teks subtitle di layar: "Kapasitas Lega!". Wajib Bahasa Indonesia, tanpa watermark.`
+                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene4Visual} Pergerakan kamera: Kamera maju perlahan ke arah objek. Voiceover bahasa Indonesia: "${sPoints.slice(0, 70)}.". Teks subtitle di layar: "Kapasitas Lega!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
             },
             {
                 scene_number: 5,
                 time_range: "6,5–8,5 detik",
                 duration_seconds: 2.0,
                 scene_title: "HONEST REVIEW",
-                visual_description: `Talent tersenyum puas mengacungkan jempol sambil mengenakan ${pName} dengan percaya diri di ruangan terang.`,
+                visual_description: scene5Visual,
                 camera_movement: "Kamera berputar mengelilingi model (orbit pan)",
                 voiceover_script: `Dipakai seharian tetep nyaman dan bikin makin percaya diri!`,
                 caption_overlay: `Nyaman & Bikin Pede!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: orang Indonesia tersenyum puas memakai ${pName}. Pergerakan kamera: Kamera berputar mengelilingi model (orbit pan). Voiceover bahasa Indonesia: "Dipakai seharian tetep nyaman dan bikin makin percaya diri!". Teks subtitle di layar: "Nyaman & Bikin Pede!". Wajib Bahasa Indonesia, tanpa watermark.`
+                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene5Visual} Pergerakan kamera: Kamera berputar mengelilingi model (orbit pan). Voiceover bahasa Indonesia: "Dipakai seharian tetep nyaman dan bikin makin percaya diri!". Teks subtitle di layar: "Nyaman & Bikin Pede!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
             },
             {
                 scene_number: 6,
                 time_range: "8,5–10 detik",
                 duration_seconds: 1.5,
                 scene_title: "CTA NETRAL",
-                visual_description: `Talent tersenyum ramah menunjuk ke arah bawah video mengajak penonton mengecek produk.`,
+                visual_description: scene6Visual,
                 camera_movement: "Kamera sejajar mata fokus menunjuk ke bawah",
                 voiceover_script: `Yuk, langsung klik keranjang di bawah video ini ya!`,
                 caption_overlay: `Klik Keranjang di Bawah Video!`,
-                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: orang Indonesia tersenyum ramah menunjuk ke bawah video. Pergerakan kamera: Kamera sejajar mata fokus menunjuk ke bawah. Voiceover bahasa Indonesia: "Yuk, langsung klik keranjang di bawah video ini ya!". Teks subtitle di layar: "Klik Keranjang di Bawah!". Wajib Bahasa Indonesia, tanpa watermark.`
+                google_flow_prompt: `Video UGC vertikal 9:16 kualitas FHD. Talent: ${talentLabel}. Visual adegan: ${scene6Visual} Pergerakan kamera: Kamera sejajar mata fokus menunjuk ke bawah. Voiceover bahasa Indonesia: "Yuk, langsung klik keranjang di bawah video ini ya!". Teks subtitle di layar: "Klik Keranjang di Bawah!". Wajib Bahasa Indonesia, tanpa watermark${isFaceless ? ', tanpa menampilkan wajah model' : ''}.`
             }
         ],
         total_narasi_kata: 25,
@@ -488,6 +532,7 @@ export async function generateUgcCampaign({
     videoDuration = 10,
     tone = 'Casual & Ceria (Gen Z)',
     voiceGender = 'Cewek Ceria',
+    talentPreference = 'auto',
     imageAnalysis = null
 }) {
     // 1. License / Trial Check
@@ -499,9 +544,41 @@ export async function generateUgcCampaign({
     const dur = parseInt(videoDuration, 10) || 10;
     const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
 
+    // Directive based on talent preference
+    let talentDirective = '';
+    if (talentPreference === 'faceless') {
+        talentDirective = `
+ATURAN WAJIB FORMAT FACELESS (TANPA MODEL WAJAH / FOKUS PRESENTASI PRODUK / UNBOXING POV):
+- Video ini DILARANG KERAS MENAMPILKAN WAJAH MODEL SAMA SEKALI!
+- Visual adegan HARUS fokus penuh pada presentasi produk secara profesional & estetik.
+- Visual adegan harus berupa POV orang pertama (first-person POV): tangan unboxing membuka paket/kemasan, tangan memegang produk, demonstrasi close-up tekstur bahan dan fungsi secara detail, serta flatlay estetik di atas meja dengan pencahayaan alami kamar estetik.
+- Di seluruh scene dan "google_flow_prompt", WAJIB menggunakan struktur:
+  "Video UGC vertikal 9:16 kualitas FHD. Gaya: Faceless aesthetic product presentation, hands-only POV unboxing. Visual adegan: Tangan memperlihatkan [nama produk] secara estetik di atas meja minimalis, unboxing membuka kemasan rapi, demonstrasi detail bahan secara close-up... Pergerakan kamera: [pergerakan kamera]. Voiceover bahasa Indonesia: '[naskah suara]'. Teks subtitle di layar bahasa Indonesia: '[teks overlay]'. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark, tanpa menampakkan wajah model."
+`;
+    } else if (talentPreference === 'female') {
+        talentDirective = `
+ATURAN WAJIB MODEL WANITA:
+- Seluruh visual adegan dan "google_flow_prompt" WAJIB menggunakan talent WANITA muda Indonesia berpenampilan natural, ceria, ramah, dan ekspresif.
+- Di seluruh scene dan "google_flow_prompt", awali dengan: "Video UGC vertikal 9:16 kualitas FHD. Talent: wanita muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: ..."
+`;
+    } else if (talentPreference === 'male') {
+        talentDirective = `
+ATURAN WAJIB MODEL PRIA:
+- Seluruh visual adegan dan "google_flow_prompt" WAJIB menggunakan talent PRIA muda Indonesia berpenampilan kasual keren, rapi, ramah, dan komunikatif.
+- Di seluruh scene dan "google_flow_prompt", awali dengan: "Video UGC vertikal 9:16 kualitas FHD. Talent: pria muda Indonesia berpenampilan kasual rapi, pencahayaan alami estetik. Visual adegan: ..."
+`;
+    } else {
+        talentDirective = `
+GAYA VISUAL & MODEL (BEBAS / REKOMENDASI AI):
+- AI bebas berkreasi menentukan gaya visual terbaik yang paling menjual (apakah model wanita, model pria, atau faceless unboxing hands-only) sesuai kecocokan produk ${productCategory || 'ini'}.
+`;
+    }
+
     // 2. Construct prompt for Gemini according to Kawan Digital Skill v2.0
     const systemPrompt = `Kamu adalah Kawan Digital, asisten pembuat konten affiliate dan review berbahasa Indonesia kelas dunia.
 Tugasmu adalah menghasilkan Storyboard UGC ideal (Hook, Problem, Pengenalan, Demonstrasi, Honest Review, CTA), prompt video Google Flow / Veo per klip 10 detik, dan 3 template caption siap pakai untuk TikTok & Shopee Video.
+
+${talentDirective}
 
 ATURAN STRUKTUR SCENE (WAJIB TEPAT 6 TAHAPAN INI, BERAPAPUN DURASINYA):
 1. Hook — menarik perhatian di detik awal
@@ -606,6 +683,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     if (productUrl) userPrompt += `- Referensi URL: ${productUrl}\n`;
     userPrompt += `- Gaya Bahasa / Tone: ${tone}\n`;
     userPrompt += `- Tipe Voiceover: ${voiceGender}\n`;
+    userPrompt += `- Preferensi Model / Talent: ${talentPreference.toUpperCase()} (${talentPreference === 'faceless' ? 'WAJIB FACELESS / TANPA MODEL WAJAH / FOKUS UNBOXING HANDS ONLY' : (talentPreference === 'female' ? 'WAJIB MODEL WANITA' : (talentPreference === 'male' ? 'WAJIB MODEL PRIA' : 'BEBAS REKOMENDASI AI'))})\n`;
 
     try {
         const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-3.8-flash', null, null, { jsonMode: true });
@@ -625,7 +703,8 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
             productCategory,
             sellingPoints,
             videoDuration: dur,
-            tone
+            tone,
+            talentPreference
         });
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');

@@ -209,6 +209,9 @@
                                 <option value="📱 Gadget & Elektronik">📱 Gadget & Aksesoris</option>
                                 <option value="🍔 Kuliner & Makanan">🍔 Kuliner / F&B</option>
                                 <option value="🏠 Kebutuhan Rumah Tangga">🏠 Home & Living</option>
+                                <option value="✨ Kesehatan & Kebugaran">✨ Kesehatan & Wellness</option>
+                                <option value="🍼 Ibu & Anak">🍼 Ibu, Bayi & Anak</option>
+                                <option value="🚗 Otomotif & Aksesoris">🚗 Otomotif & Hobi</option>
                             </select>
                         </div>
                         <div>
@@ -220,6 +223,28 @@
                                 <option value="Elegan & Mewah">Elegan & Premium</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Model / Visual Talent Preference -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                                <i data-lucide="user-check" class="w-3.5 h-3.5 text-brand-400"></i>
+                                Model & Gaya Visual:
+                            </label>
+                            <span id="talent-preference-badge" class="text-[10px] text-brand-300 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full font-semibold">
+                                Bebas / Rekomendasi AI
+                            </span>
+                        </div>
+                        <select id="ugc-talent" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500">
+                            <option value="auto">🤖 Bebas / Rekomendasi AI (AI sesuaikan otomatis dengan produk)</option>
+                            <option value="faceless">📦 Faceless / Tanpa Wajah (Fokus produk, unboxing, tangan POV & close-up)</option>
+                            <option value="female">👩 Model Wanita (Talent kreator wanita muda Indonesia, ceria & ramah)</option>
+                            <option value="male">👨 Model Pria (Talent kreator pria muda Indonesia, keren & kasual)</option>
+                        </select>
+                        <p id="ugc-talent-hint" class="text-[10px] text-slate-400 mt-1 italic">
+                            💡 Jika memilih <strong>Faceless</strong>, visual video fokus pada unboxing, demonstrasi produk, dan POV tangan tanpa menampakkan wajah model.
+                        </p>
                     </div>
 
                     <!-- Duration Selector (Cleaned without scene text, 10s default) -->
