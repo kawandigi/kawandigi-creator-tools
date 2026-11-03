@@ -19,15 +19,16 @@ import {
     generateOmniVideo 
 } from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
-import { extractProductDetails, extractDetailsFromImage, generateUgcCampaign } from './modules/ugc_creator.js';
+import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
 
 // Global State
-let selectedUgcDuration = 30; // 10, 20, 30, 60
+let selectedUgcDuration = 10; // 10s Utama, 20s (2 Klip), 30s (3 Klip)
 let selectedDramaScenes = 3;  // 3 scenes (30s) or 6 scenes (60s)
 let currentUgcCampaign = null;
 let currentDramaEpisode = null;
+let uploadedScreenshots = []; // Array of reference images: [{ id, base64, mimeType, name, previewUrl }]
 
 // =========================================================================
 // TOAST NOTIFICATION UTILITY
@@ -128,6 +129,7 @@ function switchTab(tabId) {
     // Desktop Nav
     const desktopTabs = {
         'ugc': document.getElementById('nav-ugc'),
+        'flow': document.getElementById('nav-flow'),
         'drama': document.getElementById('nav-drama'),
         'license': document.getElementById('nav-license')
     };
@@ -135,6 +137,7 @@ function switchTab(tabId) {
     // Mobile Nav
     const mobileTabs = {
         'ugc': document.getElementById('m-nav-ugc'),
+        'flow': document.getElementById('m-nav-flow'),
         'drama': document.getElementById('m-nav-drama'),
         'license': document.getElementById('m-nav-license')
     };
@@ -142,11 +145,13 @@ function switchTab(tabId) {
     // Sections
     const sections = {
         'ugc': document.getElementById('section-ugc'),
+        'flow': document.getElementById('section-flow'),
         'drama': document.getElementById('section-drama'),
         'license': document.getElementById('section-license')
     };
 
     Object.keys(sections).forEach(id => {
+        if (!sections[id]) return;
         if (id === tabId) {
             sections[id].classList.remove('hidden');
             desktopTabs[id]?.classList.add('active');
@@ -160,19 +165,180 @@ function switchTab(tabId) {
         }
     });
 
+    if (tabId === 'flow') {
+        populateGoogleFlowStudio(currentUgcCampaign);
+    }
+
     if (window.lucide) window.lucide.createIcons();
 }
 
 function initNavigation() {
     // Desktop Nav buttons
     document.getElementById('nav-ugc')?.addEventListener('click', () => switchTab('ugc'));
+    document.getElementById('nav-flow')?.addEventListener('click', () => switchTab('flow'));
     document.getElementById('nav-drama')?.addEventListener('click', () => switchTab('drama'));
     document.getElementById('nav-license')?.addEventListener('click', () => switchTab('license'));
 
     // Mobile Nav buttons
     document.getElementById('m-nav-ugc')?.addEventListener('click', () => switchTab('ugc'));
+    document.getElementById('m-nav-flow')?.addEventListener('click', () => switchTab('flow'));
     document.getElementById('m-nav-drama')?.addEventListener('click', () => switchTab('drama'));
     document.getElementById('m-nav-license')?.addEventListener('click', () => switchTab('license'));
+
+    // Studio Google Flow reload button
+    document.getElementById('btn-flow-refresh-iframe')?.addEventListener('click', () => {
+        const iframe = document.getElementById('google-flow-iframe');
+        if (iframe) {
+            iframe.src = iframe.src;
+            showToast('Studio Google Flow dimuat ulang.', 'info');
+        }
+    });
+}
+
+/**
+ * Populate prompts into Studio Google Flow Drawer (Left Panel)
+ */
+function populateGoogleFlowStudio(campaign) {
+    const listContainer = document.getElementById('flow-prompt-list');
+    const badge = document.getElementById('flow-prompt-badge');
+    const emptyState = document.getElementById('flow-empty-prompts');
+    if (!listContainer) return;
+
+    if (!campaign || (!campaign.scenes && !campaign.parts)) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (badge) badge.textContent = '0 Adegan';
+        return;
+    }
+
+    if (emptyState) emptyState.classList.add('hidden');
+    listContainer.innerHTML = '';
+
+    const dur = campaign.video_duration || selectedUgcDuration || 10;
+    const sceneCount = campaign.scenes?.length || 6;
+    if (badge) {
+        badge.textContent = `${dur} Detik • ${sceneCount} Adegan`;
+    }
+
+    // 1. If multi-part (e.g. 20s or 30s), render Part 10s cards first
+    if (Array.isArray(campaign.parts) && campaign.parts.length > 1) {
+        const partsSection = document.createElement('div');
+        partsSection.className = 'space-y-3 pb-3 border-b border-slate-800';
+        partsSection.innerHTML = `
+            <div class="flex items-center justify-between text-xs font-bold text-emerald-400">
+                <span class="flex items-center gap-1.5"><i data-lucide="scissors" class="w-3.5 h-3.5"></i> Klip Video 10 Detik (${campaign.parts.length} Klip):</span>
+                <span class="text-[10px] text-slate-400 font-normal">Render terpisah, lalu gabungkan</span>
+            </div>
+        `;
+
+        campaign.parts.forEach(part => {
+            const card = document.createElement('div');
+            card.className = 'bg-gradient-to-r from-emerald-950/40 via-slate-900 to-emerald-950/40 border border-emerald-500/50 rounded-xl p-3.5 space-y-2.5 shadow-md';
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-extrabold text-xs border border-emerald-500/30">
+                            KLIP ${part.part_number} (10s)
+                        </span>
+                        <span class="text-xs font-bold text-white">${part.title || `Bagian ${part.part_number}`}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-medium">${part.scenes_included || ''}</span>
+                </div>
+
+                ${part.narasi_part ? `
+                <div class="bg-amber-950/20 border border-amber-500/20 rounded-lg p-2 flex items-center justify-between gap-2">
+                    <p class="text-[11px] text-amber-200 italic leading-relaxed">"${part.narasi_part}"</p>
+                    <button class="btn-play-vo flex-shrink-0 text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1">
+                        <i data-lucide="volume-2" class="w-3 h-3"></i> Putar
+                    </button>
+                </div>
+                ` : ''}
+
+                <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                    <label class="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Prompt Video AI (Google Flow / Veo):</label>
+                    <p class="text-[11px] text-slate-300 font-mono leading-relaxed select-all">${part.google_flow_prompt}</p>
+                    <button class="btn-copy-flow-clip w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition shadow">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Prompt Klip ${part.part_number} (Siap Paste di Kanan)
+                    </button>
+                </div>
+            `;
+
+            card.querySelector('.btn-play-vo')?.addEventListener('click', () => {
+                if (part.narasi_part) speakVoiceover(part.narasi_part);
+            });
+
+            card.querySelector('.btn-copy-flow-clip')?.addEventListener('click', () => {
+                copyToClipboard(part.google_flow_prompt, `Prompt Klip ${part.part_number} berhasil disalin! Silakan paste (Ctrl+V) di Google Flow.`);
+            });
+
+            partsSection.appendChild(card);
+        });
+
+        listContainer.appendChild(partsSection);
+    }
+
+    // 2. Render Scene Prompts
+    const scenesHeader = document.createElement('div');
+    scenesHeader.className = 'pt-1 flex items-center justify-between text-xs font-bold text-slate-300';
+    scenesHeader.innerHTML = `
+        <span class="flex items-center gap-1.5"><i data-lucide="film" class="w-3.5 h-3.5 text-brand-400"></i> Rincian Prompt Tiap Adegan:</span>
+        <button id="btn-flow-copy-all" class="text-[10px] text-brand-400 hover:text-brand-300 underline font-semibold">Salin Seluruh Naskah</button>
+    `;
+    listContainer.appendChild(scenesHeader);
+
+    scenesHeader.querySelector('#btn-flow-copy-all')?.addEventListener('click', () => {
+        const allText = formatFullPromptVideoText(campaign);
+        copyToClipboard(allText, 'Seluruh prompt dan storyboard disalin!');
+    });
+
+    const scenes = campaign.scenes || [];
+    scenes.forEach((scene, idx) => {
+        const item = document.createElement('div');
+        item.className = 'bg-slate-950 border border-slate-800 hover:border-emerald-500/40 rounded-xl p-3 space-y-2 transition';
+        item.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-md bg-brand-500/20 text-brand-400 text-xs font-bold flex items-center justify-center border border-brand-500/30">
+                        ${scene.scene_number || (idx + 1)}
+                    </span>
+                    <h5 class="text-xs font-bold text-white uppercase">${scene.scene_title || `Scene ${idx + 1}`}</h5>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono">${scene.time_range || `${scene.duration_seconds || 1.5}s`}</span>
+            </div>
+
+            <p class="text-[11px] text-slate-300 bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">${scene.visual_description || '-'}</p>
+
+            ${scene.voiceover_script ? `
+            <div class="flex items-center justify-between bg-amber-950/20 border border-amber-500/20 rounded-lg px-2.5 py-1.5 text-[11px]">
+                <span class="text-amber-200 italic line-clamp-2">"${scene.voiceover_script}"</span>
+                <button class="btn-play-vo-sc flex-shrink-0 text-amber-400 hover:text-amber-300 text-[10px] font-bold ml-2">
+                    <i data-lucide="volume-2" class="w-3 h-3"></i>
+                </button>
+            </div>
+            ` : ''}
+
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-2 space-y-1.5">
+                <p class="text-[10px] text-slate-400 font-mono leading-relaxed line-clamp-3 select-all">${scene.google_flow_prompt}</p>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                    <span class="text-[9px] text-emerald-400 font-medium">Prompt Siap Tempel</span>
+                    <button class="btn-copy-sc-prompt px-2 py-0.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded text-[10px] font-bold flex items-center gap-1 transition">
+                        <i data-lucide="copy" class="w-3 h-3"></i> Salin Prompt
+                    </button>
+                </div>
+            </div>
+        `;
+
+        item.querySelector('.btn-play-vo-sc')?.addEventListener('click', () => {
+            if (scene.voiceover_script) speakVoiceover(scene.voiceover_script);
+        });
+
+        item.querySelector('.btn-copy-sc-prompt')?.addEventListener('click', () => {
+            copyToClipboard(scene.google_flow_prompt, `Prompt Adegan ${scene.scene_number || (idx + 1)} disalin! Silakan paste di Google Flow.`);
+        });
+
+        listContainer.appendChild(item);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
 }
 
 // =========================================================================
@@ -431,9 +597,13 @@ function setUgcDuration(dur) {
             btn.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
         }
     });
-    const sceneMap = { 10: '3 Scene Kilat', 15: '4 Scene TikTok', 20: '4 Scene', 30: '6 Scene AIDA', 60: '8 Scene Story' };
+    const labelMap = { 
+        10: '10 Detik (1 Klip — Utama)', 
+        20: '20 Detik (2 Klip @ 10s)', 
+        30: '30 Detik (3 Klip @ 10s)' 
+    };
     if (durationLabel) {
-        durationLabel.textContent = `${dur} Detik (${sceneMap[dur] || '6 Scene'})`;
+        durationLabel.textContent = labelMap[dur] || `${dur} Detik`;
     }
 }
 
@@ -459,35 +629,134 @@ function formatFullPromptVideoText(campaign) {
     if (!campaign) return '';
     const analysis = campaign.product_analysis || {};
     const title = analysis.product_name || document.getElementById('ugc-name')?.value || 'Produk Pilihan';
+    const dur = campaign.video_duration || selectedUgcDuration || 10;
     
-    let text = `PROMPT VIDEO — ${title}\n`;
-    text += `Durasi: 10 detik | Rasio: 9:16 | Kualitas: FHD\n\n`;
+    let text = `==========================================================\n`;
+    text += `PROMPT VIDEO UGC AFFILIATE LENGKAP — ${title.toUpperCase()}\n`;
+    text += `Durasi Total: ${dur} Detik | Rasio: 9:16 Vertikal | Kualitas: FHD 1080p, 30fps\n`;
+    text += `Formula: 6 Tahapan UGC (Hook, Problem, Pengenalan, Demonstrasi, Review, CTA)\n`;
+    text += `Bahasa: 100% Bahasa Indonesia Alami (Tanpa Kata Bahasa Inggris)\n`;
+    text += `==========================================================\n\n`;
+
+    // Multi-part breakdown for video tools with 10s limit (Google Flow / Veo / Kling)
+    if (campaign.parts && campaign.parts.length > 1) {
+        text += `✂️ PEMBAGIAN KLIP VIDEO GOOGLE FLOW (DIREKOMENDASIKAN RENDER PER KLIP 10s):\n`;
+        text += `(Setelah semua klip dirender, gabungkan klip-klip ini di aplikasi editing seperti CapCut atau Premiere)\n\n`;
+        
+        campaign.parts.forEach(part => {
+            text += `----------------------------------------------------------\n`;
+            text += `KLIP ${part.part_number} (${part.duration_seconds || 10} DETIK) — ${part.title || `BAGIAN ${part.part_number}`}\n`;
+            if (part.scenes_included) {
+                text += `Adegan Termasuk: ${part.scenes_included}\n`;
+            }
+            if (part.narasi_part) {
+                text += `Voiceover Bahasa Indonesia: "${part.narasi_part}"\n`;
+            }
+            text += `PROMPT GOOGLE FLOW / VEO / KLING:\n${part.google_flow_prompt}\n`;
+            text += `----------------------------------------------------------\n\n`;
+        });
+        text += `\n📋 RINCIAN PER ADEGAN (6 SCENE DETAIL):\n\n`;
+    }
 
     const scenes = campaign.scenes || [];
     scenes.forEach((s) => {
         const timeRange = s.time_range || `${s.duration_seconds || 1.5} detik`;
         const titleUpper = (s.scene_title || `ADEGAN ${s.scene_number}`).toUpperCase();
-        text += `ADEGAN ${s.scene_number} (${timeRange}) — ${titleUpper}\n`;
-        text += `- Visual: ${s.visual_description || '-'}\n`;
+        text += `[ADEGAN ${s.scene_number}: ${titleUpper} (${timeRange})]\n`;
+        text += `Visual: ${s.visual_description || '-'}\n`;
         if (s.camera_movement) {
-            text += `- Kamera: ${s.camera_movement}\n`;
+            text += `Kamera: ${s.camera_movement}\n`;
         }
-        text += `- Narasi: "${s.voiceover_script || '-'}"\n`;
+        text += `Voiceover Bahasa Indonesia: "${s.voiceover_script || '-'}"\n`;
         if (s.caption_overlay) {
-            text += `- Subtitle (Safe Zone): ${s.caption_overlay}\n`;
+            text += `Teks di Layar (Subtitle Safe Zone): ${s.caption_overlay}\n`;
         }
         if (s.google_flow_prompt) {
-            text += `- Prompt Video AI (Google Flow / Veo): ${s.google_flow_prompt}\n`;
+            text += `Prompt Video AI (Google Flow / Veo): ${s.google_flow_prompt}\n`;
         }
         text += `\n`;
     });
 
-    text += `TOTAL NARASI: ${campaign.total_narasi_kata || 24} kata\n`;
-    text += `GAYA VISUAL: UGC Realistis, pencahayaan alami, 9:16 vertikal\n`;
-    text += `REFERENSI GAMBAR: Ada\n`;
+    text += `TOTAL ESTIMASI KATA: ${campaign.total_narasi_kata || 24} kata\n`;
+    text += `GAYA VISUAL: UGC Realistis, pencahayaan alami, rasio 9:16 vertikal\n`;
     text += `CTA NETRAL: "${campaign.call_to_action || 'Yuk, langsung klik keranjang di bawah video ini ya!'}"`;
 
     return text.trim();
+}
+
+/**
+ * Gallery Renderer for Multi-Screenshot References
+ */
+function renderScreenshotsGallery() {
+    const galleryContainer = document.getElementById('screenshots-gallery-container');
+    const thumbnailGrid = document.getElementById('screenshots-thumbnail-grid');
+    const countBadge = document.getElementById('screenshots-count');
+    if (!galleryContainer || !thumbnailGrid) return;
+
+    if (uploadedScreenshots.length === 0) {
+        galleryContainer.classList.add('hidden');
+        return;
+    }
+
+    galleryContainer.classList.remove('hidden');
+    if (countBadge) countBadge.textContent = uploadedScreenshots.length;
+    thumbnailGrid.innerHTML = '';
+
+    uploadedScreenshots.forEach((item, index) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'relative group rounded-lg overflow-hidden border border-slate-700 bg-slate-900 aspect-square flex items-center justify-center';
+        thumb.innerHTML = `
+            <img src="${item.previewUrl}" class="w-full h-full object-cover" alt="${item.name}">
+            <button type="button" class="btn-del-img absolute top-1 right-1 p-1 bg-black/80 hover:bg-rose-600 text-white rounded transition shadow" title="Hapus foto ini">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+            </button>
+            <span class="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-slate-300 px-1 py-0.5 truncate text-center">${item.name}</span>
+        `;
+
+        thumb.querySelector('.btn-del-img')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            uploadedScreenshots.splice(index, 1);
+            renderScreenshotsGallery();
+            showToast('Foto referensi dihapus.', 'info');
+        });
+
+        thumbnailGrid.appendChild(thumb);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+/**
+ * Append multiple screenshot files to the reference pool
+ */
+function addScreenshotFiles(fileList) {
+    if (!fileList || fileList.length === 0) return;
+    
+    let addedCount = 0;
+    Array.from(fileList).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        addedCount++;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            const [header, base64] = dataUrl.split(',');
+            const mimeType = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+            
+            uploadedScreenshots.push({
+                id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                base64,
+                mimeType,
+                name: file.name || `screenshot_${uploadedScreenshots.length + 1}.png`,
+                previewUrl: dataUrl
+            });
+            renderScreenshotsGallery();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    if (addedCount > 0) {
+        showToast(`${addedCount} foto referensi ditambahkan! Tekan tombol 'Mulai Analisis Semua Gambar' jika sudah cukup.`, 'info');
+    }
 }
 
 function initUgcCreator() {
@@ -513,87 +782,21 @@ function initUgcCreator() {
         showToast(`Contoh dimuat: ${preset.name}`, 'info');
     });
 
-    // Screenshot Dropzone & Paste (Ctrl+V) handler
+    // Multi-Screenshot Dropzone & Paste (Ctrl+V) handler
     const dropzone = document.getElementById('screenshot-dropzone');
     const screenshotInput = document.getElementById('ugc-screenshot-input');
-    const dropzoneEmpty = document.getElementById('dropzone-empty');
-    const dropzonePreview = document.getElementById('dropzone-preview');
-    const screenshotImgPreview = document.getElementById('screenshot-img-preview');
-    const screenshotFilename = document.getElementById('screenshot-filename');
-    const screenshotStatus = document.getElementById('screenshot-status');
-    const btnRemoveScreenshot = document.getElementById('btn-remove-screenshot');
+    const btnClearScreenshots = document.getElementById('btn-clear-all-screenshots');
+    const btnAnalyzeScreenshots = document.getElementById('btn-analyze-screenshots');
+    const btnAnalyzeText = document.getElementById('btn-analyze-text');
 
-    let currentScreenshotBase64 = null;
-    let currentScreenshotMime = null;
-
-    const handleScreenshotFile = (file) => {
-        if (!file || !file.type.startsWith('image/')) {
-            showToast('Unggah file gambar (PNG, JPG, WebP).', 'error');
-            return;
-        }
-
-        const nameInput = document.getElementById('ugc-name');
-        const catSelect = document.getElementById('ugc-category');
-        const toneSelect = document.getElementById('ugc-tone');
-        const sellingInput = document.getElementById('ugc-selling');
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const dataUrl = e.target.result;
-            const [header, base64] = dataUrl.split(',');
-            const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
-
-            currentScreenshotBase64 = base64;
-            currentScreenshotMime = mime;
-
-            screenshotImgPreview.src = dataUrl;
-            screenshotFilename.textContent = file.name || 'screenshot.png';
-            screenshotStatus.innerHTML = `<div class="w-3 h-3 border-2 border-brand-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Menganalisis...`;
-            dropzoneEmpty.classList.add('hidden');
-            dropzonePreview.classList.remove('hidden');
-
-            try {
-                const details = await extractDetailsFromImage(base64, mime);
-                screenshotStatus.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-emerald-400 inline-block mr-1"></i> Teranalisis Sukses`;
-
-                if (details.product_name) nameInput.value = details.product_name;
-                if (details.selling_points) sellingInput.value = details.selling_points;
-                if (details.category) {
-                    for (const opt of catSelect.options) {
-                        if (opt.value === details.category || opt.text.includes(details.category) || details.category.includes(opt.value)) {
-                            catSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                }
-                if (details.suggested_tone) {
-                    for (const opt of toneSelect.options) {
-                        if (opt.value === details.suggested_tone || opt.text.includes(details.suggested_tone)) {
-                            toneSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                }
-                showToast(`Screenshot etalase berhasil dianalisis AI!`, 'success');
-            } catch (err) {
-                screenshotStatus.innerHTML = `<span class="text-rose-400">Gagal menganalisis</span>`;
-                showToast(err.message, 'error');
-            } finally {
-                if (window.lucide) window.lucide.createIcons();
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    dropzone?.addEventListener('click', (e) => {
-        if (!e.target.closest('#btn-remove-screenshot')) {
-            screenshotInput?.click();
-        }
+    dropzone?.addEventListener('click', () => {
+        screenshotInput?.click();
     });
 
     screenshotInput?.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files[0]) {
-            handleScreenshotFile(e.target.files[0]);
+        if (e.target.files && e.target.files.length > 0) {
+            addScreenshotFiles(e.target.files);
+            screenshotInput.value = ''; // Reset input to allow re-selecting same files
         }
     });
 
@@ -609,8 +812,8 @@ function initUgcCreator() {
     dropzone?.addEventListener('drop', (e) => {
         e.preventDefault();
         dropzone.classList.remove('border-brand-500', 'bg-brand-500/10');
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleScreenshotFile(e.dataTransfer.files[0]);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            addScreenshotFiles(e.dataTransfer.files);
         }
     });
 
@@ -622,26 +825,74 @@ function initUgcCreator() {
 
         const items = e.clipboardData?.items;
         if (!items) return;
+        const imageFiles = [];
         for (const item of items) {
             if (item.type.startsWith('image/')) {
                 const file = item.getAsFile();
-                if (file) {
-                    handleScreenshotFile(file);
-                    showToast('Screenshot ditempel dari clipboard!', 'info');
-                    break;
-                }
+                if (file) imageFiles.push(file);
             }
+        }
+        if (imageFiles.length > 0) {
+            addScreenshotFiles(imageFiles);
         }
     });
 
-    btnRemoveScreenshot?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentScreenshotBase64 = null;
-        currentScreenshotMime = null;
-        screenshotInput.value = '';
-        dropzonePreview.classList.add('hidden');
-        dropzoneEmpty.classList.remove('hidden');
-        showToast('Screenshot dihapus.', 'info');
+    // Clear all screenshots button
+    btnClearScreenshots?.addEventListener('click', () => {
+        uploadedScreenshots = [];
+        renderScreenshotsGallery();
+        showToast('Semua referensi foto telah dihapus.', 'info');
+    });
+
+    // Manual Analyze Button for Multi-Screenshots
+    btnAnalyzeScreenshots?.addEventListener('click', async () => {
+        if (uploadedScreenshots.length === 0) {
+            showToast('Silakan unggah atau paste minimal satu gambar referensi etalase produk.', 'error');
+            return;
+        }
+
+        btnAnalyzeScreenshots.disabled = true;
+        if (btnAnalyzeText) btnAnalyzeText.textContent = `Menganalisis ${uploadedScreenshots.length} Foto...`;
+
+        try {
+            const details = await extractDetailsFromMultipleImages(uploadedScreenshots);
+            const nameInput = document.getElementById('ugc-name');
+            const catSelect = document.getElementById('ugc-category');
+            const toneSelect = document.getElementById('ugc-tone');
+            const sellingInput = document.getElementById('ugc-selling');
+
+            if (details.product_name && nameInput) nameInput.value = details.product_name;
+            if (details.selling_points && sellingInput) {
+                let sText = details.selling_points;
+                if (details.variant && details.variant !== 'Standar') {
+                    sText += ` (Varian: ${details.variant})`;
+                }
+                sellingInput.value = sText;
+            }
+            if (details.category && catSelect) {
+                for (const opt of catSelect.options) {
+                    if (opt.value === details.category || opt.text.includes(details.category) || details.category.includes(opt.value)) {
+                        catSelect.value = opt.value;
+                        break;
+                    }
+                }
+            }
+            if (details.suggested_tone && toneSelect) {
+                for (const opt of toneSelect.options) {
+                    if (opt.value === details.suggested_tone || opt.text.includes(details.suggested_tone)) {
+                        toneSelect.value = opt.value;
+                        break;
+                    }
+                }
+            }
+            showToast(`Analisis ${uploadedScreenshots.length} gambar sukses! Kolom form otomatis terisi.`, 'success');
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            btnAnalyzeScreenshots.disabled = false;
+            if (btnAnalyzeText) btnAnalyzeText.textContent = 'Mulai Analisis Semua Gambar';
+            if (window.lucide) window.lucide.createIcons();
+        }
     });
 
     // Duration Buttons
@@ -1009,10 +1260,10 @@ function renderUgcResults(campaign) {
         const btnFlow = sceneCard.querySelector('.btn-flow-render');
         const flowStatusMsg = sceneCard.querySelector('.flow-status-msg');
         btnFlow?.addEventListener('click', async () => {
-            await copyToClipboard(scene.google_flow_prompt, `Prompt Scene ${scene.scene_number} disalin!`);
-            window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+            await copyToClipboard(scene.google_flow_prompt, `Prompt Adegan ${scene.scene_number || (index + 1)} disalin! Beralih ke Studio Google Flow...`);
+            switchTab('flow');
             if (flowStatusMsg) flowStatusMsg.classList.remove('hidden');
-            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka Ulang Google Flow`;
+            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka di Studio Flow`;
             if (window.lucide) window.lucide.createIcons();
         });
 
@@ -1424,10 +1675,10 @@ function renderDramaResults(drama) {
         const btnFlow = sceneCard.querySelector('.btn-flow-render');
         const flowStatusMsg = sceneCard.querySelector('.flow-status-msg');
         btnFlow?.addEventListener('click', async () => {
-            await copyToClipboard(scene.google_flow_prompt, `Prompt Scene ${scene.scene_number} disalin!`);
-            window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+            await copyToClipboard(scene.google_flow_prompt, `Prompt Adegan ${scene.scene_number || (index + 1)} disalin! Beralih ke Studio Google Flow...`);
+            switchTab('flow');
             if (flowStatusMsg) flowStatusMsg.classList.remove('hidden');
-            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka Ulang Google Flow`;
+            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka di Studio Flow`;
             if (window.lucide) window.lucide.createIcons();
         });
 
@@ -1615,21 +1866,74 @@ function initLicenseManager() {
 }
 
 // =========================================================================
-// THEME TOGGLE CONTROLLER
+// THEME TOGGLE CONTROLLER (Dark, Light, System)
 // =========================================================================
+function getStoredTheme() {
+    return localStorage.getItem('kawandigi_theme') || 'dark';
+}
+
+function applyTheme(theme) {
+    const html = document.documentElement;
+    const btnToggle = document.getElementById('btn-theme-toggle');
+    let effectiveDark = true;
+
+    if (theme === 'light') {
+        effectiveDark = false;
+    } else if (theme === 'dark') {
+        effectiveDark = true;
+    } else if (theme === 'system') {
+        effectiveDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    if (effectiveDark) {
+        html.classList.add('dark');
+    } else {
+        html.classList.remove('dark');
+    }
+
+    if (btnToggle) {
+        if (theme === 'dark') {
+            btnToggle.innerHTML = `<i data-lucide="moon" class="w-4 h-4 text-brand-400"></i>`;
+            btnToggle.title = 'Tema: Mode Gelap (Klik ganti ke Mode Terang)';
+        } else if (theme === 'light') {
+            btnToggle.innerHTML = `<i data-lucide="sun" class="w-4 h-4 text-amber-400"></i>`;
+            btnToggle.title = 'Tema: Mode Terang (Klik ganti ke Sesuai Sistem)';
+        } else {
+            btnToggle.innerHTML = `<i data-lucide="laptop" class="w-4 h-4 text-emerald-400"></i>`;
+            btnToggle.title = 'Tema: Sesuai Sistem Device (Klik ganti ke Mode Gelap)';
+        }
+    }
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function cycleTheme() {
+    const current = getStoredTheme();
+    let next = 'dark';
+    if (current === 'dark') next = 'light';
+    else if (current === 'light') next = 'system';
+    else if (current === 'system') next = 'dark';
+
+    localStorage.setItem('kawandigi_theme', next);
+    applyTheme(next);
+    
+    const labelMap = { dark: 'Mode Gelap', light: 'Mode Terang', system: 'Sesuai Sistem Device' };
+    showToast(`Tema diubah: ${labelMap[next]}`, 'info');
+}
+
 function initThemeToggle() {
     const btnToggle = document.getElementById('btn-theme-toggle');
-    btnToggle?.addEventListener('click', () => {
-        const html = document.documentElement;
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            btnToggle.innerHTML = `<i data-lucide="moon" class="w-4 h-4"></i>`;
-        } else {
-            html.classList.add('dark');
-            btnToggle.innerHTML = `<i data-lucide="sun" class="w-4 h-4"></i>`;
-        }
-        if (window.lucide) window.lucide.createIcons();
-    });
+    btnToggle?.addEventListener('click', cycleTheme);
+
+    // Watch for OS theme changes if user selected 'system'
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (getStoredTheme() === 'system') {
+                applyTheme('system');
+            }
+        });
+    }
+
+    applyTheme(getStoredTheme());
 }
 
 // =========================================================================

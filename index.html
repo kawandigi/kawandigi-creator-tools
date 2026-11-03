@@ -66,6 +66,10 @@
                     <i data-lucide="shopping-bag" class="w-4 h-4"></i>
                     UGC Affiliate
                 </button>
+                <button id="nav-flow" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                    Studio Google Flow
+                </button>
                 <button id="nav-drama" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="clapperboard" class="w-4 h-4"></i>
                     AI Drama Series
@@ -127,38 +131,41 @@
                         </button>
                     </div>
 
-                    <!-- Screenshot Upload / Paste (Ctrl+V) Zone -->
-                    <div>
-                        <div class="flex items-center justify-between mb-1.5">
+                    <!-- Multi-Screenshot Upload / Paste (Ctrl+V) Zone -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
                             <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                                <i data-lucide="image" class="w-3.5 h-3.5 text-brand-400"></i>
-                                Unggah / Tempel Screenshot Etalase:
+                                <i data-lucide="images" class="w-3.5 h-3.5 text-brand-400"></i>
+                                Unggah / Tempel Referensi Gambar:
                             </label>
-                            <span class="text-[10px] bg-brand-500/20 text-brand-300 border border-brand-500/30 px-1.5 py-0.5 rounded font-bold">Rekomendasi</span>
+                            <span class="text-[10px] bg-brand-500/20 text-brand-300 border border-brand-500/30 px-1.5 py-0.5 rounded font-bold">Bisa Banyak Foto</span>
                         </div>
-                        <div id="screenshot-dropzone" class="border-2 border-dashed border-slate-700/80 hover:border-brand-500 rounded-xl p-3.5 text-center cursor-pointer transition bg-slate-950/70 relative group">
-                            <input type="file" id="ugc-screenshot-input" accept="image/*" class="hidden">
-                            <div id="dropzone-empty" class="flex flex-col items-center justify-center py-1.5">
-                                <div class="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                                    <i data-lucide="image-plus" class="w-5 h-5"></i>
+                        <div id="screenshot-dropzone" class="border-2 border-dashed border-slate-700/80 hover:border-brand-500 rounded-xl p-3 text-center cursor-pointer transition bg-slate-950/70 relative group">
+                            <input type="file" id="ugc-screenshot-input" accept="image/*" multiple class="hidden">
+                            <div id="dropzone-empty" class="flex flex-col items-center justify-center py-1">
+                                <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center mb-1 group-hover:scale-110 transition">
+                                    <i data-lucide="image-plus" class="w-4 h-4"></i>
                                 </div>
                                 <p class="text-xs font-bold text-slate-200">Klik Unggah atau Tekan <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-brand-300 font-mono">Ctrl + V</kbd></p>
-                                <p class="text-[11px] text-slate-400 mt-0.5">AI membaca judul, varian & harga etalase Shopee/TikTok Shop</p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">Bisa masukkan banyak foto: etalase, varian, ulasan pembeli, detail bahan</p>
                             </div>
-                            <div id="dropzone-preview" class="hidden flex items-center justify-between gap-3 bg-slate-900/90 p-2 rounded-xl border border-brand-500/30">
-                                <div class="flex items-center gap-2.5 overflow-hidden">
-                                    <img id="screenshot-img-preview" class="w-11 h-11 object-cover rounded-lg border border-slate-700 flex-shrink-0" alt="Screenshot" />
-                                    <div class="text-left overflow-hidden">
-                                        <span class="text-xs font-bold text-white truncate block" id="screenshot-filename">screenshot.png</span>
-                                        <span class="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold" id="screenshot-status">
-                                            <i data-lucide="check-circle" class="w-3 h-3"></i> Siap Dianalisis AI
-                                        </span>
-                                    </div>
-                                </div>
-                                <button type="button" id="btn-remove-screenshot" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition" title="Hapus screenshot">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </div>
+
+                        <!-- Uploaded Thumbnails Gallery (Hidden if empty) -->
+                        <div id="screenshots-gallery-container" class="hidden space-y-2">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                                <span>Daftar Referensi (<strong id="screenshots-count" class="text-white">0</strong> gambar):</span>
+                                <button type="button" id="btn-clear-all-screenshots" class="text-rose-400 hover:text-rose-300 text-[10px] font-semibold underline">
+                                    Hapus Semua
                                 </button>
                             </div>
+                            <div id="screenshots-thumbnail-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-36 overflow-y-auto p-1 bg-slate-950/60 rounded-xl border border-slate-800"></div>
+
+                            <!-- Manual Analyze Button -->
+                            <button type="button" id="btn-analyze-screenshots" class="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition">
+                                <i data-lucide="scan-text" class="w-3.5 h-3.5"></i>
+                                <span id="btn-analyze-text">Mulai Analisis Semua Gambar</span>
+                            </button>
                         </div>
                     </div>
 
@@ -202,32 +209,28 @@
                         </div>
                     </div>
 
-                    <!-- Duration Selector (Fast-paced affiliate video cuts) -->
+                    <!-- Duration Selector (Cleaned without scene text, 10s default) -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between items-center">
-                            <span>Durasi Video & Format Pacing:</span>
-                            <span class="text-brand-400 font-bold" id="ugc-duration-label">30 Detik (6 Scene AIDA)</span>
+                            <span>Durasi Video Target:</span>
+                            <span class="text-brand-400 font-bold" id="ugc-duration-label">10 Detik (1 Klip — Utama)</span>
                         </label>
-                        <div class="grid grid-cols-4 gap-2">
-                            <button type="button" data-duration="10" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2 text-xs font-bold text-slate-300 hover:border-brand-500 transition">
-                                10 Detik
-                                <span class="block text-[10px] text-slate-500 font-normal">3 Scene Kilat</span>
+                        <div class="grid grid-cols-3 gap-2.5">
+                            <button type="button" data-duration="10" class="btn-duration active bg-brand-500/20 border border-brand-500 text-brand-300 rounded-xl py-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                                <i data-lucide="zap" class="w-3.5 h-3.5 text-brand-400"></i>
+                                10 Detik (Utama)
                             </button>
-                            <button type="button" data-duration="15" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2 text-xs font-bold text-slate-300 hover:border-brand-500 transition">
-                                15 Detik
-                                <span class="block text-[10px] text-slate-500 font-normal">4 Scene TikTok</span>
+                            <button type="button" data-duration="20" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2.5 text-xs font-bold text-slate-300 hover:border-brand-500 transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="film" class="w-3.5 h-3.5 text-slate-400"></i>
+                                20 Detik (2 Klip)
                             </button>
-                            <button type="button" data-duration="30" class="btn-duration active bg-brand-500/20 border-brand-500 text-brand-300 rounded-xl py-2 text-xs font-bold transition">
-                                30 Detik
-                                <span class="block text-[10px] text-slate-400 font-normal">6 Scene AIDA</span>
-                            </button>
-                            <button type="button" data-duration="60" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2 text-xs font-bold text-slate-300 hover:border-brand-500 transition">
-                                60 Detik
-                                <span class="block text-[10px] text-slate-500 font-normal">8 Scene Story</span>
+                            <button type="button" data-duration="30" class="btn-duration bg-slate-950 border border-slate-800 rounded-xl py-2.5 text-xs font-bold text-slate-300 hover:border-brand-500 transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-slate-400"></i>
+                                30 Detik (3 Klip)
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-1.5 italic">
-                            *Ritme cepat (fast-paced cuts 2–5 detik per scene) dari Hook hingga CTA untuk retensi tontonan tertinggi.
+                        <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                            💡 Durasi di atas 10 detik otomatis dipecah menjadi beberapa prompt video 10 detik (Part 1, Part 2, dst.) agar langsung pas dirender di Google Flow / Veo lalu digabung di CapCut/Premiere.
                         </p>
                     </div>
 
@@ -316,6 +319,81 @@
                             <!-- Scene Cards List -->
                             <div id="ugc-scene-list" class="space-y-3"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- TAB: STUDIO GOOGLE FLOW (VEO WORKSPACE)    -->
+        <!-- ========================================== -->
+        <section id="section-flow" class="tab-content hidden space-y-4">
+            <!-- Top Bar with status & quick actions -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/30">
+                        <i data-lucide="video" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            Studio Google Flow (Veo)
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">100% Gratis</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Pilih prompt di panel kiri, lalu paste (<kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-emerald-300 font-mono">Ctrl + V</kbd>) di Google Flow sebelah kanan.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btn-flow-refresh-iframe" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold flex items-center gap-1 transition" title="Muat ulang Google Flow">
+                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> Refresh
+                    </button>
+                    <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" title="Buka di tab / jendela terpisah">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Buka di Tab Baru
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Workspace Split: Left (Prompt Drawer) + Right (Google Flow Embed) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-210px)] min-h-[620px]">
+                <!-- Left Panel: Prompt Drawer (5 Cols) -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col overflow-hidden shadow-sm">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800 mb-3">
+                        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                            <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
+                            Daftar Prompt Video Siap Pakai
+                        </span>
+                        <span id="flow-prompt-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
+                            0 Adegan
+                        </span>
+                    </div>
+
+                    <!-- Scrollable Prompts List -->
+                    <div id="flow-prompt-list" class="flex-1 overflow-y-auto space-y-3 pr-1">
+                        <!-- Empty state if no campaign generated yet -->
+                        <div id="flow-empty-prompts" class="text-center py-16 text-slate-500 space-y-2">
+                            <i data-lucide="clapperboard" class="w-10 h-10 mx-auto text-slate-600"></i>
+                            <p class="text-xs font-semibold text-slate-400">Belum Ada Prompt Video</p>
+                            <p class="text-[11px] text-slate-500 max-w-xs mx-auto">Generate prompt di tab <strong>UGC Affiliate</strong> terlebih dahulu, prompt 10 detik per adegan akan otomatis tersusun rapi di sini!</p>
+                            <button type="button" onclick="document.getElementById('nav-ugc').click()" class="mt-2 px-3 py-1.5 bg-brand-600/30 hover:bg-brand-600/50 text-brand-300 border border-brand-500/40 rounded-lg text-xs font-bold transition">
+                                Buka Tab UGC Affiliate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Google Flow Embed (7 Cols) -->
+                <div class="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden relative flex flex-col shadow-inner">
+                    <iframe id="google-flow-iframe" src="https://aitestkitchen.withgoogle.com/tools/video-fx" class="w-full h-full border-0 rounded-2xl" allow="clipboard-read; clipboard-write; microphone; camera; fullscreen"></iframe>
+                    
+                    <!-- Companion Overlay Helper if user browser blocks iframe -->
+                    <div id="flow-iframe-helper" class="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur-md border border-emerald-500/30 rounded-xl p-2.5 flex items-center justify-between text-xs text-slate-300 shadow-2xl">
+                        <span class="flex items-center gap-1.5 text-[11px]">
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                            Tips: Klik tombol <strong>Salin Prompt</strong> di kiri, lalu paste (<kbd class="px-1 py-0.2 bg-slate-800 border border-slate-700 rounded text-[9px] text-emerald-300 font-mono">Ctrl + V</kbd>) di Google Flow.
+                        </span>
+                        <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 font-bold underline flex items-center gap-1 whitespace-nowrap text-[11px]">
+                            Buka di Jendela Baru <i data-lucide="external-link" class="w-3 h-3"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -624,6 +702,10 @@
         <button id="m-nav-ugc" class="mobile-nav-btn active flex flex-col items-center gap-1 text-[10px] font-semibold text-brand-400">
             <i data-lucide="shopping-bag" class="w-5 h-5"></i>
             UGC
+        </button>
+        <button id="m-nav-flow" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
+            <i data-lucide="sparkles" class="w-5 h-5 text-emerald-400"></i>
+            Flow
         </button>
         <button id="m-nav-drama" class="mobile-nav-btn flex flex-col items-center gap-1 text-[10px] font-semibold text-slate-400">
             <i data-lucide="clapperboard" class="w-5 h-5"></i>

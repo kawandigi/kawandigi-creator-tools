@@ -187,31 +187,37 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
 }
 
 /**
- * Intelligent AI Multimodal Extraction from Screenshot (Shopee, TikTok Shop, Tokopedia, Listing, Menu)
- * As defined in Kawan Digital Skill v2.0
+ * Intelligent AI Multimodal Extraction from One or More Screenshots / Photos
+ * Supports multiple reference images simultaneously (e.g. storefront + review + variant details)
  */
-export async function extractDetailsFromImage(base64Data, mimeType = 'image/jpeg') {
-    const systemPrompt = `Kamu adalah Kawan Digital, asisten AI spesialis analisis screenshot etalase marketplace (Shopee, TikTok Shop, Tokopedia, Lazada), listing hotel/staycation, atau menu kuliner.
-Tugasmu adalah menganalisis gambar screenshot yang diunggah secara objektif, akurat, dan jujur tanpa mengarang fakta.
+export async function extractDetailsFromMultipleImages(images) {
+    if (!images || images.length === 0) {
+        throw new Error('Pilih minimal satu gambar referensi etalase produk.');
+    }
 
-Ekstrak informasi yang terbaca dari gambar dan kembalikan HANYA format JSON valid berikut (tanpa markdown backtick):
+    const systemPrompt = `Kamu adalah Kawan Digital, asisten AI spesialis analisis multi-gambar screenshot etalase marketplace (Shopee, TikTok Shop, Tokopedia, Lazada), detail ulasan pembeli, atau menu kuliner.
+Tugasmu adalah menganalisis seluruh gambar referensi yang diunggah secara objektif, akurat, dan menyeluruh tanpa mengarang fakta. Gabungkan informasi dari seluruh gambar (nama produk, varian, harga, bahan, keunggulan, ulasan).
+
+Ekstrak informasi yang terbaca dari seluruh gambar dan kembalikan HANYA format JSON valid berikut (tanpa markdown backtick):
 {
-  "product_name": "Nama produk / nama tempat / nama menu yang terbaca jelas",
+  "product_name": "Nama produk lengkap yang bersih, mudah dipahami, tanpa karakter sampah",
   "category": "🛍️ Konten Affiliate Produk",
   "variant": "Warna & varian yang terlihat di gambar (atau 'Standar')",
-  "visual_details": "Detail visual yang terlihat (bahan, bentuk, kemasan, porsi, dsb.)",
+  "visual_details": "Detail visual yang terlihat dari gambar (bahan, bentuk, kemasan, warna, dsb.)",
   "price": "Harga / diskon / rating jika terbaca jelas, atau 'belum terdeteksi'",
-  "selling_points": "Keunggulan utama / benefit yang tampak atau terbaca dari deskripsi screenshot (2-3 kalimat padat)",
+  "selling_points": "Keunggulan utama / benefit yang tampak atau terbaca dari deskripsi & ulasan screenshot (2-3 kalimat padat)",
   "suggested_tone": "Casual & Ceria (Gen Z)",
   "target_audience": "Target calon pembeli ideal produk ini"
 }`;
 
-    const prompt = `Analisis screenshot etalase produk berikut. Ekstrak nama produk, kategori, varian warna/detail visual, harga (jika terbaca), dan keunggulan utamanya dalam format JSON.`;
+    const prompt = `Analisis seluruh ${images.length} gambar referensi produk berikut. Ekstrak nama produk lengkap, kategori, detail visual/spesifikasi, ulasan/keunggulan utama dalam format JSON.`;
 
-    const rawResponse = await callGemini(prompt, systemPrompt, 'gemini-3.8-flash', null, {
-        mimeType: mimeType,
-        data: base64Data
-    });
+    const inlineDataPayload = images.map(img => ({
+        mimeType: img.mimeType || 'image/jpeg',
+        data: img.base64
+    }));
+
+    const rawResponse = await callGemini(prompt, systemPrompt, 'gemini-3.8-flash', null, inlineDataPayload);
 
     if (rawResponse) {
         const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
@@ -222,7 +228,11 @@ Ekstrak informasi yang terbaca dari gambar dan kembalikan HANYA format JSON vali
         }
     }
 
-    throw new Error('Gagal menganalisis screenshot. Pastikan gambar etalase memiliki teks judul yang jelas.');
+    throw new Error('Gagal menganalisis referensi gambar. Pastikan gambar memuat teks judul atau informasi yang cukup jelas.');
+}
+
+export async function extractDetailsFromImage(base64Data, mimeType = 'image/jpeg') {
+    return extractDetailsFromMultipleImages([{ base64: base64Data, mimeType }]);
 }
 
 // Backwards compatibility alias
@@ -265,18 +275,31 @@ function sanitizeIndonesianUgc(campaign) {
         }
         if (s.google_flow_prompt) {
             s.google_flow_prompt = s.google_flow_prompt
-                .replace(/^Cinematic vertical 9:16 UGC video,?\s*/i, 'Video UGC vertikal 9:16, ')
-                .replace(/natural handheld lighting/gi, 'pencahayaan alami natural')
+                .replace(/^Cinematic vertical 9:16 UGC video,?\s*/i, 'Video UGC vertikal 9:16 kualitas FHD. Talent: wanita muda Indonesia berpenampilan natural, ')
+                .replace(/natural handheld lighting/gi, 'pencahayaan alami kamar estetik')
                 .replace(/natural lighting/gi, 'pencahayaan alami')
-                .replace(/photorealistic,?\s*FHD/gi, 'fotorealistis, FHD')
+                .replace(/photorealistic,?\s*FHD/gi, 'fotorealistis FHD tanpa watermark')
                 .replace(/photorealistic/gi, 'fotorealistis')
                 .replace(/highly detailed/gi, 'sangat detail')
                 .replace(/bright room/gi, 'ruangan terang')
                 .replace(/bright bedroom background/gi, 'latar kamar tidur estetik')
-                .replace(/stylish outfit/gi, 'pakaian stylish modis')
+                .replace(/stylish outfit/gi, 'pakaian kasual modis')
                 .replace(/casual style/gi, 'gaya kasual');
+
+            // Ensure explicit Indonesian voiceover directive is present
+            if (!/voiceover bahasa indonesia/i.test(s.google_flow_prompt) && s.voiceover_script) {
+                s.google_flow_prompt += `. Voiceover bahasa Indonesia: "${s.voiceover_script}". Percakapan dan teks wajib Bahasa Indonesia, tanpa kata bahasa Inggris.`;
+            }
         }
     });
+
+    if (Array.isArray(campaign.parts)) {
+        campaign.parts.forEach(p => {
+            if (p.google_flow_prompt && !/voiceover bahasa indonesia/i.test(p.google_flow_prompt) && p.narasi_part) {
+                p.google_flow_prompt += `. Voiceover bahasa Indonesia: "${p.narasi_part}". Wajib Bahasa Indonesia, tanpa watermark.`;
+            }
+        });
+    }
 
     return campaign;
 }
@@ -284,14 +307,9 @@ function sanitizeIndonesianUgc(campaign) {
 /**
  * Generate Complete UGC Affiliate Storyboard & Scene Prompts
  * Strictly adheres to Kawan Digital Skill v2.0:
- * - 6-Scene UGC Video (10 Seconds, FHD 9:16)
- *   1. Hook (0–1.5s, 3–5 kata)
- *   2. Problem (1.5–3s, 4–6 kata)
- *   3. Pengenalan (3–4.5s, 4–6 kata)
- *   4. Demonstrasi (4.5–6.5s, 4–6 kata)
- *   5. Honest Review (6.5–8.5s, 4–6 kata)
- *   6. CTA Netral (8.5–10s, 3–5 kata)
- * - Total narasi: 22–26 kata (maksimal 28 kata)
+ * - 6-Scene UGC Video structure (Hook, Problem, Pengenalan, Demonstrasi, Review, CTA)
+ * - Multi-Part 10s Video Splitting (10s = 1 clip, 20s = 2 clips @ 10s, 30s = 3 clips @ 10s)
+ * - Explicit Indonesian Voiceover & Talent Directives in Prompts (Zero English Leakage)
  * - Safe zone: area tengah-atas, hindari area bawah 15% & kanan 10%
  * - Multi-Platform Neutral CTA (tidak menyebut warna keranjang)
  * - 3 Template Caption Siap Pakai (Hard-selling, Storytelling, Soft-selling)
@@ -314,53 +332,46 @@ export async function generateUgcCampaign({
         throw new Error('Akses Tool AI UGC Creator terkunci. Silakan masukkan kode lisensi di tab Lisensi untuk membuka akses.');
     }
 
+    const dur = parseInt(videoDuration, 10) || 10;
+    const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
+
     // 2. Construct prompt for Gemini according to Kawan Digital Skill v2.0
-    const systemPrompt = `Kamu adalah Kawan Digital, asisten pembuat konten affiliate dan review berbahasa Indonesia.
-Tugasmu adalah menghasilkan Storyboard 6 adegan (grid 2x3), prompt video UGC durasi 10 detik, dan 3 template caption siap pakai untuk TikTok & Shopee Video.
+    const systemPrompt = `Kamu adalah Kawan Digital, asisten pembuat konten affiliate dan review berbahasa Indonesia kelas dunia.
+Tugasmu adalah menghasilkan Storyboard UGC ideal (Hook, Problem, Pengenalan, Demonstrasi, Honest Review, CTA), prompt video Google Flow / Veo per klip 10 detik, dan 3 template caption siap pakai untuk TikTok & Shopee Video.
 
-ATURAN STRUKTUR VIDEO (WAJIB TEPAT 6 ADEGAN BERIKUT):
-| # | Adegan | Waktu | Kata Narasi |
-|---|---|---|---|
-| 1 | Hook — tarik perhatian | 0–1,5 detik | 3–5 kata |
-| 2 | Problem — masalah yang relate | 1,5–3 detik | 4–6 kata |
-| 3 | Pengenalan — tampilkan produk/tempat | 3–4,5 detik | 4–6 kata |
-| 4 | Demonstrasi — tunjukkan aksi/keunggulan | 4,5–6,5 detik | 4–6 kata |
-| 5 | Honest Review — benefit jujur | 6,5–8,5 detik | 4–6 kata |
-| 6 | CTA Netral — ajakan bertindak | 8,5–10 detik | 3–5 kata |
+ATURAN STRUKTUR SCENE (WAJIB TEPAT 6 TAHAPAN INI, BERAPAPUN DURASINYA):
+1. Hook — menarik perhatian di detik awal
+2. Problem — masalah relatable yang dialami penonton
+3. Pengenalan — memperkenalkan produk sebagai solusi
+4. Demonstrasi — aksi nyata penggunaan atau keunggulan produk
+5. Honest Review — ulasan jujur & manfaat yang dirasakan
+6. CTA Netral — ajakan bertindak (klik keranjang/link di bawah video)
 
-ATURAN BAHASA (SANGAT KRUSIAL — WAJIB 100% BAHASA INDONESIA):
-- SEMUA teks di dalam hasil output HARUS 100% BAHASA INDONESIA! DILARANG KERAS MENGGUNAKAN BAHASA INGGRIS!
-- Dilarang membocorkan frasa bahasa Inggris seperti "Cinematic vertical", "natural handheld lighting", "girl looking confused", "holding crop top", "Pan left", "medium close up", "snap zoom in", dll.
-- camera_movement: WAJIB DALAM BAHASA INDONESIA!
-  Gunakan istilah bahasa Indonesia seperti:
-  * "Zoom cepat ke arah produk"
-  * "Kamera bergerak ke kiri perlahan, close-up sedang"
-  * "Kamera statis jarak dekat fokus detail produk"
-  * "Kamera meregangkan/mendemonstrasikan produk secara dekat"
-  * "Kamera berputar mengelilingi model (orbit pan)"
-  * "Kamera sejajar mata fokus menunjuk ke bawah (CTA)"
-- google_flow_prompt: WAJIB 100% DALAM BAHASA INDONESIA!
-  Prompt untuk Google Flow / Veo harus berupa deskripsi visual sinematik yang hidup dan realistis dalam Bahasa Indonesia.
-  Format Google Flow Prompt:
-  "Video UGC vertikal 9:16, pencahayaan alami, [deskripsi adegan visual detail dalam Bahasa Indonesia], pergerakan kamera [kamera dalam Bahasa Indonesia], fotorealistis, FHD"
-- visual_description: WAJIB 100% dalam Bahasa Indonesia detail.
-- voiceover_script: WAJIB 100% dalam Bahasa Indonesia natural dan luwes (total 22-26 kata).
-- caption_overlay: WAJIB 100% dalam Bahasa Indonesia singkat (maksimal 2 baris).
+ATURAN PEMBAGIAN DURASI & KLIP 10 DETIK (${dur} DETIK — ${partCount} KLIP):
+Google Flow / Veo / AI Video merender video maksimal 10 detik per klip.
+${partCount === 1 ? `
+- Video 10 detik dibuat dalam 1 Klip utuh 10 detik (Adegan 1 s/d 6). Total narasi 22-26 kata.
+` : (partCount === 2 ? `
+- Video 20 detik dipecah menjadi tepat 2 KLIP (@ 10 detik per klip) agar user bisa merender 2 kali lalu menggabungkannya dalam editing video:
+  * KLIP 1 (10 Detik): Adegan 1 (Hook), Adegan 2 (Problem), Adegan 3 (Pengenalan Solusi). Narasi Klip 1: 20-25 kata.
+  * KLIP 2 (10 Detik): Adegan 4 (Demonstrasi), Adegan 5 (Honest Review), Adegan 6 (CTA Netral). Narasi Klip 2: 20-25 kata.
+` : `
+- Video 30 detik dipecah menjadi tepat 3 KLIP (@ 10 detik per klip):
+  * KLIP 1 (10 Detik): Adegan 1 (Hook mendalam) & Adegan 2 (Problem penonton). Narasi Klip 1: 20-25 kata.
+  * KLIP 2 (10 Detik): Adegan 3 (Pengenalan Produk) & Adegan 4 (Demonstrasi Aksi Lengkap). Narasi Klip 2: 20-25 kata.
+  * KLIP 3 (10 Detik): Adegan 5 (Honest Review) & Adegan 6 (Call To Action Netral). Narasi Klip 3: 20-25 kata.
+`)}
 
-ATURAN NARASI:
-- Total narasi SELURUH video: TEPAT 22–26 KATA (maksimal 28 kata).
-- Bahasa Indonesia natural, seolah sedang ngobrol ramah.
-- CTA Netral: JANGAN SEBUT WARNA KERANJANG (JANGAN "keranjang kuning" / "keranjang oranye").
-  Gunakan CTA netral seperti: "Yuk, langsung klik keranjang di bawah video ini ya!" atau "Temukan tautan produknya persis di bawah video ya."
+ATURAN BAHASA & PROMPT GOOGLE FLOW (WAJIB 100% BAHASA INDONESIA):
+- SEMUA teks output HARUS 100% BAHASA INDONESIA! DILARANG KERAS MENGGUNAKAN BAHASA INGGRIS!
+- Agar AI video generator menghasilkan video dengan talent Indonesia dan audio bahasa Indonesia (bukan bahasa Inggris), setiap "google_flow_prompt" WAJIB MENGIKUTI STRUKTUR SPESIFIK BERIKUT:
+  "Video UGC vertikal 9:16 kualitas FHD. Talent: wanita muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: [deskripsi visual detail adegan dalam bahasa Indonesia]. Pergerakan kamera: [kamera bahasa Indonesia]. Voiceover bahasa Indonesia: '[naskah suara adegan ini]'. Teks subtitle di layar bahasa Indonesia: '[teks overlay]'. Wajib percakapan dan tulisan Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark."
 
-ATURAN SAFE ZONE & SUBTITLE:
-- Subtitle maksimal 2 baris di area tengah-atas.
-- Hindari ~15% area bawah dan ~10–15% area kanan (tertutup tombol like, komentar, keranjang, caption).
+ATURAN PERGERAKAN KAMERA (WAJIB BAHASA INDONESIA):
+Contoh: "Zoom cepat ke arah produk", "Kamera bergerak ke kiri perlahan, close-up sedang", "Kamera statis jarak dekat fokus detail bahan", "Kamera meregangkan produk secara dekat", "Kamera berputar mengelilingi model (orbit pan)", "Kamera sejajar mata fokus menunjuk ke bawah".
 
-3 TEMPLATE CAPTION SIAP PAKAI:
-1. Hard-selling: Singkat, langsung, to the point, urgensi + 3-6 hashtag relevan.
-2. Storytelling: Relatable, personal experience, emosional + 3-6 hashtag relevan.
-3. Soft-selling: Edukatif, informatif, subtle persuasion + 3-6 hashtag relevan.
+ATURAN CTA NETRAL:
+JANGAN SEBUT WARNA KERANJANG (JANGAN "keranjang kuning" / "keranjang oranye"). Gunakan: "Yuk, langsung klik keranjang di bawah video ini ya!" atau "Temukan tautan produknya persis di bawah video ya."
 
 Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
 {
@@ -370,22 +381,35 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     "core_benefit": "Manfaat utama produk",
     "target_buyer": "Target calon pembeli"
   },
+  "duration_seconds": ${dur},
+  "part_count": ${partCount},
+  "parts": [
+    {
+      "part_number": 1,
+      "part_title": "KLIP 1: HOOK & PROBLEM",
+      "duration_seconds": 10,
+      "scenes_included": "Adegan 1 - 3",
+      "google_flow_prompt": "Video UGC vertikal 9:16 kualitas FHD. Talent: wanita muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: Gadis Indonesia tersenyum ceria menunjukkan produk ke kamera... Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: '...'. Teks subtitle di layar bahasa Indonesia: '...'. Wajib Bahasa Indonesia, tanpa bahasa Inggris, tanpa watermark.",
+      "narasi_part": "Naskah voiceover lengkap untuk klip 1 ini (20-25 kata)"
+    }
+  ],
   "scenes": [
     {
       "scene_number": 1,
+      "part_number": 1,
       "time_range": "0–1,5 detik",
       "duration_seconds": 1.5,
       "scene_title": "HOOK",
-      "visual_description": "Seorang gadis Gen Z tersenyum ceria menunjukkan produk di depan kamera dengan latar kamar estetik pencahayaan alami.",
+      "visual_description": "Seorang gadis Gen Z Indonesia tersenyum ceria menunjukkan produk di depan kamera dengan latar kamar estetik pencahayaan alami.",
       "camera_movement": "Zoom cepat ke arah produk",
       "voiceover_script": "Mau tampil cantik modis seharian?",
       "word_count": 5,
       "caption_overlay": "Mau Tampil Cantik Modis?",
-      "google_flow_prompt": "Video UGC vertikal 9:16, pencahayaan alami, seorang gadis Gen Z tersenyum ceria menunjukkan produk di depan kamera dengan latar kamar estetik, pergerakan kamera zoom cepat ke arah produk, fotorealistis, FHD"
+      "google_flow_prompt": "Video UGC vertikal 9:16 kualitas FHD. Talent: wanita muda Indonesia berpenampilan natural, pencahayaan alami kamar estetik. Visual adegan: Gadis Gen Z tersenyum ceria menunjukkan produk di depan kamera. Pergerakan kamera: Zoom cepat ke arah produk. Voiceover bahasa Indonesia: 'Mau tampil cantik modis seharian?'. Teks subtitle di layar bahasa Indonesia: 'Mau Tampil Cantik Modis?'. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark."
     }
   ],
   "total_narasi_kata": 24,
-  "formatted_prompt_video": "PROMPT VIDEO — [Nama Produk]\nDurasi: 10 detik | Rasio: 9:16 | Kualitas: FHD...",
+  "formatted_prompt_video": "PROMPT VIDEO — [Nama Produk]\nDurasi: ${dur} detik...",
   "captions": {
     "hard_selling": {
       "hook": "Teks hook bahasa Indonesia",
@@ -411,7 +435,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
   }
 }`;
 
-    let userPrompt = `Buatkan Storyboard 6 Adegan, Prompt Video 10 Detik, dan 3 Template Caption sesuai standar Kawan Digital (SEMUA OUTPUT HARUS 100% BAHASA INDONESIA, TERMASUK PERGERAKAN KAMERA DAN PROMPT VIDEO GOOGLE FLOW):\n`;
+    let userPrompt = `Buatkan Storyboard UGC Ideal, Prompt Video Google Flow per Klip 10 Detik, dan 3 Template Caption sesuai standar Kawan Digital (TOTAL DURASI: ${dur} DETIK, DIBAGI MENJADI ${partCount} KLIP @ 10 DETIK):\n`;
     if (productName) userPrompt += `- Nama Produk: ${productName}\n`;
     if (productCategory) userPrompt += `- Kategori: ${productCategory}\n`;
     if (sellingPoints) userPrompt += `- Keunggulan / Selling Points: ${sellingPoints}\n`;
