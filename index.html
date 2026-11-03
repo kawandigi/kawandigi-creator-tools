@@ -58,15 +58,14 @@
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-40 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-            <!-- Logo & Brand Link -->
+<!-- Logo & Brand Link (Clean seamless image, original name) -->
             <div class="flex items-center gap-2.5 cursor-pointer" id="btn-brand-home" title="Kembali ke Beranda">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-cyan-400 p-[1.5px] shadow-lg shadow-brand-500/25 flex items-center justify-center">
-                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center overflow-hidden">
-                        <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-7 h-7 object-cover">
-                    </div>
-                </div>
-                <div class="flex items-baseline">
-                    <span class="text-base sm:text-lg font-black tracking-tight text-white"><span class="logo-kawan text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span><span class="text-cyan-400 font-bold">.online</span></span>
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover shadow-sm flex-shrink-0">
+                <div class="min-w-0">
+                    <h1 class="text-sm sm:text-base font-black tracking-tight flex items-center gap-1.5 flex-nowrap">
+                        <span class="tracking-tight whitespace-nowrap"><span class="logo-kawan text-slate-900 dark:text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
+                        <span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider whitespace-nowrap">CREATOR TOOLS</span>
+                    </h1>
                 </div>
             </div>
 
@@ -92,6 +91,9 @@
                 </button>
                 <button id="nav-license" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                     <i data-lucide="key" class="w-3.5 h-3.5"></i> Lisensi
+                </button>
+                <button id="nav-admin" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 text-amber-400 hover:text-amber-300">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i> Admin
                 </button>
             </nav>
 
@@ -141,16 +143,15 @@
 
     <aside id="sidebar-drawer" class="fixed top-0 bottom-0 left-0 w-[84vw] max-w-sm bg-slate-900 border-r border-slate-800 z-50 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out">
         <!-- Drawer Header -->
-        <div class="p-4 sm:p-5 border-b border-slate-800/80 flex items-center justify-between">
+        <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 p-[1.5px] flex items-center justify-center">
-                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center overflow-hidden">
-                        <img src="assets/icons/logo.png" alt="logo" class="w-6 h-6 object-cover">
-                    </div>
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 rounded-xl object-cover shadow-sm flex-shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-sm font-black text-slate-900 dark:text-white"><span class="logo-kawan">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
+                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider">CREATOR TOOLS</span>
                 </div>
-                <span class="text-base font-black text-white">kawandigi<span class="text-cyan-400">.online</span></span>
             </div>
-            <button id="btn-close-drawer" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 transition">
+            <button id="btn-close-drawer" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 transition">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
@@ -1256,6 +1257,259 @@
             </div>
         </section>
 
+        <!-- ========================================== -->
+        <!-- TAB: CONSOLE ADMIN (FULL PAGE DASHBOARD)   -->
+        <!-- ========================================== -->
+        <section id="section-admin" class="tab-content hidden space-y-6 sm:space-y-8">
+            <!-- Admin Top Dashboard Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-amber-950/60 to-slate-900 border border-amber-500/30 rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold border border-amber-500/30 shadow-md shadow-amber-500/10 flex-shrink-0">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h2 class="text-xl sm:text-2xl font-black text-white">Console Admin KawanDigi</h2>
+                            <span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 tracking-wider uppercase">Owner Dashboard</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Kelola database member terpusat, analitik jam sibuk 24 jam, feature flags, dan produk digital</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.kdSwitchTab('catalog')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 font-bold text-xs flex items-center gap-2 transition self-start sm:self-auto shadow-sm">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>Kembali ke Beranda</span>
+                </button>
+            </div>
+
+            <!-- Admin Subtabs Navigation Bar -->
+            <div class="bg-slate-900/90 dark:bg-slate-900 border border-slate-800 rounded-2xl p-2 flex gap-2 overflow-x-auto shadow-sm">
+                <button type="button" id="btn-atab-members" class="admin-tab active px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Data Member (<span id="admin-member-count">0</span>)</span>
+                </button>
+                <button type="button" id="btn-atab-analytics" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Statistik & Jam Sibuk</span>
+                </button>
+                <button type="button" id="btn-atab-flags" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                    <span>Kendali Tools</span>
+                </button>
+                <button type="button" id="btn-atab-products" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 text-rose-400"></i>
+                    <span>Produk Digital Toko</span>
+                </button>
+                <button type="button" id="btn-atab-tutorials" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="play-circle" class="w-4 h-4 text-purple-400"></i>
+                    <span>Kelola Tutorial</span>
+                </button>
+                <button type="button" id="btn-atab-settings" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Pengaturan</span>
+                </button>
+            </div>
+
+            <!-- Admin Panels (Full-Width Dashboard Containers) -->
+            <div class="space-y-6">
+                
+                <!-- TAB 1: MEMBERS DATABASE -->
+                <div id="admin-section-members" class="admin-panel space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="users" class="w-4 h-4 text-amber-400"></i>
+                                Database Member & Follow-Up Penawaran
+                            </h4>
+                            <p class="text-xs text-slate-400">Kelola member terdaftar dan hubungi langsung melalui Email dengan 1-klik</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btn-export-members-csv" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV (Excel)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search / Filter -->
+                    <div class="relative">
+                        <input type="text" id="admin-search-members" placeholder="Cari nama atau email member..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <!-- Members Table -->
+                    <div class="border border-slate-800 rounded-xl overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="p-3">Member (Google Profile)</th>
+                                    <th class="p-3">Paket Langganan</th>
+                                    <th class="p-3 text-center">Total Generate</th>
+                                    <th class="p-3">Skor XP & Level</th>
+                                    <th class="p-3">Bergabung</th>
+                                    <th class="p-3 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-member-table-body" class="divide-y divide-slate-800/60 font-sans">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- TAB: 24-HOUR PEAK USAGE & ANALYTICS -->
+                <div id="admin-section-analytics" class="admin-panel hidden space-y-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i>
+                                Analisis Jam Sibuk & Kebiasaan Produktif Member
+                            </h4>
+                            <p class="text-xs text-slate-400">Pantau jam berapa saja member paling sering menggunakan tools dan tren aktivitas</p>
+                        </div>
+                    </div>
+
+                    <!-- 3 KPI Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-1">
+                            <span class="text-[10px] font-semibold text-slate-400 uppercase">Jam Paling Sibuk (Peak Time)</span>
+                            <div id="analytics-peak-hours" class="text-base font-black text-amber-300">20:00 - 22:00 WIB</div>
+                            <p class="text-[11px] text-slate-500">Waktu utama kreator memproduksi konten</p>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-1">
+                            <span class="text-[10px] font-semibold text-slate-400 uppercase">Total Generate Tercatat</span>
+                            <div id="analytics-total-logs" class="text-base font-black text-emerald-400">0 Aktivitas</div>
+                            <p class="text-[11px] text-slate-500">Dari seluruh member aktif</p>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-1">
+                            <span class="text-[10px] font-semibold text-slate-400 uppercase">Kreator Teraktif (MVP)</span>
+                            <div id="analytics-top-creator" class="text-base font-black text-brand-300">Rian Pratama</div>
+                            <p class="text-[11px] text-slate-500">Peringkat 1 Leaderboard saat ini</p>
+                        </div>
+                    </div>
+
+                    <!-- Visual 24-Hour Bar Chart (00:00 - 23:00 WIB) -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                                Distribusi Pemakaian 24 Jam (WIB)
+                            </span>
+                            <span class="text-[10px] text-slate-400">Tinggi batang = Frekuensi Generate</span>
+                        </div>
+
+                        <!-- 24-Hour CSS Bars Container -->
+                        <div id="analytics-24h-chart" class="flex items-end gap-1.5 h-36 pt-4 pb-2 px-1 border-b border-slate-800 overflow-x-auto">
+                            <!-- Populated dynamically by app.js -->
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-500 font-mono px-1">
+                            <span>00:00</span>
+                            <span>06:00</span>
+                            <span>12:00 (Siang)</span>
+                            <span>18:00</span>
+                            <span>23:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Activity Log Stream -->
+                    <div class="space-y-2 pt-2">
+                        <h5 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i>
+                            Aktivitas Terbaru Member
+                        </h5>
+                        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
+                                    <tr>
+                                        <th class="p-2.5">Waktu (WIB)</th>
+                                        <th class="p-2.5">Member</th>
+                                        <th class="p-2.5">Tool</th>
+                                        <th class="p-2.5">Detail Konten</th>
+                                        <th class="p-2.5 text-right">XP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analytics-live-logs-body" class="divide-y divide-slate-800/60 font-sans">
+                                    <!-- Populated dynamically by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: FEATURE FLAGS (TOOLS ACCESSIBILITY) -->
+                <div id="admin-section-flags" class="admin-panel hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
+                                Kendali Visibilitas & Akses Tools
+                            </h4>
+                            <p class="text-xs text-slate-400">Aktifkan atau nonaktifkan tools untuk member. Tool yang belum siap dapat diset ke non-aktif.</p>
+                        </div>
+                    </div>
+
+                    <div id="admin-flags-list" class="space-y-3">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: DIGITAL PRODUCTS (STORE MANAGER) -->
+                <div id="admin-section-products" class="admin-panel hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="shopping-bag" class="w-4 h-4 text-brand-400"></i>
+                                Manajemen Produk Digital di Katalog
+                            </h4>
+                            <p class="text-xs text-slate-400">Tambah, ubah harga, banner, atau hapus produk yang ingin Anda jual ke member</p>
+                        </div>
+                        <button type="button" id="btn-add-digital-product" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Produk Baru
+                        </button>
+                    </div>
+
+                    <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB 4: TUTORIAL VIDEOS MANAGER -->
+                <div id="admin-section-tutorials" class="admin-panel hidden space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
+                                Manajemen Video Tutorial
+                            </h4>
+                            <p class="text-xs text-slate-400">Kelola video YouTube panduan yang tampil pada tab Tutorial untuk member</p>
+                        </div>
+                        <button type="button" id="btn-add-tutorial-video" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Video Tutorial
+                        </button>
+                    </div>
+
+                    <div id="admin-tutorials-list" class="space-y-3">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB 5: ADMIN SETTINGS -->
+                <div id="admin-section-settings" class="admin-panel hidden space-y-5 max-w-lg">
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-bold text-white">Ganti PIN Keamanan Admin</h4>
+                        <p class="text-xs text-slate-400">Amankan console admin dari akses yang tidak berwenang.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="password" id="admin-new-pin" placeholder="PIN Baru (min 4 karakter)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <button type="button" id="btn-save-admin-pin" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl">Simpan PIN</button>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 space-y-2">
+                        <h4 class="text-sm font-bold text-white">Google OAuth Client ID</h4>
+                        <p class="text-xs text-slate-400">Masukkan Google Client ID dari Google Cloud Console untuk aktivasi Google Sign-In asli.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="admin-google-client-id" placeholder="xxxx.apps.googleusercontent.com" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono">
+                            <button type="button" id="btn-save-google-client-id" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl">Simpan</button>
+                        
+            </div>
+        </section>
     </main>
 
     <!-- Mobile Bottom Navigation Bar -->
@@ -1613,251 +1867,7 @@
 
     <!-- ========================================== -->
     <!-- MODAL: ADMIN MANAGEMENT CONSOLE            -->
-    <!-- ========================================== -->
-    <div id="modal-admin-console" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-5xl w-full h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
-            <!-- Header -->
-            <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold border border-amber-500/30">
-                        <i data-lucide="shield" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                            Console Admin KawanDigi
-                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">Authorized</span>
-                        </h3>
-                        <p class="text-xs text-slate-400">Kelola database member, feature flags, katalog produk, dan tutorial</p>
-                    </div>
-                </div>
-                <button id="btn-close-admin-console" class="text-slate-400 hover:text-white p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Admin Navigation Subtabs -->
-            <div class="bg-slate-950/70 border-b border-slate-800 px-4 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
-                <button type="button" id="btn-atab-members" class="admin-tab active px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    <i data-lucide="users" class="w-4 h-4"></i> Data Member (<span id="admin-member-count">0</span>)
-                </button>
-                <button type="button" id="btn-atab-analytics" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i> Statistik & Jam Sibuk
-                </button>
-                <button type="button" id="btn-atab-flags" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
-                    <i data-lucide="toggle-left" class="w-4 h-4"></i> Kendali Tools (Feature Flags)
-                </button>
-                <button type="button" id="btn-atab-products" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
-                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Produk Digital Toko
-                </button>
-                <button type="button" id="btn-atab-tutorials" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
-                    <i data-lucide="video" class="w-4 h-4"></i> Kelola Tutorial Video
-                </button>
-                <button type="button" id="btn-atab-settings" class="admin-tab px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-white">
-                    <i data-lucide="settings" class="w-4 h-4"></i> Pengaturan
-                </button>
-            </div>
-
-            <!-- Admin Content Body -->
-            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-                <!-- TAB 1: MEMBERS DATABASE -->
-                <div id="admin-section-members" class="admin-panel space-y-4">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div>
-                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                                <i data-lucide="users" class="w-4 h-4 text-amber-400"></i>
-                                Database Member & Follow-Up Penawaran
-                            </h4>
-                            <p class="text-xs text-slate-400">Kelola member terdaftar dan hubungi langsung melalui Email dengan 1-klik</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" id="btn-export-members-csv" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV (Excel)
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Search / Filter -->
-                    <div class="relative">
-                        <input type="text" id="admin-search-members" placeholder="Cari nama atau email member..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
-                    </div>
-
-                    <!-- Members Table -->
-                    <div class="border border-slate-800 rounded-xl overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-300">
-                            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase text-[10px] tracking-wider">
-                                <tr>
-                                    <th class="p-3">Member (Google Profile)</th>
-                                    <th class="p-3">Paket Langganan</th>
-                                    <th class="p-3 text-center">Total Generate</th>
-                                    <th class="p-3">Skor XP & Level</th>
-                                    <th class="p-3">Bergabung</th>
-                                    <th class="p-3 text-right">Tindakan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-member-table-body" class="divide-y divide-slate-800/60 font-sans">
-                                <!-- Populated dynamically by app.js -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- TAB: 24-HOUR PEAK USAGE & ANALYTICS -->
-                <div id="admin-section-analytics" class="admin-panel hidden space-y-5">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                                <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i>
-                                Analisis Jam Sibuk & Kebiasaan Produktif Member
-                            </h4>
-                            <p class="text-xs text-slate-400">Pantau jam berapa saja member paling sering menggunakan tools dan tren aktivitas</p>
-                        </div>
-                    </div>
-
-                    <!-- 3 KPI Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-1">
-                            <span class="text-[10px] font-semibold text-slate-400 uppercase">Jam Paling Sibuk (Peak Time)</span>
-                            <div id="analytics-peak-hours" class="text-base font-black text-amber-300">20:00 - 22:00 WIB</div>
-                            <p class="text-[11px] text-slate-500">Waktu utama kreator memproduksi konten</p>
-                        </div>
-                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-1">
-                            <span class="text-[10px] font-semibold text-slate-400 uppercase">Total Generate Tercatat</span>
-                            <div id="analytics-total-logs" class="text-base font-black text-emerald-400">0 Aktivitas</div>
-                            <p class="text-[11px] text-slate-500">Dari seluruh member aktif</p>
-                        </div>
-                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-1">
-                            <span class="text-[10px] font-semibold text-slate-400 uppercase">Kreator Teraktif (MVP)</span>
-                            <div id="analytics-top-creator" class="text-base font-black text-brand-300">Rian Pratama</div>
-                            <p class="text-[11px] text-slate-500">Peringkat 1 Leaderboard saat ini</p>
-                        </div>
-                    </div>
-
-                    <!-- Visual 24-Hour Bar Chart (00:00 - 23:00 WIB) -->
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
-                                Distribusi Pemakaian 24 Jam (WIB)
-                            </span>
-                            <span class="text-[10px] text-slate-400">Tinggi batang = Frekuensi Generate</span>
-                        </div>
-
-                        <!-- 24-Hour CSS Bars Container -->
-                        <div id="analytics-24h-chart" class="flex items-end gap-1.5 h-36 pt-4 pb-2 px-1 border-b border-slate-800 overflow-x-auto">
-                            <!-- Populated dynamically by app.js -->
-                        </div>
-                        <div class="flex justify-between text-[10px] text-slate-500 font-mono px-1">
-                            <span>00:00</span>
-                            <span>06:00</span>
-                            <span>12:00 (Siang)</span>
-                            <span>18:00</span>
-                            <span>23:00</span>
-                        </div>
-                    </div>
-
-                    <!-- Live Activity Log Stream -->
-                    <div class="space-y-2 pt-2">
-                        <h5 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                            <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-400"></i>
-                            Aktivitas Terbaru Member
-                        </h5>
-                        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950">
-                            <table class="w-full text-left text-xs text-slate-300">
-                                <thead class="bg-slate-900 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
-                                    <tr>
-                                        <th class="p-2.5">Waktu (WIB)</th>
-                                        <th class="p-2.5">Member</th>
-                                        <th class="p-2.5">Tool</th>
-                                        <th class="p-2.5">Detail Konten</th>
-                                        <th class="p-2.5 text-right">XP</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="analytics-live-logs-body" class="divide-y divide-slate-800/60 font-sans">
-                                    <!-- Populated dynamically by app.js -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB 2: FEATURE FLAGS (TOOLS ACCESSIBILITY) -->
-                <div id="admin-section-flags" class="admin-panel hidden space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                                <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
-                                Kendali Visibilitas & Akses Tools
-                            </h4>
-                            <p class="text-xs text-slate-400">Aktifkan atau nonaktifkan tools untuk member. Tool yang belum siap dapat diset ke non-aktif.</p>
-                        </div>
-                    </div>
-
-                    <div id="admin-flags-list" class="space-y-3">
-                        <!-- Populated dynamically by app.js -->
-                    </div>
-                </div>
-
-                <!-- TAB 3: DIGITAL PRODUCTS (STORE MANAGER) -->
-                <div id="admin-section-products" class="admin-panel hidden space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                                <i data-lucide="shopping-bag" class="w-4 h-4 text-brand-400"></i>
-                                Manajemen Produk Digital di Katalog
-                            </h4>
-                            <p class="text-xs text-slate-400">Tambah, ubah harga, banner, atau hapus produk yang ingin Anda jual ke member</p>
-                        </div>
-                        <button type="button" id="btn-add-digital-product" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Produk Baru
-                        </button>
-                    </div>
-
-                    <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Populated dynamically by app.js -->
-                    </div>
-                </div>
-
-                <!-- TAB 4: TUTORIAL VIDEOS MANAGER -->
-                <div id="admin-section-tutorials" class="admin-panel hidden space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-                                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
-                                Manajemen Video Tutorial
-                            </h4>
-                            <p class="text-xs text-slate-400">Kelola video YouTube panduan yang tampil pada tab Tutorial untuk member</p>
-                        </div>
-                        <button type="button" id="btn-add-tutorial-video" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Video Tutorial
-                        </button>
-                    </div>
-
-                    <div id="admin-tutorials-list" class="space-y-3">
-                        <!-- Populated dynamically by app.js -->
-                    </div>
-                </div>
-
-                <!-- TAB 5: ADMIN SETTINGS -->
-                <div id="admin-section-settings" class="admin-panel hidden space-y-5 max-w-lg">
-                    <div class="space-y-1">
-                        <h4 class="text-sm font-bold text-white">Ganti PIN Keamanan Admin</h4>
-                        <p class="text-xs text-slate-400">Amankan console admin dari akses yang tidak berwenang.</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <input type="password" id="admin-new-pin" placeholder="PIN Baru (min 4 karakter)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                        <button type="button" id="btn-save-admin-pin" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl">Simpan PIN</button>
-                    </div>
-
-                    <div class="pt-4 border-t border-slate-800 space-y-2">
-                        <h4 class="text-sm font-bold text-white">Google OAuth Client ID</h4>
-                        <p class="text-xs text-slate-400">Masukkan Google Client ID dari Google Cloud Console untuk aktivasi Google Sign-In asli.</p>
-                        <div class="flex gap-2">
-                            <input type="text" id="admin-google-client-id" placeholder="xxxx.apps.googleusercontent.com" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono">
-                            <button type="button" id="btn-save-google-client-id" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl">Simpan</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    
         </div>
     </div>
 

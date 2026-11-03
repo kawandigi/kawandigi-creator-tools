@@ -182,7 +182,8 @@ function switchTab(tabId) {
         'flow': document.getElementById('nav-flow'),
         'drama': document.getElementById('nav-drama'),
         'tutorial': document.getElementById('nav-tutorial'),
-        'license': document.getElementById('nav-license')
+        'license': document.getElementById('nav-license'),
+        'admin': document.getElementById('nav-admin')
     };
 
     // Mobile Nav
@@ -204,7 +205,8 @@ function switchTab(tabId) {
         'flow': document.getElementById('section-flow'),
         'drama': document.getElementById('section-drama'),
         'tutorial': document.getElementById('section-tutorial'),
-        'license': document.getElementById('section-license')
+        'license': document.getElementById('section-license'),
+        'admin': document.getElementById('section-admin')
     };
 
     // Feature Flag protection
@@ -242,6 +244,13 @@ function switchTab(tabId) {
         renderLeaderboard();
     } else if (tabId === 'tutorial') {
         renderTutorials();
+    } else if (tabId === 'admin') {
+        renderAdminMembers();
+        renderAdminAnalytics();
+        renderAdminFlags();
+        renderAdminProducts();
+        renderAdminTutorials();
+        loadAdminSettings();
     }
 
     // Smooth scroll to top
@@ -302,6 +311,7 @@ function initNavigation() {
     document.getElementById('nav-drama')?.addEventListener('click', () => switchTab('drama'));
     document.getElementById('nav-tutorial')?.addEventListener('click', () => switchTab('tutorial'));
     document.getElementById('nav-license')?.addEventListener('click', () => switchTab('license'));
+    document.getElementById('nav-admin')?.addEventListener('click', () => window.kdOpenAdminConsole());
 
     // Mobile Nav buttons
     document.getElementById('m-nav-catalog')?.addEventListener('click', () => switchTab('catalog'));
@@ -2982,8 +2992,10 @@ function initAdminConsole() {
     document.getElementById('btn-submit-admin-pin')?.addEventListener('click', () => {
         const pin = document.getElementById('input-admin-pin')?.value;
         if (verifyAdminPin(pin)) {
+            sessionStorage.setItem('kd_admin_unlocked', '1');
             document.getElementById('modal-admin-pin')?.classList.add('hidden');
             openAdminConsole();
+            showToast('Akses Console Admin Terbuka.', 'success');
         } else {
             showToast('PIN Admin salah. Coba lagi.', 'error');
         }
@@ -3086,8 +3098,9 @@ function initAdminConsole() {
 }
 
 function openAdminConsole() {
-    document.getElementById('modal-admin-console')?.classList.remove('hidden');
+    switchTab('admin');
     renderAdminMembers();
+    renderAdminAnalytics();
     renderAdminFlags();
     renderAdminProducts();
     renderAdminTutorials();
@@ -3406,7 +3419,16 @@ window.kdOpenDrawer = openDrawer;
 window.kdCloseDrawer = closeDrawer;
 window.kdOpenProfileModal = openUserProfileModal;
 window.kdOpenAdminConsole = () => {
-    document.getElementById('modal-admin-pin')?.classList.remove('hidden');
+    if (sessionStorage.getItem('kd_admin_unlocked') === '1') {
+        openAdminConsole();
+    } else {
+        document.getElementById('modal-admin-pin')?.classList.remove('hidden');
+        const pinInput = document.getElementById('input-admin-pin');
+        if (pinInput) {
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    }
 };
 window.kdOpenHistory = () => {
     document.getElementById('modal-history-center')?.classList.remove('hidden');
