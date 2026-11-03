@@ -230,14 +230,21 @@ function populateGoogleFlowStudio(campaign) {
         badge.textContent = `${dur} Detik • ${sceneCount} Adegan`;
     }
 
-    // 1. If multi-part (e.g. 20s or 30s), render Part 10s cards first
-    if (Array.isArray(campaign.parts) && campaign.parts.length > 1) {
+    // 1. If multi-part (e.g. 20s or 30s) or single-part (10s), render Klip 10s cards first
+    if (Array.isArray(campaign.parts) && campaign.parts.length > 0) {
         const partsSection = document.createElement('div');
         partsSection.className = 'space-y-3 pb-3 border-b border-slate-800';
+        const isMulti = campaign.parts.length > 1;
+
         partsSection.innerHTML = `
             <div class="flex items-center justify-between text-xs font-bold text-emerald-400">
-                <span class="flex items-center gap-1.5"><i data-lucide="scissors" class="w-3.5 h-3.5"></i> Klip Video 10 Detik (${campaign.parts.length} Klip):</span>
-                <span class="text-[10px] text-slate-400 font-normal">Render terpisah, lalu gabungkan</span>
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="${isMulti ? 'scissors' : 'sparkles'}" class="w-3.5 h-3.5"></i>
+                    ${isMulti ? `Klip Video 10 Detik (${campaign.parts.length} Klip):` : 'Prompt Video Utuh (10 Detik Siap Tempel):'}
+                </span>
+                <span class="text-[10px] text-slate-400 font-normal">
+                    ${isMulti ? 'Render per klip 10s lalu gabungkan' : 'Langsung tempel di studio'}
+                </span>
             </div>
         `;
 
@@ -248,11 +255,11 @@ function populateGoogleFlowStudio(campaign) {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-extrabold text-xs border border-emerald-500/30">
-                            KLIP ${part.part_number} (10s)
+                            ${isMulti ? `KLIP ${part.part_number} (10s)` : 'PROMPT 10s UTUH'}
                         </span>
-                        <span class="text-xs font-bold text-white">${part.title || `Bagian ${part.part_number}`}</span>
+                        <span class="text-xs font-bold text-white">${part.part_title || part.title || (isMulti ? `Bagian ${part.part_number}` : 'Video UGC Siap Pakai')}</span>
                     </div>
-                    <span class="text-[10px] text-slate-400 font-medium">${part.scenes_included || ''}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">${part.scenes_included || '6 Tahapan UGC'}</span>
                 </div>
 
                 ${part.narasi_part ? `
@@ -268,7 +275,7 @@ function populateGoogleFlowStudio(campaign) {
                     <label class="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Prompt Video AI (Google Flow / Veo):</label>
                     <p class="text-[11px] text-slate-300 font-mono leading-relaxed select-all">${part.google_flow_prompt}</p>
                     <button class="btn-copy-flow-clip w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition shadow">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Prompt Klip ${part.part_number} (Siap Paste di Kanan)
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Prompt ${isMulti ? `Klip ${part.part_number}` : '10s Siap Tempel'}
                     </button>
                 </div>
             `;
@@ -278,7 +285,7 @@ function populateGoogleFlowStudio(campaign) {
             });
 
             card.querySelector('.btn-copy-flow-clip')?.addEventListener('click', () => {
-                copyToClipboard(part.google_flow_prompt, `Prompt Klip ${part.part_number} berhasil disalin! Silakan paste (Ctrl+V) di Google Flow.`);
+                copyToClipboard(part.google_flow_prompt, `Prompt ${isMulti ? `Klip ${part.part_number}` : '10s'} berhasil disalin! Silakan tempel (Ctrl+V) di Google Flow.`);
             });
 
             partsSection.appendChild(card);
@@ -649,14 +656,14 @@ function formatFullPromptVideoText(campaign) {
     text += `Bahasa: 100% Bahasa Indonesia Alami (Tanpa Kata Bahasa Inggris)\n`;
     text += `==========================================================\n\n`;
 
-    // Multi-part breakdown for video tools with 10s limit (Google Flow / Veo / Kling)
+    // 1. Google Flow 10s Video Ready-to-Use Prompt Block
     if (campaign.parts && campaign.parts.length > 1) {
-        text += `✂️ PEMBAGIAN KLIP VIDEO GOOGLE FLOW (DIREKOMENDASIKAN RENDER PER KLIP 10s):\n`;
-        text += `(Setelah semua klip dirender, gabungkan klip-klip ini di aplikasi editing seperti CapCut atau Premiere)\n\n`;
+        text += `✂️ PEMBAGIAN KLIP VIDEO GOOGLE FLOW (${campaign.parts.length} KLIP @ 10s):\n`;
+        text += `(Render per klip 10 detik di Google Flow / Veo, lalu satukan di CapCut atau Premiere)\n\n`;
         
         campaign.parts.forEach(part => {
             text += `----------------------------------------------------------\n`;
-            text += `KLIP ${part.part_number} (${part.duration_seconds || 10} DETIK) — ${part.title || `BAGIAN ${part.part_number}`}\n`;
+            text += `KLIP ${part.part_number} (${part.duration_seconds || 10} DETIK) — ${part.part_title || part.title || `BAGIAN ${part.part_number}`}\n`;
             if (part.scenes_included) {
                 text += `Adegan Termasuk: ${part.scenes_included}\n`;
             }
@@ -666,8 +673,20 @@ function formatFullPromptVideoText(campaign) {
             text += `PROMPT GOOGLE FLOW / VEO / KLING:\n${part.google_flow_prompt}\n`;
             text += `----------------------------------------------------------\n\n`;
         });
-        text += `\n📋 RINCIAN PER ADEGAN (6 SCENE DETAIL):\n\n`;
+    } else {
+        // Single 10-second Unified Prompt
+        const singlePrompt = (campaign.parts && campaign.parts[0]?.google_flow_prompt)
+            || (campaign.scenes && campaign.scenes[0]?.google_flow_prompt)
+            || `Video UGC vertikal 9:16 kualitas FHD. Talent: orang muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: Gadis muda Indonesia tersenyum ceria menunjukkan ${title} ke arah kamera, ekspresi antusias mencoba produk, detail fitur unggulan, dan gestur ramah mengajak klik keranjang. Voiceover bahasa Indonesia: "${(campaign.scenes || []).map(s => s.voiceover_script).filter(Boolean).join(' ')}". Teks subtitle di layar bahasa Indonesia. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris, tanpa watermark.`;
+
+        text += `🎬 PROMPT UTUH SIAP PAKAI GOOGLE FLOW (10 DETIK):\n`;
+        text += `(Salin prompt di bawah ini lalu tempel / Ctrl+V di Google Flow / Veo)\n\n`;
+        text += `${singlePrompt}\n\n`;
     }
+
+    text += `==========================================================\n`;
+    text += `📋 RINCIAN STORYBOARD & NASKAH (6 TAHAPAN LENGKAP):\n`;
+    text += `==========================================================\n\n`;
 
     const scenes = campaign.scenes || [];
     scenes.forEach((s) => {
@@ -678,18 +697,14 @@ function formatFullPromptVideoText(campaign) {
         if (s.camera_movement) {
             text += `Kamera: ${s.camera_movement}\n`;
         }
-        text += `Voiceover Bahasa Indonesia: "${s.voiceover_script || '-'}"\n`;
+        text += `Voiceover (Naskah Suara): "${s.voiceover_script || '-'}"\n`;
         if (s.caption_overlay) {
-            text += `Teks di Layar (Subtitle Safe Zone): ${s.caption_overlay}\n`;
-        }
-        if (s.google_flow_prompt) {
-            text += `Prompt Video AI (Google Flow / Veo): ${s.google_flow_prompt}\n`;
+            text += `Teks di Layar (Safe Zone): ${s.caption_overlay}\n`;
         }
         text += `\n`;
     });
 
     text += `TOTAL ESTIMASI KATA: ${campaign.total_narasi_kata || 24} kata\n`;
-    text += `GAYA VISUAL: UGC Realistis, pencahayaan alami, rasio 9:16 vertikal\n`;
     text += `CTA NETRAL: "${campaign.call_to_action || 'Yuk, langsung klik keranjang di bawah video ini ya!'}"`;
 
     return text.trim();
@@ -1174,197 +1189,22 @@ function renderUgcResults(campaign) {
             <!-- Caption / Overlay Text -->
             ${scene.caption_overlay ? `
             <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Teks di Layar (Overlay):</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Teks di Layar (Subtitle Safe Zone):</label>
                 <div class="inline-block px-2.5 py-1 bg-brand-500/20 text-brand-300 border border-brand-500/40 rounded-lg text-xs font-black">
                     ${scene.caption_overlay}
                 </div>
             </div>
             ` : ''}
-
-            <!-- 1-Click Google Flow Bridge (Primary Workflow) -->
-            <div class="mt-2 p-3 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2.5 shadow-lg">
-                <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-emerald-300">Google Flow (Veo 10s Clip)</span>
-                                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded-full font-bold">100% Gratis</span>
-                            </div>
-                            <p class="text-[10px] text-slate-400">1-Klik Salin prompt & buka studio Google Flow</p>
-                        </div>
-                    </div>
-                    <button class="btn-flow-render px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition transform active:scale-95 flex-shrink-0">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                        <span>Buka di Google Flow</span>
-                    </button>
-                </div>
-
-                <!-- Prompt box with Copy button -->
-                <div class="bg-slate-950/80 border border-emerald-500/20 rounded-lg p-2.5 flex items-start justify-between gap-2">
-                    <p class="prompt-text text-[11px] text-slate-300 font-mono leading-relaxed select-all">
-                        ${scene.google_flow_prompt}
-                    </p>
-                    <button class="btn-copy-prompt text-emerald-400 hover:text-emerald-300 text-[10px] font-bold flex items-center gap-1 flex-shrink-0 bg-emerald-950/60 border border-emerald-500/30 px-2 py-1 rounded">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin
-                    </button>
-                </div>
-                <div class="flow-status-msg hidden text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 p-2 rounded-lg flex items-center gap-1.5">
-                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
-                    <span>Prompt tersalin di clipboard! Di tab Google Flow, tinggal tekan Ctrl+V (Paste) lalu klik Generate.</span>
-                </div>
-            </div>
-
-            <!-- Video & Visual Generator Controls -->
-            <div class="pt-2 border-t border-slate-900 space-y-2">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <button class="btn-render-inapp w-full py-2 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 transition">
-                        <i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i>
-                        <span>Buat Video In-App (Tanpa Pindah Tab)</span>
-                    </button>
-                    <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
-                        <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
-                        <span>Preview Gambar Visual</span>
-                    </button>
-                </div>
-
-                <!-- Secondary Link: Google Gemini Omni Video API -->
-                <button class="btn-generate-video text-[10px] text-slate-500 hover:text-slate-300 underline text-center block w-full py-0.5">
-                    Coba Generate via Google Gemini Omni Video API (.mp4)
-                </button>
-
-                <!-- Video Player Container -->
-                <div class="video-container hidden text-center space-y-2 pt-2 bg-slate-900/60 p-3 rounded-xl border border-brand-500/30">
-                    <video class="scene-video-player mx-auto rounded-xl border border-brand-500/50 max-h-80 w-auto shadow-2xl" controls autoplay loop playsinline></video>
-                    <div class="flex items-center justify-center gap-2 pt-1">
-                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="scene.webm">
-                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.webm)
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Image Preview Container -->
-                <div class="preview-image-container hidden text-center pt-1">
-                    <img class="preview-img mx-auto rounded-xl border border-slate-700 max-h-80 object-cover shadow-lg" alt="AI Preview" />
-                </div>
-            </div>
         `;
 
         // Wire Copy Vo
         sceneCard.querySelector('.btn-copy-vo')?.addEventListener('click', () => {
-            copyToClipboard(scene.voiceover_script, `Naskah Scene ${scene.scene_number} disalin!`);
+            copyToClipboard(scene.voiceover_script, `Naskah Scene ${scene.scene_number || (index + 1)} disalin!`);
         });
 
         // Wire Play Vo (Web Speech Audio)
         sceneCard.querySelector('.btn-play-vo')?.addEventListener('click', () => {
             speakVoiceover(scene.voiceover_script);
-        });
-
-        // Wire Copy Prompt
-        sceneCard.querySelector('.btn-copy-prompt')?.addEventListener('click', () => {
-            copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
-        });
-
-        // Wire Google Flow 1-Click Bridge
-        const btnFlow = sceneCard.querySelector('.btn-flow-render');
-        const flowStatusMsg = sceneCard.querySelector('.flow-status-msg');
-        btnFlow?.addEventListener('click', async () => {
-            await copyToClipboard(scene.google_flow_prompt, `Prompt Adegan ${scene.scene_number || (index + 1)} disalin! Beralih ke Studio Google Flow...`);
-            switchTab('flow');
-            if (flowStatusMsg) flowStatusMsg.classList.remove('hidden');
-            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka di Studio Flow`;
-            if (window.lucide) window.lucide.createIcons();
-        });
-
-        // Wire In-App Video Renderer (Canvas + Pollinations + MediaRecorder)
-        const btnInApp = sceneCard.querySelector('.btn-render-inapp');
-        const videoContainer = sceneCard.querySelector('.video-container');
-        const videoPlayer = sceneCard.querySelector('.scene-video-player');
-        const btnDownloadVideo = sceneCard.querySelector('.btn-download-video');
-
-        btnInApp?.addEventListener('click', async () => {
-            btnInApp.disabled = true;
-            btnInApp.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Merender Video...`;
-
-            try {
-                // 1. Get visual artwork
-                const imageUrl = await generateImagen3(scene.google_flow_prompt, '9:16');
-
-                // 2. Play speech audio in sync
-                speakVoiceover(scene.voiceover_script);
-
-                // 3. Render animated video canvas
-                const videoBlobUrl = await renderInAppSceneVideo({
-                    imageUrl,
-                    durationSeconds: scene.duration_seconds || 4,
-                    captionText: scene.caption_overlay || scene.voiceover_script,
-                    voiceoverText: scene.voiceover_script,
-                    sceneNumber: scene.scene_number || (index + 1)
-                });
-
-                videoPlayer.src = videoBlobUrl;
-                btnDownloadVideo.href = videoBlobUrl;
-                btnDownloadVideo.download = `kawandigi-scene-${scene.scene_number || (index + 1)}.webm`;
-                videoContainer.classList.remove('hidden');
-                btnInApp.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Render Ulang Video`;
-                showToast(`Video Scene ${scene.scene_number || (index + 1)} berhasil dibuat!`, 'success');
-            } catch (err) {
-                showToast('Gagal merender video: ' + err.message, 'error');
-                btnInApp.innerHTML = `<i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i> Buat Video In-App`;
-            } finally {
-                btnInApp.disabled = false;
-                if (window.lucide) window.lucide.createIcons();
-            }
-        });
-
-        // Wire Gemini Omni Video API (for accounts with Cloud billing)
-        const btnVideo = sceneCard.querySelector('.btn-generate-video');
-        btnVideo?.addEventListener('click', async () => {
-            btnVideo.disabled = true;
-            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Menghubungi Gemini Omni API...`;
-            try {
-                const videoDataUrl = await generateOmniVideo(scene.google_flow_prompt, '9:16');
-                videoPlayer.src = videoDataUrl;
-                btnDownloadVideo.href = videoDataUrl;
-                btnDownloadVideo.download = `kawandigi-scene-${scene.scene_number || (index + 1)}.mp4`;
-                videoContainer.classList.remove('hidden');
-                showToast(`Video Scene ${scene.scene_number || (index + 1)} siap ditonton!`, 'success');
-            } catch (err) {
-                if (err.message === 'FREE_TIER_VIDEO_LIMIT') {
-                    openVideoTierModal(scene.google_flow_prompt);
-                } else {
-                    showToast(err.message, 'error');
-                }
-            } finally {
-                btnVideo.disabled = false;
-                btnVideo.textContent = 'Coba Generate via Google Gemini Omni Video API (.mp4)';
-                if (window.lucide) window.lucide.createIcons();
-            }
-        });
-
-        // Wire Imagen Preview
-        const btnImagen = sceneCard.querySelector('.btn-preview-imagen');
-        const imgContainer = sceneCard.querySelector('.preview-image-container');
-        const previewImg = sceneCard.querySelector('.preview-img');
-
-        btnImagen?.addEventListener('click', async () => {
-            btnImagen.disabled = true;
-            btnImagen.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-accent-400 border-t-transparent rounded-full animate-spin"></div> Merender Gambar...`;
-            try {
-                const imgData = await generateImagen3(scene.google_flow_prompt, '9:16');
-                previewImg.src = imgData;
-                imgContainer.classList.remove('hidden');
-                btnImagen.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-accent-400"></i> Render Ulang Gambar`;
-                showToast(`Preview Gambar Scene ${scene.scene_number} siap!`, 'success');
-            } catch (err) {
-                showToast(err.message, 'error');
-                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Preview Gambar`;
-            } finally {
-                btnImagen.disabled = false;
-                if (window.lucide) window.lucide.createIcons();
-            }
         });
 
         sceneList.appendChild(sceneCard);
