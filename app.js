@@ -2868,24 +2868,24 @@ function initAuthManager() {
     });
 
     document.getElementById('btn-demo-google-login')?.addEventListener('click', () => {
-        const demoUser = {
-            id: 'g_' + Date.now(),
-            name: 'Kreator KawanDigi',
+        const superAdminUser = {
+            id: 'superadmin_' + Date.now(),
+            name: 'Imanuel Pramana (Admin)',
             email: 'admin.kawandigi@gmail.com',
             picture: 'assets/icons/favicon.png',
             joinedAt: new Date().toISOString(),
-            totalGenerates: 15,
-            xp: 180,
-            level: 'Rising Star',
+            totalGenerates: 94,
+            xp: 1500,
+            level: 'Mythic Legend',
             subscription: {
-                plan: 'VIP Master Lifetime',
+                plan: 'Superadmin Official Lifetime',
                 active: true
             }
         };
-        saveCurrentUser(demoUser);
-        document.getElementById('modal-user-profile')?.classList.add('hidden');
+        saveCurrentUser(superAdminUser);
         updateHeaderAuthUI();
-        showToast('Berhasil terhubung dengan Akun Google! Selamat berkarya, Kak.', 'success');
+        document.getElementById('modal-user-profile')?.classList.add('hidden');
+        showToast('Berhasil masuk sebagai Superadmin: admin.kawandigi@gmail.com', 'success');
     });
 
     initGoogleIdentityServices();
@@ -3011,6 +3011,18 @@ function openUserProfileModal() {
     }
 
     modal.classList.remove('hidden');
+
+    // Check Google Client ID status & re-render GIS button in visible container
+    const clientId = getGoogleClientId();
+    const noticeEl = document.getElementById('google-oauth-notice');
+    if (!clientId) {
+        if (noticeEl) noticeEl.classList.remove('hidden');
+    } else {
+        if (noticeEl) noticeEl.classList.add('hidden');
+        setTimeout(() => {
+            initGoogleIdentityServices();
+        }, 120);
+    }
 }
 
 function initGoogleIdentityServices() {
@@ -3047,6 +3059,7 @@ function initGoogleIdentityServices() {
 
         const btnContainer = document.getElementById('g_id_signin_button');
         if (btnContainer) {
+            btnContainer.innerHTML = '';
             window.google.accounts.id.renderButton(btnContainer, {
                 theme: 'filled_blue',
                 size: 'large',
@@ -3065,11 +3078,20 @@ function initGoogleIdentityServices() {
 // =========================================================================
 function initAdminConsole() {
     document.getElementById('btn-header-admin')?.addEventListener('click', () => {
-        document.getElementById('modal-admin-pin')?.classList.remove('hidden');
-        const pinInput = document.getElementById('input-admin-pin');
-        if (pinInput) {
-            pinInput.value = '';
-            pinInput.focus();
+        const user = getCurrentUser();
+        if (!isSuperAdmin(user)) {
+            showToast('Akses Ditolak: Hanya Superadmin (admin.kawandigi@gmail.com) yang dapat mengakses Console Admin.', 'error');
+            return;
+        }
+        if (sessionStorage.getItem('kd_admin_unlocked') === '1') {
+            openAdminConsole();
+        } else {
+            document.getElementById('modal-admin-pin')?.classList.remove('hidden');
+            const pinInput = document.getElementById('input-admin-pin');
+            if (pinInput) {
+                pinInput.value = '';
+                pinInput.focus();
+            }
         }
     });
 
@@ -3078,12 +3100,18 @@ function initAdminConsole() {
     });
 
     document.getElementById('btn-submit-admin-pin')?.addEventListener('click', () => {
+        const user = getCurrentUser();
+        if (!isSuperAdmin(user)) {
+            showToast('Akses Ditolak: Anda harus login dengan akun Google Superadmin admin.kawandigi@gmail.com', 'error');
+            document.getElementById('modal-admin-pin')?.classList.add('hidden');
+            return;
+        }
         const pin = document.getElementById('input-admin-pin')?.value;
         if (verifyAdminPin(pin)) {
             sessionStorage.setItem('kd_admin_unlocked', '1');
             document.getElementById('modal-admin-pin')?.classList.add('hidden');
             openAdminConsole();
-            showToast('Akses Console Admin Terbuka.', 'success');
+            showToast('Akses Superadmin Terverifikasi. Selamat datang, Admin!', 'success');
         } else {
             showToast('PIN Admin salah. Coba lagi.', 'error');
         }
