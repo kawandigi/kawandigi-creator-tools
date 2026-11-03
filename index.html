@@ -53,13 +53,106 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="drawer-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- ========================================================================= -->
+    <!-- SIDEBAR NAVIGATION: Fixed on Desktop (lg:), Drawer on Mobile (< lg)        -->
+    <!-- ========================================================================= -->
+    <aside id="sidebar-drawer" class="fixed top-0 bottom-0 left-0 w-[84vw] max-w-sm lg:w-64 lg:static lg:h-screen lg:sticky lg:top-0 bg-slate-900 border-r border-slate-800 z-50 flex flex-col justify-between shadow-2xl lg:shadow-none transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out flex-shrink-0">
+        <!-- Sidebar Brand Header -->
+        <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 cursor-pointer" onclick="window.kdSwitchTab('catalog')">
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 rounded-xl object-cover shadow-sm flex-shrink-0">
+                <div class="flex flex-col justify-center leading-none">
+                    <span class="text-sm font-black text-slate-900 dark:text-white"><span class="logo-kawan">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
+                    <span class="text-[7.5px] font-black text-[#544ce7] dark:text-[#a6a1fd] tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
+                </div>
+            </div>
+            <!-- Mobile Close Button (Hidden on Desktop) -->
+            <button id="btn-close-drawer" class="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 transition" title="Tutup Menu">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Navigation Items -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-1.5 text-xs font-semibold custom-scrollbar">
+            <button type="button" id="sidebar-tab-catalog" onclick="window.kdSwitchTab('catalog'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow-md shadow-brand-500/25 transition">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>Overview & Beranda</span>
+            </button>
+            <button type="button" id="sidebar-tab-ugc" onclick="window.kdSwitchTab('ugc'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                <span>AI UGC Affiliate Creator</span>
+            </button>
+            <button type="button" id="sidebar-tab-flow" onclick="window.kdSwitchTab('flow'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="film" class="w-4 h-4 text-emerald-400"></i>
+                <span>Google Flow Studio</span>
+            </button>
+            <button type="button" id="sidebar-tab-drama" onclick="window.kdSwitchTab('drama'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="clapperboard" class="w-4 h-4 text-amber-400"></i>
+                    <span>AI Drama & Micro-Series</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">HOT</span>
+            </button>
+            <button type="button" id="sidebar-tab-leaderboard" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
+                <span>Peringkat & Gamifikasi</span>
+            </button>
+            <button type="button" id="sidebar-tab-tutorial" onclick="window.kdSwitchTab('tutorial'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
+                <span>Tutorial & Panduan Video</span>
+            </button>
+            <button type="button" id="sidebar-tab-history" onclick="window.kdOpenHistory(); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+                    <span>Riwayat Project Saya</span>
+                </div>
+                <span id="drawer-history-badge" class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/30">0</span>
+            </button>
+
+            <div class="py-2"><div class="border-t border-slate-200 dark:border-slate-800"></div></div>
+
+            <button type="button" id="drawer-admin-btn" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item hidden w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-500 dark:text-amber-300 hover:bg-amber-500/10 transition">
+                <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+                <span>Console Admin KawanDigi</span>
+            </button>
+            <button type="button" id="sidebar-tab-license" onclick="window.kdSwitchTab('license'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+                <span>Paket Langganan & Lisensi</span>
+            </button>
+        </div>
+
+        <!-- Sidebar Footer: Profile Card & AI Key Trigger -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800/90 bg-slate-50/80 dark:bg-slate-950/60 space-y-3">
+            <div onclick="window.kdOpenProfileModal(); window.kdCloseDrawer();" class="flex items-center gap-3 p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer transition">
+                <img id="drawer-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-brand-500/40">
+                <div class="min-w-0 flex-1">
+                    <h5 id="drawer-user-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">Kreator KawanDigi</h5>
+                    <p id="drawer-user-tier" class="text-[10px] text-brand-500 dark:text-brand-400 font-semibold truncate">Member VIP • Diamond</p>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </div>
+
+            <!-- AI Key Settings CTA Button -->
+            <button type="button" id="drawer-btn-api-key" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600/30 to-indigo-600/30 hover:from-brand-600/50 hover:to-indigo-600/50 border border-brand-500/40 text-brand-600 dark:text-brand-300 font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400"></i>
+                <span>Pengaturan AI Key</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- RIGHT MAIN WRAPPER (Header + Main Content) -->
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
 
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800">
+    <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-<!-- Logo & Brand Link (Stacked CREATOR TOOLS under kawandigi) -->
-            <div class="flex items-center gap-2 cursor-pointer min-w-0 flex-shrink-0" id="btn-brand-home" title="Kembali ke Beranda">
+            <!-- Mobile Logo & Brand (Hidden on Desktop because desktop has permanent sidebar) -->
+            <div class="flex items-center gap-2 cursor-pointer min-w-0 flex-shrink-0 lg:hidden" id="btn-brand-home" title="Kembali ke Beranda">
                 <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shadow-sm flex-shrink-0">
                 <div class="flex flex-col justify-center leading-none min-w-0">
                     <span class="text-sm sm:text-base font-black tracking-tight"><span class="logo-kawan text-slate-900 dark:text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
@@ -67,67 +160,44 @@
                 </div>
             </div>
 
-            <!-- Desktop Navigation Tabs -->
-            <nav class="hidden lg:flex items-center gap-1 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60 flex-shrink-0">
-                <button id="nav-catalog" class="nav-tab active px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-brand-400"></i> Beranda
-                </button>
-                <button id="nav-leaderboard" class="nav-tab px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400"></i> Peringkat
-                </button>
-                <button id="nav-ugc" class="nav-tab px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i> UGC Affiliate
-                </button>
-                <button id="nav-flow" class="nav-tab px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="film" class="w-3.5 h-3.5 text-emerald-400"></i> Google Flow
-                </button>
-                <button id="nav-drama" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-amber-400"></i> AI Drama
-                </button>
-                <button id="nav-tutorial" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="play-circle" class="w-3.5 h-3.5 text-indigo-400"></i> Tutorial
-                </button>
-                <button id="nav-license" class="nav-tab px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
-                    <i data-lucide="key" class="w-3.5 h-3.5"></i> Lisensi
-                </button>
-                <button id="nav-admin" class="nav-tab hidden px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all items-center gap-1.5 text-amber-400 hover:text-amber-300">
-                    <i data-lucide="shield" class="w-3.5 h-3.5"></i> Admin
-                </button>
-            </nav>
+            <!-- Desktop Active Page Title & Indicator -->
+            <div class="hidden lg:flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <span class="font-bold text-slate-900 dark:text-slate-200 text-sm" id="desktop-breadcrumb-title">Overview & Beranda</span>
+                <span class="text-slate-300 dark:text-slate-700">•</span>
+                <span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold text-[11px] bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    AI Engine Ready
+                </span>
+            </div>
 
-<!-- Right Controls: Theme Toggle, Auth, Admin & Hamburger Drawer -->
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <!-- Right Controls: Theme Toggle, Auth, Admin & Mobile Hamburger Drawer -->
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
                 <!-- Theme Toggle Button -->
-                <button id="btn-theme-toggle" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm flex-shrink-0" title="Ganti Mode Gelap/Terang">
+                <button id="btn-theme-toggle" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white border border-slate-200 dark:border-slate-700/80 transition shadow-sm flex-shrink-0" title="Ganti Mode Gelap/Terang">
                     <i data-lucide="sun" class="w-4 h-4"></i>
                 </button>
 
-                <!-- Language / Engine Pill -->
-                <div class="hidden sm:inline-flex items-center px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-[11px] font-bold text-slate-300 tracking-wide">
-                    <span>EN</span>
-                </div>
-
                 <!-- API Key Modal Trigger -->
-                <button id="btn-api-key-modal" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Pengaturan AI API Key">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                <button id="btn-api-key-modal" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition" title="Pengaturan AI API Key">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400"></i>
                     <span id="api-status-text">AI Key</span>
                 </button>
 
-                <!-- User Profile / Auth Button (Compact icon on mobile, with text on desktop) -->
-                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-300 transition flex-shrink-0" title="Profil Akun Member">
+                <!-- User Profile / Auth Button -->
+                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-600 dark:text-brand-300 transition flex-shrink-0" title="Profil Akun Member">
                     <img id="auth-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="hidden w-5 h-5 rounded-full object-cover">
-                    <i id="auth-default-icon" data-lucide="user" class="w-4 h-4 text-brand-400"></i>
+                    <i id="auth-default-icon" data-lucide="user" class="w-4 h-4 text-brand-500 dark:text-brand-400"></i>
                     <span id="auth-user-name" class="text-xs font-bold hidden sm:inline">Akun</span>
                 </button>
 
-                <!-- Admin Button -->
-                <button id="btn-header-admin" class="hidden p-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 transition items-center gap-1.5 text-xs font-semibold" title="Console Admin KawanDigi">
-                    <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-400"></i>
+                <!-- Admin Button (Hidden unless admin) -->
+                <button id="btn-header-admin" class="hidden p-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition items-center gap-1.5 text-xs font-semibold" title="Console Admin KawanDigi">
+                    <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400"></i>
                     <span class="text-[11px] font-bold">Admin</span>
                 </button>
 
-                <!-- Hamburger Drawer Trigger (Always within screen bounds) -->
-                <button id="btn-open-drawer" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm flex-shrink-0" title="Buka Menu Lengkap">
+                <!-- Hamburger Drawer Trigger (Only on screens < lg) -->
+                <button id="btn-open-drawer" class="lg:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white border border-slate-200 dark:border-slate-700/80 transition shadow-sm flex-shrink-0" title="Buka Menu Lengkap">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -137,104 +207,7 @@
     <!-- ========================================================================= -->
     <!-- SLIDING SIDEBAR DRAWER MENU (REFERENCE: AMBILTIKETNYA.ONLINE)               -->
     <!-- ========================================================================= -->
-    <div id="drawer-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
-
-    <aside id="sidebar-drawer" class="fixed top-0 bottom-0 left-0 w-[84vw] max-w-sm bg-slate-900 border-r border-slate-800 z-50 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out">
-        <!-- Drawer Header -->
-        <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 rounded-xl object-cover shadow-sm flex-shrink-0">
-                <div class="flex flex-col justify-center leading-none">
-                    <span class="text-sm font-black text-slate-900 dark:text-white"><span class="logo-kawan">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                    <span class="text-[7.5px] font-black text-[#544ce7] dark:text-[#a6a1fd] tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
-                </div>
-            </div>
-            <button id="btn-close-drawer" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 transition">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-        </div>
-
-        <!-- Drawer Navigation Items -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-1.5 text-xs font-semibold">
-            <button type="button" onclick="window.kdSwitchTab('catalog'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-brand-600 text-white font-bold shadow-md shadow-brand-500/25 transition">
-                <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                <span>Overview & Beranda</span>
-            </button>
-            <button type="button" onclick="window.kdSwitchTab('ugc'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
-                <span>AI UGC Affiliate Creator</span>
-            </button>
-            <button type="button" onclick="window.kdSwitchTab('flow'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="film" class="w-4 h-4 text-emerald-400"></i>
-                <span>Google Flow Studio</span>
-            </button>
-            <button type="button" onclick="window.kdSwitchTab('drama'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="clapperboard" class="w-4 h-4 text-amber-400"></i>
-                    <span>AI Drama & Micro-Series</span>
-                </div>
-                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">HOT</span>
-            </button>
-            <button type="button" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
-                <span>Peringkat & Gamifikasi</span>
-            </button>
-            <button type="button" onclick="window.kdSwitchTab('tutorial'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
-                <span>Tutorial & Panduan Video</span>
-            </button>
-            <button type="button" onclick="window.kdOpenHistory(); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
-                    <span>Riwayat Project Saya</span>
-                </div>
-                <span id="drawer-history-badge" class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/30">0</span>
-            </button>
-
-            <div class="py-2"><div class="border-t border-slate-800"></div></div>
-
-            <button type="button" id="drawer-admin-btn" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item hidden w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-300 hover:bg-amber-500/10 transition">
-                <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
-                <span>Console Admin KawanDigi</span>
-            </button>
-            <button type="button" onclick="window.kdSwitchTab('license'); window.kdCloseDrawer();" class="drawer-menu-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
-                <span>Paket Langganan & Lisensi</span>
-            </button>
-        </div>
-
-        <!-- Drawer Footer: User Profile & AI Key Button -->
-        <div class="p-4 border-t border-slate-800/90 bg-slate-950/60 space-y-3">
-            <div onclick="window.kdOpenProfileModal(); window.kdCloseDrawer();" class="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
-                <img id="drawer-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-brand-500/40">
-                <div class="min-w-0 flex-1">
-                    <h5 id="drawer-user-name" class="text-xs font-bold text-white truncate">Kreator KawanDigi</h5>
-                    <p id="drawer-user-tier" class="text-[10px] text-brand-400 font-semibold truncate">Member VIP • Diamond</p>
-                </div>
-                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-            </div>
-
-            <!-- Language & Theme Pills Row -->
-            <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-[11px] font-bold text-slate-400">
-                    <button type="button" class="px-2 py-0.5 rounded-lg bg-brand-500/20 text-brand-300">ID</button>
-                    <button type="button" class="px-2 py-0.5 rounded-lg hover:text-white">EN</button>
-                </div>
-                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-slate-400">
-                    <button type="button" id="drawer-theme-toggle" class="px-2.5 py-1 rounded-lg hover:text-white flex items-center gap-1.5 text-xs font-semibold" title="Ganti Mode">
-                        <i data-lucide="sun" class="w-3.5 h-3.5"></i>
-                        <span>Tema</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- AI Key Settings CTA Button -->
-            <button type="button" id="drawer-btn-api-key" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-600/30 to-indigo-600/30 hover:from-brand-600/50 hover:to-indigo-600/50 border border-brand-500/40 text-brand-300 font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Pengaturan AI Key</span>
-            </button>
-        </div>
-    </aside>
+    
 
     <!-- Main Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-8">
@@ -1509,6 +1482,7 @@
             </div>
         </section>
     </main>
+    </div>
 
     <!-- Mobile Bottom Navigation Bar -->
     <!-- App Bottom Navigation Dock with Center Elevated FAB (Matches Image 1) -->

@@ -182,7 +182,19 @@ function initVideoTierModal() {
 // TAB NAVIGATION SYSTEM
 // =========================================================================
 function switchTab(tabId) {
-    // Desktop Nav
+    // Sidebar Nav Tabs (Desktop & Drawer)
+    const sidebarTabs = {
+        'catalog': document.getElementById('sidebar-tab-catalog'),
+        'ugc': document.getElementById('sidebar-tab-ugc'),
+        'flow': document.getElementById('sidebar-tab-flow'),
+        'drama': document.getElementById('sidebar-tab-drama'),
+        'leaderboard': document.getElementById('sidebar-tab-leaderboard'),
+        'tutorial': document.getElementById('sidebar-tab-tutorial'),
+        'license': document.getElementById('sidebar-tab-license'),
+        'admin': document.getElementById('drawer-admin-btn')
+    };
+
+    // Desktop Nav (if exists)
     const desktopTabs = {
         'catalog': document.getElementById('nav-catalog'),
         'leaderboard': document.getElementById('nav-leaderboard'),
@@ -194,7 +206,7 @@ function switchTab(tabId) {
         'admin': document.getElementById('nav-admin')
     };
 
-    // Mobile Nav
+    // Mobile Bottom Dock Nav
     const mobileTabs = {
         'catalog': document.getElementById('m-nav-catalog'),
         'leaderboard': document.getElementById('m-nav-leaderboard'),
@@ -238,13 +250,39 @@ function switchTab(tabId) {
             desktopTabs[id]?.classList.add('active');
             mobileTabs[id]?.classList.add('active');
             mobileTabs[id]?.classList.replace('text-slate-400', 'text-brand-400');
+
+            if (sidebarTabs[id]) {
+                sidebarTabs[id].classList.add('bg-brand-600', 'text-white', 'font-bold', 'shadow-md', 'shadow-brand-500/25');
+                sidebarTabs[id].classList.remove('text-slate-300', 'hover:bg-slate-800');
+            }
         } else {
             sections[id].classList.add('hidden');
             desktopTabs[id]?.classList.remove('active');
             mobileTabs[id]?.classList.remove('active');
             mobileTabs[id]?.classList.replace('text-brand-400', 'text-slate-400');
+
+            if (sidebarTabs[id]) {
+                sidebarTabs[id].classList.remove('bg-brand-600', 'text-white', 'font-bold', 'shadow-md', 'shadow-brand-500/25');
+                sidebarTabs[id].classList.add('text-slate-300', 'hover:bg-slate-800');
+            }
         }
     });
+
+    // Update Desktop Breadcrumb Title
+    const breadcrumb = document.getElementById('desktop-breadcrumb-title');
+    const tabTitles = {
+        'catalog': 'Overview & Beranda',
+        'ugc': 'AI UGC Affiliate Video Creator',
+        'flow': 'Google Flow Studio',
+        'drama': 'AI Drama & Micro-Series',
+        'leaderboard': 'Peringkat & Gamifikasi',
+        'tutorial': 'Tutorial & Panduan Video',
+        'admin': 'Console Admin KawanDigi',
+        'license': 'Paket Langganan & Lisensi'
+    };
+    if (breadcrumb && tabTitles[tabId]) {
+        breadcrumb.textContent = tabTitles[tabId];
+    }
 
     if (tabId === 'catalog') {
         renderCatalog();
@@ -293,6 +331,7 @@ function openGoogleFlowPopup() {
 // SLIDING SIDEBAR DRAWER (REFERENCE: AMBILTIKETNYA.ONLINE)
 // =========================================================================
 function openDrawer() {
+    if (window.innerWidth >= 1024) return;
     const drawer = document.getElementById('sidebar-drawer');
     const backdrop = document.getElementById('drawer-backdrop');
     if (!drawer || !backdrop) return;
@@ -304,6 +343,7 @@ function openDrawer() {
 }
 
 function closeDrawer() {
+    if (window.innerWidth >= 1024) return;
     const drawer = document.getElementById('sidebar-drawer');
     const backdrop = document.getElementById('drawer-backdrop');
     if (!drawer || !backdrop) return;
@@ -2600,9 +2640,27 @@ function renderLeaderboard() {
     // Render Top 3 Podium
     if (podiumGrid) {
         const medals = [
-            { rank: 1, medal: '🥇 Juara 1', crown: '👑', border: 'border-amber-500 shadow-amber-500/20', bg: 'from-amber-950/40 via-slate-900 to-amber-950/20' },
-            { rank: 2, medal: '🥈 Juara 2', crown: '🥈', border: 'border-slate-400 shadow-slate-500/10', bg: 'from-slate-900 to-slate-950' },
-            { rank: 3, medal: '🥉 Juara 3', crown: '🥉', border: 'border-amber-700 shadow-amber-800/10', bg: 'from-amber-950/30 to-slate-950' }
+            { 
+                rank: 1, 
+                medal: '🥇 Juara 1', 
+                crown: '👑', 
+                border: 'border-amber-400 dark:border-amber-500 shadow-amber-500/10 dark:shadow-amber-500/20', 
+                badgeBg: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-slate-900 dark:border-slate-700 dark:text-amber-300' 
+            },
+            { 
+                rank: 2, 
+                medal: '🥈 Juara 2', 
+                crown: '🥈', 
+                border: 'border-slate-300 dark:border-slate-600 shadow-slate-400/10 dark:shadow-slate-500/10', 
+                badgeBg: 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300' 
+            },
+            { 
+                rank: 3, 
+                medal: '🥉 Juara 3', 
+                crown: '🥉', 
+                border: 'border-amber-600/40 dark:border-amber-700 shadow-orange-500/10 dark:shadow-amber-800/10', 
+                badgeBg: 'bg-orange-100 text-orange-900 border-orange-300 dark:bg-slate-900 dark:border-slate-700 dark:text-orange-300' 
+            }
         ];
 
         podiumGrid.innerHTML = top3.map((m, idx) => {
@@ -2610,30 +2668,30 @@ function renderLeaderboard() {
             const levelInfo = calculateLevel(m.xp || 0);
 
             return `
-                <div class="bg-gradient-to-b ${config.bg} border-2 ${config.border} rounded-2xl p-5 flex flex-col justify-between text-center relative shadow-xl transform ${idx === 0 ? 'md:-translate-y-2' : ''}">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-xs font-black text-amber-300">
+                <div class="podium-card bg-white dark:bg-slate-900 border-2 ${config.border} rounded-2xl p-5 flex flex-col justify-between text-center relative shadow-lg transform ${idx === 0 ? 'md:-translate-y-2' : ''}">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full ${config.badgeBg} border text-xs font-black">
                         ${config.medal}
                     </div>
                     <div class="pt-3 space-y-2">
                         <div class="relative inline-block mx-auto">
-                            <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-16 h-16 rounded-2xl mx-auto object-cover border-2 border-amber-400/60 shadow-lg">
+                            <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-16 h-16 rounded-2xl mx-auto object-cover border-2 border-amber-400/60 shadow-md">
                             <span class="absolute -bottom-1 -right-1 text-base">${levelInfo.icon}</span>
                         </div>
                         <div>
-                            <h4 class="text-sm font-extrabold text-white truncate">${m.name}</h4>
+                            <h4 class="text-sm font-extrabold text-slate-900 dark:text-white truncate">${m.name}</h4>
                             <span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${levelInfo.badgeClass}">
                                 ${levelInfo.title}
                             </span>
                         </div>
-                        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-around text-xs">
+                        <div class="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-around text-xs">
                             <div>
-                                <span class="text-slate-500 text-[10px] block">Video Dibuat</span>
-                                <span class="font-bold text-white">${m.totalGenerates || 0}</span>
+                                <span class="text-slate-500 dark:text-slate-400 text-[10px] block font-semibold">Video Dibuat</span>
+                                <span class="font-bold text-slate-800 dark:text-white">${m.totalGenerates || 0}</span>
                             </div>
-                            <div class="w-px h-6 bg-slate-800"></div>
+                            <div class="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
                             <div>
-                                <span class="text-slate-500 text-[10px] block">Total XP</span>
-                                <span class="font-black text-emerald-400 font-mono">${m.xp || 0} XP</span>
+                                <span class="text-slate-500 dark:text-slate-400 text-[10px] block font-semibold">Total XP</span>
+                                <span class="font-black text-emerald-600 dark:text-emerald-400 font-mono">${m.xp || 0} XP</span>
                             </div>
                         </div>
                     </div>
@@ -2645,20 +2703,20 @@ function renderLeaderboard() {
     // Render Ranks 4 to 50
     if (tableBody) {
         if (rest.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Belum ada peserta tambahan di peringkat ini.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 dark:text-slate-400">Belum ada peserta tambahan di peringkat ini.</td></tr>`;
         } else {
             tableBody.innerHTML = rest.map((m, idx) => {
                 const rankNum = idx + 4;
                 const levelInfo = calculateLevel(m.xp || 0);
 
                 return `
-                    <tr class="hover:bg-slate-800/40 transition">
-                        <td class="p-3.5 text-center font-bold text-slate-400 font-mono">#${rankNum}</td>
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                        <td class="p-3.5 text-center font-bold text-slate-600 dark:text-slate-400 font-mono">#${rankNum}</td>
                         <td class="p-3.5 flex items-center gap-2.5">
-                            <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-8 h-8 rounded-lg object-cover border border-slate-800">
+                            <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-800">
                             <div>
-                                <div class="font-bold text-white text-xs">${m.name}</div>
-                                <div class="text-[10px] text-slate-500">${m.email ? m.email.split('@')[0] + '@***' : 'Kreator'}</div>
+                                <div class="font-bold text-slate-900 dark:text-white text-xs">${m.name}</div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">${m.email ? m.email.split('@')[0] + '@***' : 'Kreator'}</div>
                             </div>
                         </td>
                         <td class="p-3.5">
@@ -2666,8 +2724,8 @@ function renderLeaderboard() {
                                 <span>${levelInfo.icon}</span> ${levelInfo.title}
                             </span>
                         </td>
-                        <td class="p-3.5 text-center font-bold text-white font-mono">${m.totalGenerates || 0}</td>
-                        <td class="p-3.5 text-right font-black text-emerald-400 font-mono">${m.xp || 0} XP</td>
+                        <td class="p-3.5 text-center font-bold text-slate-800 dark:text-white font-mono">${m.totalGenerates || 0}</td>
+                        <td class="p-3.5 text-right font-black text-emerald-600 dark:text-emerald-400 font-mono">${m.xp || 0} XP</td>
                     </tr>
                 `;
             }).join('');

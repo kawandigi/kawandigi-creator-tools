@@ -8,11 +8,11 @@ import { getCurrentUser, updateCurrentUserProfile, getMemberList, saveMemberList
 const STORAGE_LOGS_KEY = 'kawandigi_activity_logs';
 
 export const LEVEL_TIERS = [
-    { minXp: 1500, title: 'Mythic Legend', icon: '👑', color: 'from-amber-400 to-yellow-500', badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
-    { minXp: 701,  title: 'Diamond Creator', icon: '💎', color: 'from-cyan-400 to-blue-500', badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' },
-    { minXp: 301,  title: 'Pro Content Master', icon: '🥇', color: 'from-emerald-400 to-teal-500', badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' },
-    { minXp: 101,  title: 'Rising Star', icon: '🥈', color: 'from-indigo-400 to-purple-500', badgeClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40' },
-    { minXp: 0,    title: 'Novice Creator', icon: '🥉', color: 'from-slate-400 to-slate-500', badgeClass: 'bg-slate-800 text-slate-300 border-slate-700' }
+    { minXp: 1500, title: 'Mythic Legend', icon: '👑', color: 'from-amber-400 to-yellow-500', badgeClass: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-bold' },
+    { minXp: 701,  title: 'Diamond Creator', icon: '💎', color: 'from-cyan-400 to-blue-500', badgeClass: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30 font-bold' },
+    { minXp: 301,  title: 'Pro Content Master', icon: '🥇', color: 'from-emerald-400 to-teal-500', badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-bold' },
+    { minXp: 101,  title: 'Rising Star', icon: '🥈', color: 'from-indigo-400 to-purple-500', badgeClass: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 font-bold' },
+    { minXp: 0,    title: 'Novice Creator', icon: '🥉', color: 'from-slate-400 to-slate-500', badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700 font-bold' }
 ];
 
 // Default initial activity logs for demo analytics & peak hour preview

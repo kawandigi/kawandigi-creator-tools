@@ -72,7 +72,7 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 9999;
+    z-index: 45;
     padding: 12px 18px;
     border-radius: 14px;
     font-size: 13px;
@@ -713,29 +713,63 @@ html:not(.dark) #admin-search-members {
     color: #0f172a !important;
 }
 
-/* 7. Leaderboard in Light Mode */
+/* 7. Leaderboard in Light Mode - High Contrast Overhaul */
 html:not(.dark) #section-leaderboard .bg-slate-900,
 html:not(.dark) #section-leaderboard .border-slate-800 {
     background-color: #ffffff !important;
     border-color: #e2e8f0 !important;
 }
 
+html:not(.dark) #section-leaderboard .podium-card {
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05) !important;
+}
+
 html:not(.dark) #section-leaderboard table thead {
     background-color: #f8fafc !important;
+    border-bottom-color: #e2e8f0 !important;
+}
+
+html:not(.dark) #section-leaderboard table thead th {
     color: #475569 !important;
+    font-weight: 700 !important;
 }
 
 html:not(.dark) #section-leaderboard table tbody tr {
     background-color: #ffffff !important;
     border-bottom-color: #f1f5f9 !important;
-    color: #0f172a !important;
+}
+
+html:not(.dark) #section-leaderboard table tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+html:not(.dark) #section-leaderboard table tbody tr td {
+    color: #1e293b !important;
 }
 
 html:not(.dark) #sticky-user-rank-bar {
-    background-color: #ffffff !important;
+    background: #ffffff !important;
     border-color: #e2e8f0 !important;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08) !important;
     color: #0f172a !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar .text-white {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar .text-slate-400 {
+    color: #64748b !important;
+}
+
+/* Desktop Sidebar Static Guarantee */
+@media (min-width: 1024px) {
+    #sidebar-drawer {
+        transform: none !important;
+        position: sticky !important;
+        top: 0 !important;
+    }
 }
 
 /* 8. Gradient Action Buttons (Always White Text) */
