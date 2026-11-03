@@ -42,7 +42,6 @@ import {
     getMemberList,
     upsertMemberRecord,
     deleteMemberRecord,
-    generateWhatsAppOfferUrl,
     generateEmailOfferUrl,
     exportMembersToCsv,
     getAdminPin,
@@ -64,6 +63,13 @@ import {
     upsertTutorialVideo,
     deleteTutorialVideo
 } from './modules/catalog_manager.js';
+import {
+    trackActivity,
+    getLeaderboard,
+    getActivityHourlyDistribution,
+    getActivityLogs,
+    calculateLevel
+} from './modules/gamification_manager.js';
 
 // Global State
 let selectedUgcDuration = 10; // 10s Utama, 20s (2 Klip), 30s (3 Klip)
@@ -171,6 +177,7 @@ function switchTab(tabId) {
     // Desktop Nav
     const desktopTabs = {
         'catalog': document.getElementById('nav-catalog'),
+        'leaderboard': document.getElementById('nav-leaderboard'),
         'ugc': document.getElementById('nav-ugc'),
         'flow': document.getElementById('nav-flow'),
         'drama': document.getElementById('nav-drama'),
@@ -181,6 +188,7 @@ function switchTab(tabId) {
     // Mobile Nav
     const mobileTabs = {
         'catalog': document.getElementById('m-nav-catalog'),
+        'leaderboard': document.getElementById('m-nav-leaderboard'),
         'ugc': document.getElementById('m-nav-ugc'),
         'flow': document.getElementById('m-nav-flow'),
         'drama': document.getElementById('m-nav-drama'),
@@ -191,6 +199,7 @@ function switchTab(tabId) {
     // Sections
     const sections = {
         'catalog': document.getElementById('section-catalog'),
+        'leaderboard': document.getElementById('section-leaderboard'),
         'ugc': document.getElementById('section-ugc'),
         'flow': document.getElementById('section-flow'),
         'drama': document.getElementById('section-drama'),
@@ -229,6 +238,8 @@ function switchTab(tabId) {
 
     if (tabId === 'catalog') {
         renderCatalog();
+    } else if (tabId === 'leaderboard') {
+        renderLeaderboard();
     } else if (tabId === 'tutorial') {
         renderTutorials();
     }
@@ -258,6 +269,8 @@ function openGoogleFlowPopup() {
 function initNavigation() {
     // Desktop Nav buttons
     document.getElementById('nav-catalog')?.addEventListener('click', () => switchTab('catalog'));
+    document.getElementById('nav-leaderboard')?.addEventListener('click', () => switchTab('leaderboard'));
+    document.getElementById('m-nav-leaderboard')?.addEventListener('click', () => switchTab('leaderboard'));
     document.getElementById('nav-ugc')?.addEventListener('click', () => switchTab('ugc'));
     document.getElementById('nav-flow')?.addEventListener('click', () => switchTab('flow'));
     document.getElementById('nav-drama')?.addEventListener('click', () => switchTab('drama'));
@@ -2508,6 +2521,188 @@ function renderTutorials() {
     if (window.lucide) window.lucide.createIcons();
 }
 
+
+// =========================================================================
+// LEADERBOARD & GAMIFICATION RENDERING
+// =========================================================================
+function renderLeaderboard() {
+    const podiumGrid = document.getElementById('podium-top3-grid');
+    const tableBody = document.getElementById('leaderboard-table-body');
+    const myRankPos = document.getElementById('my-rank-position');
+    const myRankLevel = document.getElementById('my-rank-level');
+    const myRankXp = document.getElementById('my-rank-xp');
+    const myRankAvatar = document.getElementById('my-rank-avatar');
+
+    const { top3, rest, myRank, totalParticipants } = getLeaderboard();
+
+    // Render Top 3 Podium
+    if (podiumGrid) {
+        const medals = [
+            { rank: 1, medal: '🥇 Juara 1', crown: '👑', border: 'border-amber-500 shadow-amber-500/20', bg: 'from-amber-950/40 via-slate-900 to-amber-950/20' },
+            { rank: 2, medal: '🥈 Juara 2', crown: '🥈', border: 'border-slate-400 shadow-slate-500/10', bg: 'from-slate-900 to-slate-950' },
+            { rank: 3, medal: '🥉 Juara 3', crown: '🥉', border: 'border-amber-700 shadow-amber-800/10', bg: 'from-amber-950/30 to-slate-950' }
+        ];
+
+        podiumGrid.innerHTML = top3.map((m, idx) => {
+            const config = medals[idx] || medals[2];
+            const levelInfo = calculateLevel(m.xp || 0);
+
+            return `
+                <div class="bg-gradient-to-b ${config.bg} border-2 ${config.border} rounded-2xl p-5 flex flex-col justify-between text-center relative shadow-xl transform ${idx === 0 ? 'md:-translate-y-2' : ''}">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-xs font-black text-amber-300">
+                        ${config.medal}
+                    </div>
+                    <div class="pt-3 space-y-2">
+                        <div class="relative inline-block mx-auto">
+                            <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-16 h-16 rounded-2xl mx-auto object-cover border-2 border-amber-400/60 shadow-lg">
+                            <span class="absolute -bottom-1 -right-1 text-base">${levelInfo.icon}</span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-extrabold text-white truncate">${m.name}</h4>
+                            <span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${levelInfo.badgeClass}">
+                                ${levelInfo.title}
+                            </span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-around text-xs">
+                            <div>
+                                <span class="text-slate-500 text-[10px] block">Video Dibuat</span>
+                                <span class="font-bold text-white">${m.totalGenerates || 0}</span>
+                            </div>
+                            <div class="w-px h-6 bg-slate-800"></div>
+                            <div>
+                                <span class="text-slate-500 text-[10px] block">Total XP</span>
+                                <span class="font-black text-emerald-400 font-mono">${m.xp || 0} XP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Render Ranks 4 to 50
+    if (tableBody) {
+        if (rest.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Belum ada peserta tambahan di peringkat ini.</td></tr>`;
+        } else {
+            tableBody.innerHTML = rest.map((m, idx) => {
+                const rankNum = idx + 4;
+                const levelInfo = calculateLevel(m.xp || 0);
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3.5 text-center font-bold text-slate-400 font-mono">#${rankNum}</td>
+                        <td class="p-3.5 flex items-center gap-2.5">
+                            <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-8 h-8 rounded-lg object-cover border border-slate-800">
+                            <div>
+                                <div class="font-bold text-white text-xs">${m.name}</div>
+                                <div class="text-[10px] text-slate-500">${m.email ? m.email.split('@')[0] + '@***' : 'Kreator'}</div>
+                            </div>
+                        </td>
+                        <td class="p-3.5">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${levelInfo.badgeClass}">
+                                <span>${levelInfo.icon}</span> ${levelInfo.title}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-center font-bold text-white font-mono">${m.totalGenerates || 0}</td>
+                        <td class="p-3.5 text-right font-black text-emerald-400 font-mono">${m.xp || 0} XP</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    // Update Current User Sticky Bar
+    if (myRank) {
+        if (myRankPos) myRankPos.textContent = `#${myRank.position}`;
+        if (myRankLevel) {
+            myRankLevel.textContent = `${myRank.tier.icon} ${myRank.tier.title}`;
+            myRankLevel.className = `text-[10px] px-2 py-0.5 rounded-full border ${myRank.tier.badgeClass}`;
+        }
+        if (myRankXp) myRankXp.textContent = `${myRank.member.xp || 0} XP`;
+        if (myRankAvatar) myRankAvatar.src = myRank.member.picture || 'assets/icons/favicon.png';
+    } else {
+        const cur = getCurrentUser();
+        if (myRankPos) myRankPos.textContent = '#-- (Tamu)';
+        if (myRankLevel) myRankLevel.textContent = '🥉 Novice Creator';
+        if (myRankXp) myRankXp.textContent = `${cur?.xp || 0} XP`;
+        if (myRankAvatar) myRankAvatar.src = cur?.picture || 'assets/icons/favicon.png';
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+// =========================================================================
+// ADMIN 24-HOUR ANALYTICS & PEAK USAGE CHART
+// =========================================================================
+function renderAdminAnalytics() {
+    const peakHoursEl = document.getElementById('analytics-peak-hours');
+    const totalLogsEl = document.getElementById('analytics-total-logs');
+    const topCreatorEl = document.getElementById('analytics-top-creator');
+    const chartContainer = document.getElementById('analytics-24h-chart');
+    const logsBody = document.getElementById('analytics-live-logs-body');
+
+    const { distribution, peakSummary, totalLogs, topPeak } = getActivityHourlyDistribution();
+    const members = getMemberList();
+    const topMember = [...members].sort((a, b) => (b.totalGenerates || 0) - (a.totalGenerates || 0))[0];
+
+    if (peakHoursEl) peakHoursEl.textContent = peakSummary;
+    if (totalLogsEl) totalLogsEl.textContent = `${totalLogs} Aktivitas`;
+    if (topCreatorEl && topMember) topCreatorEl.textContent = `${topMember.name} (${topMember.totalGenerates || 0}x)`;
+
+    // Render 24-Hour CSS Bar Chart
+    if (chartContainer) {
+        const maxCount = Math.max(...distribution.map(d => d.count), 1);
+
+        chartContainer.innerHTML = distribution.map(d => {
+            const heightPct = Math.max(12, Math.round((d.count / maxCount) * 100));
+            const isPeak = d.count === topPeak.count && d.count > 0;
+            const barBg = isPeak 
+                ? 'bg-gradient-to-t from-amber-500 to-yellow-400 shadow-md shadow-amber-500/30' 
+                : (d.count > 0 ? 'bg-gradient-to-t from-emerald-600 to-teal-400' : 'bg-slate-800/80');
+
+            return `
+                <div class="flex-1 flex flex-col items-center justify-end h-full group relative" title="Pukul ${d.label} WIB: ${d.count} kali generate">
+                    <span class="opacity-0 group-hover:opacity-100 transition absolute -top-6 text-[9px] font-mono font-bold bg-slate-900 border border-slate-700 text-white px-1 rounded z-10 whitespace-nowrap">
+                        ${d.label}: ${d.count}x
+                    </span>
+                    <div class="w-full rounded-t-sm transition-all duration-300 ${barBg}" style="height: ${heightPct}%;"></div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Render Live Activity Stream
+    if (logsBody) {
+        const logs = getActivityLogs();
+        if (logs.length === 0) {
+            logsBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Belum ada aktivitas tercatat hari ini.</td></tr>`;
+        } else {
+            logsBody.innerHTML = logs.slice(0, 15).map(log => {
+                const dateStr = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB' : '-';
+                return `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-2.5 font-mono text-[11px] text-slate-400">${dateStr}</td>
+                        <td class="p-2.5">
+                            <span class="font-bold text-white text-[11px]">${log.name || 'Member'}</span>
+                        </td>
+                        <td class="p-2.5">
+                            <span class="px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] font-bold">
+                                ${log.tool}
+                            </span>
+                        </td>
+                        <td class="p-2.5 text-[11px] text-slate-300 truncate max-w-xs">${log.detail}</td>
+                        <td class="p-2.5 text-right font-mono font-bold text-emerald-400 text-[11px]">+${log.xpEarned || 10} XP</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+
 // =========================================================================
 // USER AUTHENTICATION & GOOGLE OAUTH / GIS
 // =========================================================================
@@ -2558,8 +2753,10 @@ function initAuthManager() {
             name: 'Kreator KawanDigi',
             email: 'kreator@gmail.com',
             picture: 'assets/icons/favicon.png',
-            whatsapp: '',
             joinedAt: new Date().toISOString(),
+            totalGenerates: 15,
+            xp: 180,
+            level: 'Rising Star',
             subscription: {
                 plan: 'VIP Master Lifetime',
                 active: true
@@ -2568,11 +2765,7 @@ function initAuthManager() {
         saveCurrentUser(demoUser);
         document.getElementById('modal-user-profile')?.classList.add('hidden');
         updateHeaderAuthUI();
-
-        if (!demoUser.whatsapp) {
-            document.getElementById('modal-whatsapp-prompt')?.classList.remove('hidden');
-        }
-        showToast('Berhasil masuk dengan akun Google Demo!', 'success');
+        showToast('Berhasil terhubung dengan Akun Google! Selamat berkarya, Kak.', 'success');
     });
 
     initGoogleIdentityServices();
@@ -2612,26 +2805,36 @@ function openUserProfileModal() {
     const avatarEl = document.getElementById('profile-avatar');
     const nameEl = document.getElementById('profile-name');
     const emailEl = document.getElementById('profile-email');
-    const waInput = document.getElementById('profile-input-whatsapp');
     const planBadge = document.getElementById('profile-plan-badge');
     const planName = document.getElementById('profile-plan-name');
+    const levelEl = document.getElementById('profile-user-level');
+    const xpEl = document.getElementById('profile-user-xp');
+    const genEl = document.getElementById('profile-user-generates');
     const logoutContainer = document.getElementById('profile-logout-container');
 
     if (user && user.email) {
+        const levelInfo = calculateLevel(user.xp || 0);
         if (avatarEl) avatarEl.src = user.picture || 'assets/icons/favicon.png';
         if (nameEl) nameEl.textContent = user.name || 'Member KawanDigi';
         if (emailEl) emailEl.textContent = user.email;
-        if (waInput) waInput.value = user.whatsapp || '';
         if (planBadge) planBadge.textContent = user.subscription?.plan || 'VIP Master Lifetime';
         if (planName) planName.textContent = user.subscription?.plan || 'Akses Penuh Semua Tools';
+        if (levelEl) {
+            levelEl.textContent = `${levelInfo.icon} ${levelInfo.title}`;
+            levelEl.className = `px-2 py-0.5 rounded-full font-bold text-[10px] border ${levelInfo.badgeClass}`;
+        }
+        if (xpEl) xpEl.textContent = `${user.xp || 10} XP`;
+        if (genEl) genEl.textContent = `${user.totalGenerates || 0} Video Dibuat`;
         if (logoutContainer) logoutContainer.classList.remove('hidden');
     } else {
         if (avatarEl) avatarEl.src = 'assets/icons/favicon.png';
         if (nameEl) nameEl.textContent = 'Tamu / Belum Masuk';
-        if (emailEl) emailEl.textContent = 'Silakan masuk akun Google Anda di bawah.';
-        if (waInput) waInput.value = '';
+        if (emailEl) emailEl.textContent = 'Silakan hubungkan akun Google Anda di bawah.';
         if (planBadge) planBadge.textContent = 'Trial Pengunjung';
         if (planName) planName.textContent = 'Fitur Terbatas';
+        if (levelEl) levelEl.textContent = '🥉 Novice Creator';
+        if (xpEl) xpEl.textContent = '0 XP';
+        if (genEl) genEl.textContent = '0 Video Dibuat';
         if (logoutContainer) logoutContainer.classList.add('hidden');
     }
 
@@ -2718,6 +2921,7 @@ function initAdminConsole() {
 
     const atabs = {
         'members': { btn: document.getElementById('btn-atab-members'), panel: document.getElementById('admin-section-members') },
+        'analytics': { btn: document.getElementById('btn-atab-analytics'), panel: document.getElementById('admin-section-analytics') },
         'flags': { btn: document.getElementById('btn-atab-flags'), panel: document.getElementById('admin-section-flags') },
         'products': { btn: document.getElementById('btn-atab-products'), panel: document.getElementById('admin-section-products') },
         'tutorials': { btn: document.getElementById('btn-atab-tutorials'), panel: document.getElementById('admin-section-tutorials') },
@@ -2743,6 +2947,10 @@ function initAdminConsole() {
     document.getElementById('btn-atab-members')?.addEventListener('click', () => {
         switchAdminTab('members');
         renderAdminMembers();
+    });
+    document.getElementById('btn-atab-analytics')?.addEventListener('click', () => {
+        switchAdminTab('analytics');
+        renderAdminAnalytics();
     });
     document.getElementById('btn-atab-flags')?.addEventListener('click', () => {
         switchAdminTab('flags');
@@ -2825,49 +3033,45 @@ function renderAdminMembers(filter = '') {
         const q = filter.toLowerCase();
         members = members.filter(m => 
             (m.name || '').toLowerCase().includes(q) || 
-            (m.email || '').toLowerCase().includes(q) || 
-            (m.whatsapp || '').includes(q)
+            (m.email || '').toLowerCase().includes(q)
         );
     }
 
     if (members.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Tidak ada member yang cocok dengan pencarian.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Tidak ada member yang cocok dengan pencarian.</td></tr>`;
         return;
     }
 
     tbody.innerHTML = members.map(m => {
-        const waPromo = generateWhatsAppOfferUrl(m.whatsapp, m.name, 'promo');
-        const waTut = generateWhatsAppOfferUrl(m.whatsapp, m.name, 'tutorial');
         const emailUrl = generateEmailOfferUrl(m.email, m.name, 'promo');
         const dateStr = m.joinedAt ? new Date(m.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+        const levelInfo = calculateLevel(m.xp || 0);
 
         return `
             <tr class="hover:bg-slate-800/40 transition">
                 <td class="p-3">
-                    <div class="font-bold text-white">${m.name}</div>
-                    <div class="text-[11px] text-slate-400 font-mono">${m.email}</div>
-                </td>
-                <td class="p-3 font-mono text-emerald-400">
-                    ${m.whatsapp || '<span class="text-slate-500 text-[10px] italic">Belum diisi</span>'}
+                    <div class="font-bold text-white flex items-center gap-2">
+                        <img src="${m.picture || 'assets/icons/favicon.png'}" class="w-6 h-6 rounded-full object-cover border border-slate-700">
+                        <span>${m.name}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400 font-mono ml-8">${m.email}</div>
                 </td>
                 <td class="p-3">
                     <span class="px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] font-bold">
                         ${m.plan || 'Free Trial'}
                     </span>
                 </td>
+                <td class="p-3 text-center font-bold text-white font-mono">${m.totalGenerates || 0}</td>
+                <td class="p-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${levelInfo.badgeClass}">
+                        <span>${levelInfo.icon}</span> ${m.xp || 0} XP
+                    </span>
+                </td>
                 <td class="p-3 text-[11px] text-slate-400">${dateStr}</td>
                 <td class="p-3 text-right">
                     <div class="flex items-center justify-end gap-1.5 flex-wrap">
-                        ${m.whatsapp ? `
-                            <a href="${waPromo}" target="_blank" class="px-2 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Penawaran Promo via WA">
-                                <i data-lucide="message-square" class="w-3 h-3"></i> WA Promo
-                            </a>
-                            <a href="${waTut}" target="_blank" class="px-2 py-1 bg-teal-600/30 hover:bg-teal-600/50 text-teal-300 border border-teal-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Info Tutorial Baru via WA">
-                                <i data-lucide="video" class="w-3 h-3"></i> WA Info
-                            </a>
-                        ` : ''}
-                        <a href="${emailUrl}" class="px-2 py-1 bg-brand-600/30 hover:bg-brand-600/50 text-brand-300 border border-brand-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Email Penawaran">
-                            <i data-lucide="mail" class="w-3 h-3"></i> Email
+                        <a href="${emailUrl}" class="px-2.5 py-1 bg-brand-600/30 hover:bg-brand-600/50 text-brand-300 border border-brand-500/40 rounded text-[10px] font-bold flex items-center gap-1 transition" title="Kirim Email Penawaran">
+                            <i data-lucide="mail" class="w-3 h-3"></i> Email Member
                         </a>
                         <button type="button" onclick="window.kdDeleteMember('${m.email}')" class="p-1 hover:text-rose-400 text-slate-500 transition" title="Hapus Member">
                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>

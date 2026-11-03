@@ -1,6 +1,7 @@
 /**
  * KawanDigi Creator Studio - Authentication & Member Management
  * Supports Google OAuth (Google Identity Services / GIS), User Dashboard, and Admin Member Management
+ * Privacy-friendly: Does NOT store phone numbers or unnecessary personal data.
  */
 
 const STORAGE_USER_KEY = 'kawandigi_user_session';
@@ -10,33 +11,58 @@ const STORAGE_GOOGLE_CLIENT_ID = 'kawandigi_google_client_id';
 
 const DEFAULT_ADMIN_PIN = 'kawandigi88';
 
-// Default initial members for demo & immediate administration
+// Default initial members for demo & leaderboard ranking
 const DEFAULT_MEMBERS = [
     {
         id: 'user_101',
         name: 'Rian Pratama',
         email: 'rian.pratama92@gmail.com',
-        whatsapp: '6281234567890',
+        picture: 'assets/icons/favicon.png',
         joinedAt: '2026-10-25T10:15:00.000Z',
+        lastActive: '2026-11-03T14:30:00.000Z',
         plan: 'VIP Master Lifetime',
+        totalGenerates: 94,
+        xp: 1120,
+        level: 'Diamond Creator',
         status: 'Active'
     },
     {
         id: 'user_102',
         name: 'Siti Rahmawati',
         email: 'siti.rahma.creators@gmail.com',
-        whatsapp: '6285712345678',
+        picture: 'assets/icons/favicon.png',
         joinedAt: '2026-11-01T08:30:00.000Z',
+        lastActive: '2026-11-03T15:10:00.000Z',
         plan: 'Pro Creator (Bulanan)',
+        totalGenerates: 62,
+        xp: 740,
+        level: 'Diamond Creator',
         status: 'Active'
     },
     {
         id: 'user_103',
         name: 'Budi Santoso',
         email: 'budi.santoso.affiliate@gmail.com',
-        whatsapp: '6287890123456',
+        picture: 'assets/icons/favicon.png',
         joinedAt: '2026-11-02T14:20:00.000Z',
+        lastActive: '2026-11-03T11:45:00.000Z',
         plan: 'Free Trial',
+        totalGenerates: 38,
+        xp: 450,
+        level: 'Pro Content Master',
+        status: 'Active'
+    },
+    {
+        id: 'user_104',
+        name: 'Dewi Lestari',
+        email: 'dewi.lestari.ugc@gmail.com',
+        picture: 'assets/icons/favicon.png',
+        joinedAt: '2026-11-02T16:00:00.000Z',
+        lastActive: '2026-11-03T09:15:00.000Z',
+        plan: 'Free Trial',
+        totalGenerates: 21,
+        xp: 250,
+        level: 'Rising Star',
         status: 'Active'
     }
 ];
@@ -83,7 +109,7 @@ export function saveCurrentUser(user) {
 }
 
 /**
- * Update current user profile fields (e.g. WhatsApp number)
+ * Update current user profile fields (e.g. XP, generates)
  */
 export function updateCurrentUserProfile(updates) {
     const user = getCurrentUser();
@@ -129,19 +155,20 @@ export function upsertMemberRecord(user) {
         id: user.id || 'usr_' + Date.now(),
         name: user.name || 'Member KawanDigi',
         email: user.email,
-        whatsapp: user.whatsapp || '',
+        picture: user.picture || 'assets/icons/favicon.png',
         joinedAt: user.joinedAt || new Date().toISOString(),
         lastActive: new Date().toISOString(),
         plan: user.subscription?.plan || 'Free Trial',
+        totalGenerates: user.totalGenerates || 0,
+        xp: user.xp || 10,
+        level: user.level || 'Novice Creator',
         status: 'Active'
     };
 
     if (index >= 0) {
-        // preserve joinedAt and previous whatsapp if not provided
         memberData.joinedAt = members[index].joinedAt || memberData.joinedAt;
-        if (!memberData.whatsapp && members[index].whatsapp) {
-            memberData.whatsapp = members[index].whatsapp;
-        }
+        memberData.totalGenerates = Math.max(members[index].totalGenerates || 0, memberData.totalGenerates);
+        memberData.xp = Math.max(members[index].xp || 0, memberData.xp);
         members[index] = { ...members[index], ...memberData };
     } else {
         members.unshift(memberData);
@@ -156,28 +183,11 @@ export function deleteMemberRecord(email) {
 }
 
 /**
- * WhatsApp & Email Direct Offer Helpers
+ * Direct Email Offer Helper
  */
-export function generateWhatsAppOfferUrl(phone, memberName, offerType = 'promo') {
-    let cleanPhone = (phone || '').replace(/\D/g, '');
-    if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.slice(1);
-    else if (!cleanPhone.startsWith('62') && cleanPhone.length > 8) cleanPhone = '62' + cleanPhone;
-
-    let message = '';
-    if (offerType === 'promo') {
-        message = `Halo Kak ${memberName || ''}, terima kasih sudah menggunakan KawanDigi Creator Studio!\n\nKami ada promo spesial diskon eksklusif untuk aktivasi Akun AI / Lisensi VIP Unlimited hari ini. Apakah Kakak tertarik untuk info lengkapnya? 😊`;
-    } else if (offerType === 'tutorial') {
-        message = `Halo Kak ${memberName || ''}! Video tutorial terbaru cara merancang storyboard iklan affiliate & Google Flow sudah rilis di KawanDigi Studio. Silakan akses sekarang ya!`;
-    } else {
-        message = `Halo Kak ${memberName || ''}! Ada yang bisa kami bantu terkait penggunaan tools AI di KawanDigi Creator Studio?`;
-    }
-
-    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-}
-
 export function generateEmailOfferUrl(email, memberName, offerType = 'promo') {
     let subject = 'Penawaran Spesial KawanDigi Creator Studio';
-    let body = `Halo Kak ${memberName || ''},\n\nTerima kasih telah bergabung di KawanDigi Creator Studio.\n\nKami memiliki penawaran eksklusif khusus member untuk meningkatkan produktivitas pembuatan konten AI Anda.\n\nSilakan balas email ini jika ada pertanyaan.\n\nSalam hangat,\nTim KawanDigi`;
+    let body = `Halo Kak ${memberName || ''},\n\nTerima kasih telah aktif berkarya di KawanDigi Creator Studio.\n\nKami memiliki penawaran eksklusif khusus member untuk meningkatkan produktivitas pembuatan konten AI Anda.\n\nSilakan balas email ini jika ada pertanyaan.\n\nSalam hangat,\nTim KawanDigi`;
     
     if (offerType === 'tutorial') {
         subject = 'Update Panduan & Video Tutorial Baru KawanDigi';
@@ -188,13 +198,13 @@ export function generateEmailOfferUrl(email, memberName, offerType = 'promo') {
 }
 
 /**
- * Export members to CSV file for Excel / CRM
+ * Export members to CSV file for Excel / CRM (Zero phone numbers)
  */
 export function exportMembersToCsv() {
     const members = getMemberList();
-    let csv = 'ID,Nama Lengkap,Email,WhatsApp,Paket Langganan,Tanggal Bergabung,Status\n';
+    let csv = 'ID,Nama Lengkap,Email,Paket Langganan,Total Generate,Skor XP,Level Rank,Tanggal Bergabung,Terakhir Aktif,Status\n';
     members.forEach(m => {
-        csv += `"${m.id}","${m.name}","${m.email}","${m.whatsapp || '-'}","${m.plan}","${m.joinedAt}","${m.status}"\n`;
+        csv += `"${m.id}","${m.name}","${m.email}","${m.plan}","${m.totalGenerates || 0}","${m.xp || 0}","${m.level || 'Novice'}","${m.joinedAt}","${m.lastActive || '-'}","${m.status}"\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

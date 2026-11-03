@@ -1,5 +1,5 @@
 // Service Worker for kawandigi CREATOR TOOLS
-const CACHE_NAME = 'kawandigi-cache-v4';
+const CACHE_NAME = 'kawandigi-cache-v5';
 const ASSETS = [
     './',
     './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
     './modules/video_renderer.js',
     './modules/auth_manager.js',
     './modules/catalog_manager.js',
+    './modules/gamification_manager.js',
     './assets/icons/logo.png',
     './assets/icons/favicon.png',
     './assets/icons/icon-192.png',

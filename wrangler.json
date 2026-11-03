@@ -1,5 +1,6 @@
 {
   "name": "kawandigi-creator-tools",
+  "main": "worker.js",
   "compatibility_date": "2026-11-03",
   "assets": {
     "directory": "./",
