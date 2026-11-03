@@ -209,6 +209,11 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
                 maxOutputTokens: 4096
             };
 
+            // Optimasi Kecepatan: Minimalkan thinking budget untuk respons naskah cepat (latency < 3 detik)
+            if (options?.disableThinking !== false) {
+                generationConfig.thinkingConfig = { thinkingBudget: 0 };
+            }
+
             if (isJsonMode) {
                 generationConfig.responseMimeType = 'application/json';
             }
@@ -232,12 +237,24 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-                const response = await fetch(endpoint, {
+                let response = await fetch(endpoint, {
                     signal: controller.signal,
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
+                // Jika model tidak mendukung parameter thinkingConfig (HTTP 400), otomatis coba ulang tanpa thinkingConfig
+                if (!response.ok && response.status === 400 && generationConfig.thinkingConfig) {
+                    delete generationConfig.thinkingConfig;
+                    payload.generationConfig = generationConfig;
+                    response = await fetch(endpoint, {
+                        signal: controller.signal,
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
                 clearTimeout(timeoutId);
 
                 if (!response.ok) {

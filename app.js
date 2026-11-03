@@ -235,7 +235,7 @@ function populateGoogleFlowStudio(campaign) {
     if (emptyState) emptyState.classList.add('hidden');
     listContainer.innerHTML = '';
 
-    const dur = campaign.video_duration || selectedUgcDuration || 10;
+    const dur = campaign.duration_seconds || campaign.video_duration || selectedUgcDuration || 10;
     const sceneCount = campaign.scenes?.length || 6;
     if (badge) {
         badge.textContent = `${dur} Detik • ${sceneCount} Adegan`;
@@ -658,7 +658,7 @@ function formatFullPromptVideoText(campaign) {
     if (!campaign) return '';
     const analysis = campaign.product_analysis || {};
     const title = analysis.product_name || document.getElementById('ugc-name')?.value || 'Produk Pilihan';
-    const dur = campaign.video_duration || selectedUgcDuration || 10;
+    const dur = campaign.duration_seconds || campaign.video_duration || selectedUgcDuration || 10;
     
     let text = `==========================================================\n`;
     text += `PROMPT VIDEO UGC AFFILIATE LENGKAP — ${title.toUpperCase()}\n`;
@@ -668,8 +668,62 @@ function formatFullPromptVideoText(campaign) {
     text += `==========================================================\n\n`;
 
     // 1. Google Flow 10s Video Ready-to-Use Prompt Block
+    const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
+    
+    // Pastikan jika durasi 20s atau 30s, parts selalu terisi sesuai partCount
+    if (partCount > 1 && (!campaign.parts || campaign.parts.length < partCount)) {
+        const scenes = campaign.scenes || [];
+        if (dur === 30) {
+            campaign.parts = [
+                {
+                    part_number: 1,
+                    part_title: "KLIP 1: HOOK & PROBLEM RELATABLE",
+                    duration_seconds: 10,
+                    scenes_included: "Adegan 1 - 2 (0–10 Detik)",
+                    narasi_part: `${scenes[0]?.voiceover_script || ''} ${scenes[1]?.voiceover_script || ''}`.trim(),
+                    google_flow_prompt: scenes[0]?.google_flow_prompt || 'Video UGC vertikal 9:16 kualitas FHD.'
+                },
+                {
+                    part_number: 2,
+                    part_title: "KLIP 2: PENGENALAN PRODUK & DEMONSTRASI FITUR",
+                    duration_seconds: 10,
+                    scenes_included: "Adegan 3 - 4 (10–20 Detik)",
+                    narasi_part: `${scenes[2]?.voiceover_script || ''} ${scenes[3]?.voiceover_script || ''}`.trim(),
+                    google_flow_prompt: scenes[2]?.google_flow_prompt || 'Video UGC vertikal 9:16 kualitas FHD.'
+                },
+                {
+                    part_number: 3,
+                    part_title: "KLIP 3: HONEST REVIEW & CALL TO ACTION",
+                    duration_seconds: 10,
+                    scenes_included: "Adegan 5 - 6 (20–30 Detik)",
+                    narasi_part: `${scenes[4]?.voiceover_script || ''} ${scenes[5]?.voiceover_script || ''}`.trim(),
+                    google_flow_prompt: scenes[4]?.google_flow_prompt || 'Video UGC vertikal 9:16 kualitas FHD.'
+                }
+            ];
+        } else if (dur === 20) {
+            campaign.parts = [
+                {
+                    part_number: 1,
+                    part_title: "KLIP 1: HOOK, PROBLEM & PENGENALAN SOLUSI",
+                    duration_seconds: 10,
+                    scenes_included: "Adegan 1 - 3 (0–10 Detik)",
+                    narasi_part: `${scenes[0]?.voiceover_script || ''} ${scenes[1]?.voiceover_script || ''} ${scenes[2]?.voiceover_script || ''}`.trim(),
+                    google_flow_prompt: scenes[0]?.google_flow_prompt || 'Video UGC vertikal 9:16 kualitas FHD.'
+                },
+                {
+                    part_number: 2,
+                    part_title: "KLIP 2: DEMONSTRASI, REVIEW & CALL TO ACTION",
+                    duration_seconds: 10,
+                    scenes_included: "Adegan 4 - 6 (10–20 Detik)",
+                    narasi_part: `${scenes[3]?.voiceover_script || ''} ${scenes[4]?.voiceover_script || ''} ${scenes[5]?.voiceover_script || ''}`.trim(),
+                    google_flow_prompt: scenes[3]?.google_flow_prompt || 'Video UGC vertikal 9:16 kualitas FHD.'
+                }
+            ];
+        }
+    }
+
     if (campaign.parts && campaign.parts.length > 1) {
-        text += `✂️ PEMBAGIAN KLIP VIDEO GOOGLE FLOW (${campaign.parts.length} KLIP @ 10s):\n`;
+        text += `✂️ PEMBAGIAN KLIP VIDEO GOOGLE FLOW (${campaign.parts.length} KLIP @ 10s — TOTAL ${dur} DETIK):\n`;
         text += `(Render per klip 10 detik di Google Flow / Veo, lalu satukan di CapCut atau Premiere)\n\n`;
         
         campaign.parts.forEach(part => {
@@ -720,6 +774,7 @@ function formatFullPromptVideoText(campaign) {
 
     return text.trim();
 }
+window.formatFullPromptVideoText = formatFullPromptVideoText;
 
 /**
  * Gallery Renderer for Multi-Screenshot References
@@ -766,33 +821,66 @@ function renderScreenshotsGallery() {
 /**
  * Append multiple screenshot files to the reference pool
  */
-function addScreenshotFiles(fileList) {
-    if (!fileList || fileList.length === 0) return;
-    
-    let addedCount = 0;
-    Array.from(fileList).forEach(file => {
-        if (!file.type.startsWith('image/')) return;
-        addedCount++;
+function compressImageFile(file, maxDimension = 1280, quality = 0.8) {
+    return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
-            const dataUrl = e.target.result;
-            const [header, base64] = dataUrl.split(',');
-            const mimeType = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
-            
-            uploadedScreenshots.push({
-                id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                base64,
-                mimeType,
-                name: file.name || `screenshot_${uploadedScreenshots.length + 1}.png`,
-                previewUrl: dataUrl
-            });
-            renderScreenshotsGallery();
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    } else {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                const [header, base64] = dataUrl.split(',');
+                resolve({ base64, mimeType: 'image/jpeg', previewUrl: dataUrl });
+            };
+            img.onerror = () => {
+                const dataUrl = e.target.result;
+                const [header, base64] = dataUrl.split(',');
+                const mimeType = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+                resolve({ base64, mimeType, previewUrl: dataUrl });
+            };
+            img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     });
+}
+
+async function addScreenshotFiles(fileList) {
+    if (!fileList || fileList.length === 0) return;
+    
+    let addedCount = 0;
+    const validFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    
+    for (const file of validFiles) {
+        addedCount++;
+        const { base64, mimeType, previewUrl } = await compressImageFile(file);
+        
+        uploadedScreenshots.push({
+            id: 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            base64,
+            mimeType,
+            name: file.name || `screenshot_${uploadedScreenshots.length + 1}.jpg`,
+            previewUrl
+        });
+        renderScreenshotsGallery();
+    }
 
     if (addedCount > 0) {
-        showToast(`${addedCount} foto referensi ditambahkan! Tekan tombol 'Mulai Analisis Semua Gambar' jika sudah cukup.`, 'info');
+        showToast(`${addedCount} foto referensi ditambahkan & dioptimalkan! Tekan tombol 'Mulai Analisis Semua Gambar'.`, 'info');
     }
 }
 
@@ -1185,7 +1273,7 @@ function renderUgcResults(campaign) {
     summaryCard.innerHTML = `
         <div class="flex items-center justify-between font-bold text-brand-300 text-xs pb-1 border-b border-brand-500/20">
             <span class="flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-amber-400"></i> Hasil Analisis & Formula Konten UGC</span>
-            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase">Durasi Pas 10s • ${campaign.total_narasi_kata || 24} Kata</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase">Durasi ${campaign.duration_seconds || selectedUgcDuration || 10}s • ${campaign.total_narasi_kata || 24} Kata</span>
         </div>
         <div class="pt-1.5 text-slate-300 space-y-1 text-[11px]">
             <p><strong class="text-white">Produk/Tempat:</strong> ${analysis.product_name || 'Produk Pilihan'}</p>

@@ -1,5 +1,5 @@
 // Service Worker for kawandigi CREATOR TOOLS
-const CACHE_NAME = 'kawandigi-cache-v2';
+const CACHE_NAME = 'kawandigi-cache-v3';
 const ASSETS = [
     './',
     './index.html',
