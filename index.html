@@ -58,14 +58,12 @@
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-40 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-<!-- Logo & Brand Link (Clean seamless image, original name) -->
-            <div class="flex items-center gap-2.5 cursor-pointer" id="btn-brand-home" title="Kembali ke Beranda">
-                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover shadow-sm flex-shrink-0">
-                <div class="min-w-0">
-                    <h1 class="text-sm sm:text-base font-black tracking-tight flex items-center gap-1.5 flex-nowrap">
-                        <span class="tracking-tight whitespace-nowrap"><span class="logo-kawan text-slate-900 dark:text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                        <span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider whitespace-nowrap">CREATOR TOOLS</span>
-                    </h1>
+<!-- Logo & Brand Link (Stacked CREATOR TOOLS under kawandigi) -->
+            <div class="flex items-center gap-2 cursor-pointer min-w-0 flex-shrink-0" id="btn-brand-home" title="Kembali ke Beranda">
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shadow-sm flex-shrink-0">
+                <div class="flex flex-col justify-center leading-none min-w-0">
+                    <span class="text-sm sm:text-base font-black tracking-tight"><span class="logo-kawan text-slate-900 dark:text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
+                    <span class="text-[7.5px] sm:text-[9px] font-black text-[#544ce7] dark:text-[#a6a1fd] tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
                 </div>
             </div>
 
@@ -97,10 +95,10 @@
                 </button>
             </nav>
 
-            <!-- Right Controls: Theme Toggle, Auth, Admin & Hamburger Drawer -->
-            <div class="flex items-center gap-2">
+<!-- Right Controls: Theme Toggle, Auth, Admin & Hamburger Drawer -->
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 <!-- Theme Toggle Button -->
-                <button id="btn-theme-toggle" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm" title="Ganti Mode Gelap/Terang">
+                <button id="btn-theme-toggle" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm flex-shrink-0" title="Ganti Mode Gelap/Terang">
                     <i data-lucide="sun" class="w-4 h-4"></i>
                 </button>
 
@@ -115,11 +113,11 @@
                     <span id="api-status-text">AI Key</span>
                 </button>
 
-                <!-- User Profile / Auth Button -->
-                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-300 transition" title="Profil Akun Member">
+                <!-- User Profile / Auth Button (Compact icon on mobile, with text on desktop) -->
+                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-300 transition flex-shrink-0" title="Profil Akun Member">
                     <img id="auth-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="hidden w-5 h-5 rounded-full object-cover">
-                    <i id="auth-default-icon" data-lucide="user" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span id="auth-user-name" class="text-xs font-bold">Akun</span>
+                    <i id="auth-default-icon" data-lucide="user" class="w-4 h-4 text-brand-400"></i>
+                    <span id="auth-user-name" class="text-xs font-bold hidden sm:inline">Akun</span>
                 </button>
 
                 <!-- Admin Button -->
@@ -128,8 +126,8 @@
                     <span class="text-[11px] font-bold">Admin</span>
                 </button>
 
-                <!-- Hamburger Drawer Trigger (Reference Design) -->
-                <button id="btn-open-drawer" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm" title="Buka Menu Lengkap">
+                <!-- Hamburger Drawer Trigger (Always within screen bounds) -->
+                <button id="btn-open-drawer" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 transition shadow-sm flex-shrink-0" title="Buka Menu Lengkap">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -146,9 +144,9 @@
         <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
                 <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 rounded-xl object-cover shadow-sm flex-shrink-0">
-                <div class="flex items-center gap-1.5">
+                <div class="flex flex-col justify-center leading-none">
                     <span class="text-sm font-black text-slate-900 dark:text-white"><span class="logo-kawan">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider">CREATOR TOOLS</span>
+                    <span class="text-[7.5px] font-black text-[#544ce7] dark:text-[#a6a1fd] tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
                 </div>
             </div>
             <button id="btn-close-drawer" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 transition">
@@ -1541,10 +1539,10 @@
             <span class="text-[10px] mt-0.5">Tutorial</span>
         </button>
 
-        <!-- 5. Akun -->
-        <button type="button" id="m-nav-account" onclick="window.kdOpenProfileModal()" class="mobile-nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white font-medium transition">
-            <i data-lucide="user" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-0.5">Akun</span>
+        <!-- 5. Google Flow Shortcut (Replaces duplicate Akun) -->
+        <button type="button" id="m-nav-flow" onclick="window.kdSwitchTab('flow')" class="mobile-nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white font-medium transition">
+            <i data-lucide="film" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-0.5">Google Flow</span>
         </button>
     </nav>
 
