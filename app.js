@@ -1156,18 +1156,6 @@ async function handleGenerateUgc() {
             },
             data: campaign
         });
-            tone: tone,
-            previewText: campaign.scenes?.[0]?.voiceover_script || campaign.scenes?.[0]?.visual_description || '',
-            inputs: {
-                productUrl,
-                productName,
-                productCategory,
-                tone,
-                videoDuration: selectedUgcDuration,
-                sellingPoints
-            },
-            data: campaign
-        });
         updateHistoryBadge();
 
         showToast('Storyboard UGC Affiliate berhasil dirancang & disimpan ke Riwayat!', 'success');
