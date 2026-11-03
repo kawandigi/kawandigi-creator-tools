@@ -1,16 +1,30 @@
 {
-  "name": "KawanDigi Creator Studio",
-  "short_name": "KawanDigi",
-  "description": "AI UGC Affiliate Video & Drama Series Generator powered by Google Gemini & Google Flow",
+  "name": "kawandigi CREATOR TOOLS",
+  "short_name": "kawandigi",
+  "description": "kawandigi CREATOR TOOLS - Studio AI UGC Affiliate & Drama Series Creator",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#030712",
-  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "background_color": "#060515",
+  "theme_color": "#544ce7",
   "icons": [
     {
-      "src": "assets/icons/icon.svg",
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KawanDigi Creator Studio • AI UGC Video & Drama Generator</title>
-    <meta name="description" content="Platform AI Video Creator tanpa batas: Hasilkan video UGC Affiliate dan Naskah Drama bersambung dengan Google Gemini & Google Flow.">
+    <title>kawandigi CREATOR TOOLS • AI UGC Video & Drama Generator</title>
+    <meta name="description" content="kawandigi CREATOR TOOLS - Platform AI Video Creator: Hasilkan naskah & storyboard video UGC Affiliate dan Drama bersambung dengan Google Gemini & Google Flow.">
     
     <!-- PWA Manifest & Mobile Icons -->
-    <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
+    <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#544ce7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="kawandigi">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,15 +24,22 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
+                            50: '#f0efff',
+                            100: '#e2e0ff',
+                            200: '#c7c4fe',
+                            300: '#a6a1fd',
+                            400: '#7e75fb',
+                            500: '#544ce7', // Warna Utama Sesuai Logo
+                            600: '#433acb',
+                            700: '#352cb2',
+                            800: '#2c2591',
+                            900: '#252174',
+                            950: '#151249',
                         },
                         accent: {
-                            500: '#ec4899',
-                            600: '#db2777',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
                         }
                     }
                 }
@@ -48,13 +57,11 @@
     <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25">
-                    <i data-lucide="video" class="w-5 h-5"></i>
-                </div>
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-10 h-10 rounded-xl shadow-lg shadow-brand-500/25 object-cover flex-shrink-0">
                 <div>
-                    <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                        Kawan<span class="text-accent-500">Digi</span>
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">CREATOR</span>
+                    <h1 class="text-lg font-black tracking-tight flex items-center gap-2">
+                        <span class="tracking-tight"><span class="logo-kawan text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
+                        <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-[#544ce7]/15 text-[#544ce7] dark:text-[#a6a1fd] border border-[#544ce7]/30 tracking-wider">CREATOR TOOLS</span>
                     </h1>
                     <p class="text-[11px] text-slate-400 font-medium">Google Flow & Gemini Video Suite</p>
                 </div>
@@ -662,7 +669,7 @@
             <!-- Hero Banner -->
             <div class="bg-gradient-to-r from-slate-900 via-brand-950 to-slate-900 border border-slate-800 rounded-2xl p-6 text-center max-w-3xl mx-auto">
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-bold mb-3 border border-brand-500/30">
-                    🎟️ KAWANDIGI LICENSE CENTER
+                    🎟️ kawandigi CREATOR TOOLS LICENSE
                 </div>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">
                     Aktivasi Lisensi & Akses Tools

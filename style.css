@@ -28,9 +28,9 @@ body {
 
 /* Active Nav Tabs */
 .nav-tab.active {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, #544ce7 0%, #433acb 100%);
     color: #ffffff;
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
+    box-shadow: 0 4px 14px 0 rgba(84, 76, 231, 0.35);
 }
 
 .nav-tab:not(.active) {
@@ -44,7 +44,7 @@ body {
 
 /* Mobile Nav Active */
 .mobile-nav-btn.active {
-    color: #818cf8;
+    color: #7e75fb;
 }
 
 .mobile-nav-btn:not(.active) {
@@ -98,9 +98,9 @@ body {
 }
 
 .kd-toast-info {
-    background: #1e1b4b;
-    border: 1px solid #6366f1;
-    color: #e0e7ff;
+    background: #18153c;
+    border: 1px solid #544ce7;
+    color: #f0efff;
 }
 
 /* Code / Prompt Box Styling */
@@ -191,9 +191,13 @@ html:not(.dark) textarea {
 html:not(.dark) input:focus,
 html:not(.dark) select:focus,
 html:not(.dark) textarea:focus {
-    border-color: #6366f1 !important;
+    border-color: #544ce7 !important;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 2px rgba(84, 76, 231, 0.2);
+}
+
+html:not(.dark) .logo-kawan {
+    color: #0f172a !important;
 }
 
 html:not(.dark) input::placeholder,
