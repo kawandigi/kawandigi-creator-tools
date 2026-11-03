@@ -97,18 +97,38 @@ export default {
       if (url.pathname === '/api/settings') {
         globalThis.__kd_settings = globalThis.__kd_settings || {};
         if (request.method === 'GET') {
-          let clientId = env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || '';
-          let adminEmail = env.ADMIN_EMAIL || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com';
+          let clientId = (
+            env.GOOGLE_CLIENT_ID ||
+            env.google_client_id ||
+            env.GOOGLE_OAUTH_CLIENT_ID ||
+            env.google_oauth_client_id ||
+            env.GOOGLE_CLIENTID ||
+            env.CLIENT_ID ||
+            env.client_id ||
+            env.OAUTH_CLIENT_ID ||
+            globalThis.__kd_settings.google_client_id ||
+            ''
+          ).trim();
+
+          let adminEmail = (
+            env.ADMIN_EMAIL ||
+            env.admin_email ||
+            env.SUPERADMIN_EMAIL ||
+            env.superadmin_email ||
+            globalThis.__kd_settings.admin_email ||
+            'admin.kawandigi@gmail.com'
+          ).trim().toLowerCase();
+
           if (db) {
             try {
               await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
               const rowClient = await db.prepare("SELECT value FROM app_settings WHERE key = 'google_client_id'").first();
               if (rowClient && rowClient.value) {
-                clientId = rowClient.value;
+                clientId = rowClient.value.trim();
               }
               const rowAdmin = await db.prepare("SELECT value FROM app_settings WHERE key = 'admin_email'").first();
               if (rowAdmin && rowAdmin.value) {
-                adminEmail = rowAdmin.value;
+                adminEmail = rowAdmin.value.trim().toLowerCase();
               }
             } catch (e) {
               console.error("D1 app_settings read error:", e);
@@ -117,8 +137,8 @@ export default {
           return new Response(JSON.stringify({
             status: 'success',
             data: {
-              google_client_id: (clientId || env.GOOGLE_CLIENT_ID || globalThis.__kd_settings.google_client_id || '').trim(),
-              admin_email: (adminEmail || env.ADMIN_EMAIL || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com').trim()
+              google_client_id: clientId,
+              admin_email: adminEmail
             }
           }), { headers: corsHeaders });
         }

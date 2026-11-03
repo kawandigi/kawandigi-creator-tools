@@ -1,3 +1,4 @@
+import { getCurrentUser, getAdminEmail } from './auth_manager.js';
 /**
  * KawanDigi Creator Studio - License & Tool Access Manager
  * Enables selling tools separately (A la Carte) or as All-Access VIP
@@ -56,6 +57,15 @@ export function clearLicenses() {
  * Check if the user has access to a specific tool (either active license or trial remaining)
  */
 export function hasToolAccess(toolId) {
+    // Superadmin has 100% full unlimited access to all features automatically
+    const user = getCurrentUser();
+    if (user && user.email) {
+        const adminEmail = (typeof getAdminEmail === 'function' ? getAdminEmail() : 'admin.kawandigi@gmail.com').toLowerCase().trim();
+        if (user.email.toLowerCase().trim() === adminEmail) {
+            return { allowed: true, type: 'all_access', trialLeft: 9999 };
+        }
+    }
+
     const licenses = getLicenses();
     
     // Master All-Access VIP

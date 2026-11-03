@@ -297,9 +297,8 @@ function switchTab(tabId) {
         renderTutorials();
     } else if (tabId === 'admin') {
         const currentUser = getCurrentUser();
-        const unlocked = sessionStorage.getItem('kd_admin_unlocked') === '1';
-        if (!isSuperAdmin(currentUser) && !unlocked) {
-            showToast('Akses Terbatas: Hanya Administrator Resmi yang dapat mengakses Console Admin.', 'error');
+        if (!isSuperAdmin(currentUser)) {
+            showToast('Akses Ditolak: Hanya Superadmin (admin.kawandigi@gmail.com) yang dapat mengakses Console Admin.', 'error');
             switchTab('catalog');
             return;
         }
@@ -2037,13 +2036,41 @@ function renderDramaResults(drama) {
 // LICENSE & ACCESS CONTROLLER
 // =========================================================================
 function updateLicenseCards() {
+    const user = getCurrentUser();
+    const isLoggedIn = user && user.email;
+    const isSuper = isSuperAdmin(user);
+
+    const guestPrompt = document.getElementById('license-guest-prompt');
+    const inputContainer = document.getElementById('license-input-container');
+    const adminNotice = document.getElementById('license-admin-notice');
+    const formArea = document.getElementById('license-form-area');
+
+    if (isLoggedIn) {
+        if (guestPrompt) guestPrompt.classList.add('hidden');
+        if (inputContainer) inputContainer.classList.remove('hidden');
+
+        if (isSuper) {
+            if (adminNotice) adminNotice.classList.remove('hidden');
+            if (formArea) formArea.classList.add('hidden');
+        } else {
+            if (adminNotice) adminNotice.classList.add('hidden');
+            if (formArea) formArea.classList.remove('hidden');
+        }
+    } else {
+        if (guestPrompt) guestPrompt.classList.remove('hidden');
+        if (inputContainer) inputContainer.classList.add('hidden');
+        if (adminNotice) adminNotice.classList.add('hidden');
+    }
+
     const licenses = getLicenses();
-    const isVip = licenses['all_access'] && (!licenses['all_access'].expires || new Date(licenses['all_access'].expires) > new Date());
+    const isVip = isSuper || (licenses['all_access'] && (!licenses['all_access'].expires || new Date(licenses['all_access'].expires) > new Date()));
 
     // 1. UGC Card Status
     const ugcStatusEl = document.getElementById('status-card-ugc');
     if (ugcStatusEl) {
-        if (isVip || (licenses['ugc'] && (!licenses['ugc'].expires || new Date(licenses['ugc'].expires) > new Date()))) {
+        if (isSuper) {
+            ugcStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Akses Superadmin</span>`;
+        } else if (isVip || (licenses['ugc'] && (!licenses['ugc'].expires || new Date(licenses['ugc'].expires) > new Date()))) {
             ugcStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="check" class="w-3.5 h-3.5"></i> Lisensi Aktif</span>`;
         } else {
             const used = getTrialUsage('ugc');
@@ -2055,7 +2082,9 @@ function updateLicenseCards() {
     // 2. Drama Card Status
     const dramaStatusEl = document.getElementById('status-card-drama');
     if (dramaStatusEl) {
-        if (isVip || (licenses['drama'] && (!licenses['drama'].expires || new Date(licenses['drama'].expires) > new Date()))) {
+        if (isSuper) {
+            dramaStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Akses Superadmin</span>`;
+        } else if (isVip || (licenses['drama'] && (!licenses['drama'].expires || new Date(licenses['drama'].expires) > new Date()))) {
             dramaStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="check" class="w-3.5 h-3.5"></i> Lisensi Aktif</span>`;
         } else {
             const used = getTrialUsage('drama');
@@ -2067,7 +2096,9 @@ function updateLicenseCards() {
     // 3. VIP Card Status
     const vipStatusEl = document.getElementById('status-card-vip');
     if (vipStatusEl) {
-        if (isVip) {
+        if (isSuper) {
+            vipStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="crown" class="w-3.5 h-3.5"></i> Superadmin Unlimited</span>`;
+        } else if (isVip) {
             vipStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> All-Access VIP Aktif</span>`;
         } else {
             vipStatusEl.innerHTML = `<span class="text-xs text-slate-400">Belum Berlangganan VIP</span>`;
@@ -2081,8 +2112,6 @@ function initLicenseManager() {
     const btnActivate = document.getElementById('btn-activate-license');
     const inputKey = document.getElementById('license-key-input');
     const alertBox = document.getElementById('license-alert');
-    const btnQuickVip = document.getElementById('btn-quick-vip');
-    const btnResetTrial = document.getElementById('btn-reset-trial');
 
     btnActivate?.addEventListener('click', () => {
         const raw = inputKey.value.trim();
@@ -2102,20 +2131,6 @@ function initLicenseManager() {
         }
 
         updateLicenseCards();
-    });
-
-    // Developer Quick VIP Button
-    btnQuickVip?.addEventListener('click', () => {
-        activateLicenseKey('KAWANDIGI-VIP-UNLIMITED');
-        updateLicenseCards();
-        showToast('👑 Mode VIP Developer Aktif! Seluruh tools terbuka tanpa batas.', 'success');
-    });
-
-    // Reset Trial Usage Button
-    btnResetTrial?.addEventListener('click', () => {
-        resetTrialUsage();
-        updateLicenseCards();
-        showToast('Kuota uji coba gratis (3x) berhasil di-reset!', 'info');
     });
 
     updateLicenseCards();
@@ -2908,26 +2923,20 @@ function updateHeaderAuthUI() {
     const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 94;
     const levelInfo = calculateLevel(xpVal);
 
-    // Toggle Admin Visibility
-    // Superadmin atau PIN unlocked -> tampilkan
-    // Regular member logged in -> sembunyikan sepenuhnya
-    // Belum login (guest) -> tampilkan tombol admin (klik meminta PIN master)
+    // Toggle Admin Visibility: strictly only for active Superadmin
     const isSuper = isSuperAdmin(user);
-    const isUnlocked = sessionStorage.getItem('kd_admin_unlocked') === '1';
-    const isRegularMember = user && user.email && !isSuper;
-
     const navAdmin = document.getElementById('nav-admin');
     const headerAdmin = document.getElementById('btn-header-admin');
     const drawerAdmin = document.getElementById('drawer-admin-btn');
 
-    if (isRegularMember) {
-        if (navAdmin) { navAdmin.classList.add('hidden'); navAdmin.classList.remove('flex'); }
-        if (headerAdmin) { headerAdmin.classList.add('hidden'); headerAdmin.classList.remove('flex'); }
-        if (drawerAdmin) { drawerAdmin.classList.add('hidden'); drawerAdmin.classList.remove('flex'); }
-    } else {
+    if (isSuper) {
         if (navAdmin) { navAdmin.classList.remove('hidden'); navAdmin.classList.add('flex'); }
         if (headerAdmin) { headerAdmin.classList.remove('hidden'); headerAdmin.classList.add('flex'); }
         if (drawerAdmin) { drawerAdmin.classList.remove('hidden'); drawerAdmin.classList.add('flex'); }
+    } else {
+        if (navAdmin) { navAdmin.classList.add('hidden'); navAdmin.classList.remove('flex'); }
+        if (headerAdmin) { headerAdmin.classList.add('hidden'); headerAdmin.classList.remove('flex'); }
+        if (drawerAdmin) { drawerAdmin.classList.add('hidden'); drawerAdmin.classList.remove('flex'); }
     }
 
     if (user && user.email) {
@@ -2966,6 +2975,7 @@ function updateHeaderAuthUI() {
     if (heroVids) heroVids.textContent = `${vidsVal} Klip`;
     if (statVids) statVids.textContent = vidsVal;
     if (statXp) statXp.textContent = xpVal.toLocaleString('id-ID');
+    updateLicenseCards();
 }
 
 function openUserProfileModal() {
@@ -3097,22 +3107,46 @@ function initGoogleIdentityServices() {
 
 function renderGoogleSignInButton() {
     const btnContainer = document.getElementById('g_id_signin_button');
-    if (!btnContainer || !window.google?.accounts?.id) return;
+    if (!btnContainer) return;
 
-    btnContainer.innerHTML = '';
-    const isDark = document.documentElement.classList.contains('dark');
-    try {
-        window.google.accounts.id.renderButton(btnContainer, {
-            theme: isDark ? 'filled_black' : 'outline',
-            size: 'large',
-            shape: 'pill',
-            width: Math.min(window.innerWidth - 64, 280),
-            text: 'signin_with',
-            locale: 'id'
-        });
-    } catch (e) {
-        console.error('[KawanDigi] Gagal render tombol Google GIS:', e);
+    const clientId = getGoogleClientId();
+    if (!clientId) {
+        btnContainer.innerHTML = `
+            <div class="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center space-y-1.5 w-full">
+                <div class="flex items-center justify-center gap-1.5 text-amber-400 font-bold text-xs">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <span>Google OAuth Client ID Belum Terpasang</span>
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                    Pastikan variable <strong>GOOGLE_CLIENT_ID</strong> sudah di-Deploy di Cloudflare Dashboard &rarr; Variables and Secrets.
+                </p>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
     }
+
+    waitForGoogleGis(() => {
+        btnContainer.innerHTML = '';
+        const isDark = document.documentElement.classList.contains('dark');
+        try {
+            window.google.accounts.id.renderButton(btnContainer, {
+                theme: isDark ? 'filled_black' : 'outline',
+                size: 'large',
+                shape: 'pill',
+                width: Math.min(window.innerWidth - 64, 280),
+                text: 'signin_with',
+                locale: 'id'
+            });
+        } catch (e) {
+            console.error('[KawanDigi] Gagal render tombol Google GIS:', e);
+            btnContainer.innerHTML = `
+                <div class="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-center text-xs text-rose-300">
+                    Gagal memuat tombol Google. Silakan refresh halaman.
+                </div>
+            `;
+        }
+    });
 }
 
 // =========================================================================
@@ -3121,22 +3155,6 @@ function renderGoogleSignInButton() {
 function initAdminConsole() {
     document.getElementById('btn-header-admin')?.addEventListener('click', () => {
         window.kdOpenAdminConsole();
-    });
-
-    document.getElementById('btn-close-admin-pin')?.addEventListener('click', () => {
-        document.getElementById('modal-admin-pin')?.classList.add('hidden');
-    });
-
-    document.getElementById('btn-submit-admin-pin')?.addEventListener('click', () => {
-        const pin = document.getElementById('input-admin-pin')?.value;
-        if (verifyAdminPin(pin)) {
-            sessionStorage.setItem('kd_admin_unlocked', '1');
-            document.getElementById('modal-admin-pin')?.classList.add('hidden');
-            openAdminConsole();
-            showToast('Akses Admin Terverifikasi. Selamat datang, Admin!', 'success');
-        } else {
-            showToast('PIN Admin salah. Coba lagi.', 'error');
-        }
     });
 
     document.getElementById('btn-close-admin-console')?.addEventListener('click', () => {
@@ -3569,16 +3587,11 @@ window.kdCloseDrawer = closeDrawer;
 window.kdOpenProfileModal = openUserProfileModal;
 window.kdOpenAdminConsole = () => {
     const user = getCurrentUser();
-    if (isSuperAdmin(user) || sessionStorage.getItem('kd_admin_unlocked') === '1') {
-        openAdminConsole();
-    } else {
-        document.getElementById('modal-admin-pin')?.classList.remove('hidden');
-        const pinInput = document.getElementById('input-admin-pin');
-        if (pinInput) {
-            pinInput.value = '';
-            pinInput.focus();
-        }
+    if (!isSuperAdmin(user)) {
+        showToast('Akses Ditolak: Hanya Superadmin (admin.kawandigi@gmail.com) yang dapat mengakses Console Admin.', 'error');
+        return;
     }
+    openAdminConsole();
 };
 window.kdOpenHistory = () => {
     document.getElementById('modal-history-center')?.classList.remove('hidden');

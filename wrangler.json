@@ -5,9 +5,5 @@
   "assets": {
     "directory": "./",
     "not_found_handling": "single-page-application"
-  },
-  "vars": {
-    "GOOGLE_CLIENT_ID": "",
-    "ADMIN_EMAIL": "admin.kawandigi@gmail.com"
   }
 }
