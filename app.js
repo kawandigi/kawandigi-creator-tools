@@ -172,6 +172,22 @@ function switchTab(tabId) {
     if (window.lucide) window.lucide.createIcons();
 }
 
+function openGoogleFlowPopup() {
+    const screenWidth = window.screen.availWidth || window.screen.width || 1280;
+    const screenHeight = window.screen.availHeight || window.screen.height || 800;
+    const width = Math.min(1050, Math.round(screenWidth * 0.55));
+    const height = screenHeight - 60;
+    const left = screenWidth - width;
+    const top = 30;
+
+    window.open(
+        'https://aitestkitchen.withgoogle.com/tools/video-fx',
+        'GoogleFlowStudio',
+        `width=${width},height=${height},left=${left},top=${top},menubar=no,status=no,toolbar=no,resizable=yes,scrollbars=yes`
+    );
+    showToast('Membuka Google Flow di samping layar...', 'info');
+}
+
 function initNavigation() {
     // Desktop Nav buttons
     document.getElementById('nav-ugc')?.addEventListener('click', () => switchTab('ugc'));
@@ -185,14 +201,9 @@ function initNavigation() {
     document.getElementById('m-nav-drama')?.addEventListener('click', () => switchTab('drama'));
     document.getElementById('m-nav-license')?.addEventListener('click', () => switchTab('license'));
 
-    // Studio Google Flow reload button
-    document.getElementById('btn-flow-refresh-iframe')?.addEventListener('click', () => {
-        const iframe = document.getElementById('google-flow-iframe');
-        if (iframe) {
-            iframe.src = iframe.src;
-            showToast('Studio Google Flow dimuat ulang.', 'info');
-        }
-    });
+    // Studio Google Flow side-by-side popup buttons
+    document.getElementById('btn-open-flow-popup')?.addEventListener('click', openGoogleFlowPopup);
+    document.getElementById('btn-flow-hero-popup')?.addEventListener('click', openGoogleFlowPopup);
 }
 
 /**
