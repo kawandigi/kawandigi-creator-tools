@@ -266,7 +266,7 @@
             </div>
 
             <!-- QUICK ACTION / ANNOUNCEMENT BANNER (MATCHES IMAGE 1) -->
-            <div class="home-stat-card bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div id="home-banner-flow" class="home-stat-card bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold flex-shrink-0">
                         <i data-lucide="zap" class="w-5 h-5"></i>
@@ -296,7 +296,7 @@
                 <!-- 6 Circular App Buttons Grid -->
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-3 sm:gap-4 py-1">
                     <!-- 1. UGC Affiliate (Purple) -->
-                    <button type="button" onclick="window.kdSwitchTab('ugc')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                    <button type="button" id="home-btn-ugc" onclick="window.kdSwitchTab('ugc')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition">
                             <i data-lucide="sparkles" class="w-6 h-6"></i>
                         </div>
@@ -304,7 +304,7 @@
                     </button>
 
                     <!-- 2. Google Flow (Blue) -->
-                    <button type="button" onclick="window.kdSwitchTab('flow')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
+                    <button type="button" id="home-btn-flow" onclick="window.kdSwitchTab('flow')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition">
                             <i data-lucide="film" class="w-6 h-6"></i>
                         </div>
@@ -312,7 +312,7 @@
                     </button>
 
                     <!-- 3. AI Drama (Orange/Amber with Badge) -->
-                    <button type="button" onclick="window.kdSwitchTab('drama')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
+                    <button type="button" id="home-btn-drama" onclick="window.kdSwitchTab('drama')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:shadow-orange-500/40 transition relative">
                             <i data-lucide="clapperboard" class="w-6 h-6"></i>
                             <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[9px] font-black border border-slate-900 shadow">HOT</span>
@@ -1196,17 +1196,20 @@
             <!-- Pricing / Catalog Cards (Jual Terpisah) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto pt-2">
                 <!-- Card 1: UGC Affiliate -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                <div id="card-pricing-ugc" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <span class="w-10 h-10 rounded-xl bg-brand-600/20 text-brand-400 flex items-center justify-center font-bold">🛍️</span>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">A LA CARTE</span>
                         </div>
                         <h4 class="text-base font-bold text-white mb-1">AI UGC Affiliate Creator</h4>
-                        <p class="text-xs text-slate-400 mb-4">Scraper etalase produk & generator naskah video affiliate 10s–60s siap Google Flow.</p>
+                        <p class="text-xs text-slate-400 mb-3">Scraper etalase produk & generator naskah video affiliate 10s–60s siap Google Flow.</p>
                         
-                        <div class="text-xl font-black text-brand-400 mb-4">
-                            Rp 39.000 <span class="text-xs font-normal text-slate-400">/ bulan</span>
+                        <div class="mb-4">
+                            <div class="text-xl font-black text-brand-400">
+                                Rp 99.000 <span class="text-xs font-bold text-amber-300 ml-1">(Akses Selamanya)</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Khusus 1 Device Pilihan Anda • Sekali Bayar Selamanya</span>
                         </div>
 
                         <ul class="text-xs text-slate-300 space-y-1.5 mb-6">
@@ -1217,23 +1220,32 @@
                         </ul>
                     </div>
 
-                    <div id="status-card-ugc" class="pt-3 border-t border-slate-800 text-center">
-                        <span class="text-xs text-slate-400">Status: Belum Aktif</span>
+                    <div class="space-y-3 pt-3 border-t border-slate-800">
+                        <a href="https://wa.me/6281234567890?text=Halo%20Admin%20KawanDigi,%20saya%20ingin%20membeli%20Lisensi%20AI%20UGC%20Affiliate%20Creator%20(Rp%2099.000%20Akses%20Selamanya)" target="_blank" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm">
+                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                            <span>Beli via WhatsApp</span>
+                        </a>
+                        <div id="status-card-ugc" class="text-center">
+                            <span class="text-[11px] text-slate-400">Status: Belum Aktif</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Card 2: AI Drama Creator -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                <div id="card-pricing-drama" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <span class="w-10 h-10 rounded-xl bg-accent-600/20 text-accent-400 flex items-center justify-center font-bold">🎭</span>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">A LA CARTE</span>
                         </div>
                         <h4 class="text-base font-bold text-white mb-1">AI Drama & Series Creator</h4>
-                        <p class="text-xs text-slate-400 mb-4">Sutradara micro-drama otomatis dengan kunci konsistensi tokoh & cliffhanger.</p>
+                        <p class="text-xs text-slate-400 mb-3">Sutradara micro-drama otomatis dengan kunci konsistensi tokoh & cliffhanger.</p>
                         
-                        <div class="text-xl font-black text-accent-400 mb-4">
-                            Rp 49.000 <span class="text-xs font-normal text-slate-400">/ bulan</span>
+                        <div class="mb-4">
+                            <div class="text-xl font-black text-accent-400">
+                                Rp 149.000 <span class="text-xs font-bold text-amber-300 ml-1">(Akses Selamanya)</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400">Khusus 1 Device Pilihan Anda • Sekali Bayar Selamanya</span>
                         </div>
 
                         <ul class="text-xs text-slate-300 space-y-1.5 mb-6">
@@ -1244,38 +1256,62 @@
                         </ul>
                     </div>
 
-                    <div id="status-card-drama" class="pt-3 border-t border-slate-800 text-center">
-                        <span class="text-xs text-slate-400">Status: Belum Aktif</span>
+                    <div class="space-y-3 pt-3 border-t border-slate-800">
+                        <a href="https://wa.me/6281234567890?text=Halo%20Admin%20KawanDigi,%20saya%20ingin%20membeli%20Lisensi%20AI%20Drama%20Creator%20(Rp%20149.000%20Akses%20Selamanya)" target="_blank" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm">
+                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                            <span>Beli via WhatsApp</span>
+                        </a>
+                        <div id="status-card-drama" class="text-center">
+                            <span class="text-[11px] text-slate-400">Status: Belum Aktif</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Card 3: All-Access VIP Bundle -->
-                <div class="bg-gradient-to-b from-brand-950/60 to-slate-900 border-2 border-brand-500 rounded-2xl p-5 flex flex-col justify-between relative shadow-xl shadow-brand-500/10">
+                <div id="card-pricing-vip" class="bg-gradient-to-b from-brand-950/60 to-slate-900 border-2 border-brand-500 rounded-2xl p-5 flex flex-col justify-between relative shadow-xl shadow-brand-500/10">
                     <div class="absolute -top-3 right-4 bg-gradient-to-r from-brand-500 to-accent-500 text-white font-extrabold text-[10px] uppercase px-2.5 py-0.5 rounded-full">
-                        PALING HEMAT
+                        PALING REKOMENDASI
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <span class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">👑</span>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">ALL-ACCESS</span>
                         </div>
-                        <h4 class="text-base font-bold text-white mb-1">Paket All-Access VIP</h4>
-                        <p class="text-xs text-slate-400 mb-4">Buka seluruh tools AI KawanDigi tanpa batasan fitur selamanya.</p>
+                        <h4 class="text-base font-bold text-white mb-1">Paket All-Access VIP Master</h4>
+                        <p class="text-xs text-slate-400 mb-3">Buka seluruh tools AI KawanDigi tanpa batasan fitur selamanya.</p>
                         
-                        <div class="text-xl font-black text-white mb-4">
-                            Rp 69.000 <span class="text-xs font-normal text-slate-400">/ bulan</span>
+                        <!-- Dual Choice: 1 Device vs All Device -->
+                        <div class="space-y-2 mb-4 bg-slate-950/70 p-3 rounded-xl border border-brand-500/20">
+                            <div class="flex items-baseline justify-between text-xs">
+                                <span class="text-slate-300 font-semibold">1 Device Terkunci:</span>
+                                <span class="font-black text-white">Rp 199.000 <span class="text-[10px] font-bold text-amber-300">(Akses Selamanya)</span></span>
+                            </div>
+                            <div class="flex items-baseline justify-between text-xs pt-1.5 border-t border-slate-800">
+                                <span class="text-amber-300 font-bold">All Device (Bebas Semua HP/PC):</span>
+                                <span class="font-black text-amber-400">Rp 349.000 <span class="text-[10px] font-bold text-amber-300">(Akses Selamanya)</span></span>
+                            </div>
                         </div>
 
                         <ul class="text-xs text-slate-300 space-y-1.5 mb-6">
-                            <li>✓ Akses AI UGC Affiliate Creator</li>
-                            <li>✓ Akses AI Drama & Series Creator</li>
+                            <li data-tool-feature="ugc">✓ Akses AI UGC Affiliate Creator</li>
+                            <li data-tool-feature="drama">✓ Akses AI Drama & Series Creator</li>
                             <li>✓ Akses Semua Tools Baru di Masa Depan</li>
                             <li>✓ Support Prioritas WhatsApp</li>
                         </ul>
                     </div>
 
-                    <div id="status-card-vip" class="pt-3 border-t border-slate-800 text-center">
-                        <span class="text-xs text-slate-400">Status: Belum Aktif</span>
+                    <div class="space-y-2 pt-3 border-t border-slate-800">
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="https://wa.me/6281234567890?text=Halo%20Admin%20KawanDigi,%20saya%20ingin%20membeli%20Lisensi%20VIP%201%20Device%20(Rp%20199.000%20Akses%20Selamanya)" target="_blank" class="py-2 px-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-[11px] rounded-xl flex items-center justify-center gap-1 text-center transition border border-slate-700">
+                                <span>Beli 1 Device</span>
+                            </a>
+                            <a href="https://wa.me/6281234567890?text=Halo%20Admin%20KawanDigi,%20saya%20ingin%20membeli%20Lisensi%20VIP%20All%20Device%20(Rp%20349.000%20Akses%20Selamanya)" target="_blank" class="py-2 px-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-[11px] rounded-xl flex items-center justify-center gap-1 text-center transition shadow-md shadow-amber-500/20">
+                                <span>Beli All Device</span>
+                            </a>
+                        </div>
+                        <div id="status-card-vip" class="text-center pt-1">
+                            <span class="text-[11px] text-slate-400">Status: Belum Aktif</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1310,6 +1346,10 @@
                 <button type="button" id="btn-atab-members" class="admin-tab active px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-sm">
                     <i data-lucide="users" class="w-4 h-4"></i>
                     <span>Data Member (<span id="admin-member-count">0</span>)</span>
+                </button>
+                <button type="button" id="btn-atab-licenses" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
+                    <i data-lucide="key" class="w-4 h-4 text-amber-400"></i>
+                    <span>Kelola & Buat Lisensi</span>
                 </button>
                 <button type="button" id="btn-atab-analytics" class="admin-tab px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-white">
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i>
@@ -1378,6 +1418,115 @@
                                 <!-- Populated dynamically by app.js -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- TAB: LICENSE GENERATOR & MANAGER -->
+                <div id="admin-section-licenses" class="admin-panel hidden space-y-6">
+                    <!-- Generator Box -->
+                    <div class="bg-gradient-to-br from-slate-900 via-amber-950/20 to-slate-900 border border-amber-500/30 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                            <div>
+                                <h4 class="text-base font-black text-white flex items-center gap-2">
+                                    <i data-lucide="key" class="w-5 h-5 text-amber-400"></i>
+                                    Generator Kunci Lisensi Baru
+                                </h4>
+                                <p class="text-xs text-slate-400 mt-0.5">Terbitkan kunci lisensi resmi untuk pembeli manual via WhatsApp</p>
+                            </div>
+                            <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 self-start sm:self-auto">
+                                ⚡ Otomatis Tersimpan di Cloudflare D1
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">Pilih Paket / Tool:</label>
+                                <select id="gen-lic-tier" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                                    <option value="all_access">👑 All-Access VIP Master (Semua Fitur)</option>
+                                    <option value="ugc">🛍️ AI UGC Affiliate Creator</option>
+                                    <option value="drama">🎭 AI Drama & Micro-Series</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">Cakupan Perangkat (Device Scope):</label>
+                                <select id="gen-lic-scope" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                                    <option value="single_device">🔒 1 Device Terkunci (Lifetime - Terkunci 1 HP/PC)</option>
+                                    <option value="all_devices">🌐 All Device / Multi-Perangkat (Bebas Semua HP & PC User)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">Catatan / Info Pembeli (Opsional):</label>
+                                <input type="text" id="gen-lic-notes" placeholder="Contoh: Budi Santoso - WA 0812345678" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-1">
+                            <button type="button" id="btn-generate-license" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition active:scale-95 cursor-pointer">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                <span>Terbitkan Kunci Lisensi Baru</span>
+                            </button>
+                        </div>
+
+                        <!-- Generated Key Result Box -->
+                        <div id="gen-lic-result-box" class="hidden bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                                    Kunci Lisensi Berhasil Diterbitkan!
+                                </span>
+                                <span id="gen-result-scope-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">1 Device</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <input type="text" id="gen-result-key" readonly class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-mono font-black text-amber-300 tracking-wider text-center sm:text-left select-all">
+                                <button type="button" id="btn-copy-gen-key" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Salin Kunci</span>
+                                </button>
+                                <button type="button" id="btn-copy-gen-wa" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                                    <span>Salin Format Pesan WA</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- License Database Table -->
+                    <div class="space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="database" class="w-4 h-4 text-amber-400"></i>
+                                    Daftar Kunci Lisensi Terbitan (<span id="admin-license-count">0</span>)
+                                </h4>
+                                <p class="text-xs text-slate-400 mt-0.5">Pantau status penggunaan kunci lisensi, perangkat terikat, dan email pembeli</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="admin-search-licenses" placeholder="Cari kode lisensi, pembeli, email..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 w-full sm:w-64">
+                                <button type="button" id="btn-refresh-licenses" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 transition" title="Segarkan Data Lisensi">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-800 rounded-xl overflow-x-auto bg-slate-900/60">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">Kunci Lisensi</th>
+                                        <th class="p-3">Paket</th>
+                                        <th class="p-3">Cakupan Device</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3">Terikat Pada Device / Akun</th>
+                                        <th class="p-3">Catatan / Pembeli</th>
+                                        <th class="p-3">Tgl Terbit</th>
+                                        <th class="p-3 text-center">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-license-table-body" class="divide-y divide-slate-800/60 font-medium">
+                                    <!-- Populated dynamically by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 
@@ -1824,6 +1973,27 @@
                     </div>
                     <p class="text-[11px] text-slate-400">
                         Termasuk generator naskah UGC affiliate, AI Drama micro-series, dan ekspor prompt Google Flow tanpa batas.
+                    </p>
+                </div>
+
+                <!-- Device & Hardware License Status Card -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="smartphone" class="w-3.5 h-3.5 text-brand-400"></i>
+                            Perangkat Anda Saat Ini:
+                        </span>
+                        <span id="profile-current-device" class="font-bold text-white truncate max-w-[160px]">Mendeteksi...</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800/60">
+                        <span class="text-slate-400 flex items-center gap-1.5">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            Status Lisensi di Perangkat Ini:
+                        </span>
+                        <span id="profile-device-license-status" class="font-bold text-amber-400">Trial Pengunjung</span>
+                    </div>
+                    <p id="profile-device-license-note" class="text-[10px] text-slate-400 pt-1 leading-relaxed border-t border-slate-800/40">
+                        Lisensi 1 device berlaku khusus untuk perangkat tempat pertama kali diaktivasi.
                     </p>
                 </div>
 

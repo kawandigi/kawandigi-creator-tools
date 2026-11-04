@@ -18,7 +18,7 @@ import {
     generateImagen3, 
     generateOmniVideo 
 } from './modules/gemini_api.js';
-import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT, getDeviceId, getDeviceName } from './modules/license_manager.js';
+import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT, getDeviceId, getDeviceName, fetchUserLicenseStatus } from './modules/license_manager.js';
 import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
@@ -2139,6 +2139,77 @@ function updateLicenseCards() {
     if (window.lucide) window.lucide.createIcons();
 }
 
+
+export function applyFeatureFlagVisibility() {
+    const flags = getFeatureFlags();
+    flags.forEach(tool => {
+        const enabled = !!tool.enabled;
+
+        // 1. Sidebar tab button & badge
+        const sidebarTab = document.getElementById(`sidebar-tab-${tool.id}`);
+        if (sidebarTab) {
+            if (enabled) {
+                sidebarTab.classList.remove('hidden');
+            } else {
+                sidebarTab.classList.add('hidden');
+            }
+        }
+
+        // 2. Home screen circular app button
+        const homeBtn = document.getElementById(`home-btn-${tool.id}`);
+        if (homeBtn) {
+            if (enabled) {
+                homeBtn.classList.remove('hidden');
+            } else {
+                homeBtn.classList.add('hidden');
+            }
+        }
+
+        // 3. Special tool elements (Flow banner and mobile dock)
+        if (tool.id === 'flow') {
+            const flowBanner = document.getElementById('home-banner-flow');
+            if (flowBanner) {
+                if (enabled) flowBanner.classList.remove('hidden');
+                else flowBanner.classList.add('hidden');
+            }
+            const dockFlow = document.getElementById('m-nav-flow');
+            if (dockFlow) {
+                if (enabled) dockFlow.classList.remove('hidden');
+                else dockFlow.classList.add('hidden');
+            }
+        }
+
+        // 4. License / Pricing Card for this tool
+        const pricingCard = document.getElementById(`card-pricing-${tool.id}`);
+        if (pricingCard) {
+            if (enabled) {
+                pricingCard.classList.remove('hidden');
+            } else {
+                pricingCard.classList.add('hidden');
+            }
+        }
+
+        // 5. Feature bullet in VIP bundle
+        const vipFeatureBullet = document.querySelector(`[data-tool-feature="${tool.id}"]`);
+        if (vipFeatureBullet) {
+            if (enabled) {
+                vipFeatureBullet.classList.remove('hidden');
+            } else {
+                vipFeatureBullet.classList.add('hidden');
+            }
+        }
+    });
+
+    // If current tab is hidden, auto-redirect to catalog
+    const activeSection = document.querySelector('.tab-content.active');
+    if (activeSection) {
+        const activeTabId = activeSection.id.replace('section-', '');
+        if (['ugc', 'drama', 'flow'].includes(activeTabId) && !isToolEnabled(activeTabId)) {
+            switchTab('catalog');
+        }
+    }
+}
+
 function initLicenseManager() {
     const btnActivate = document.getElementById('btn-activate-license');
     const inputKey = document.getElementById('license-key-input');
@@ -2573,7 +2644,9 @@ function renderToolsCatalog() {
     const countBadge = document.getElementById('catalog-tools-count');
     if (!grid) return;
 
-    const tools = getFeatureFlags();
+    // Filter tools: only show enabled tools in catalog
+    const allTools = getFeatureFlags();
+    const tools = allTools.filter(t => t.enabled);
     if (countBadge) countBadge.textContent = `${tools.length} Tools`;
 
     grid.innerHTML = tools.map(tool => {
@@ -3146,12 +3219,22 @@ function openUserProfileModal() {
     const logoutContainer = document.getElementById('profile-logout-container');
     const googleLoginContainer = document.getElementById('google-login-container');
 
+    const myDevName = getDeviceName();
+    const profileDevEl = document.getElementById('profile-current-device');
+    const profileLicStatusEl = document.getElementById('profile-device-license-status');
+    const profileLicNoteEl = document.getElementById('profile-device-license-note');
+
+    if (profileDevEl) profileDevEl.textContent = myDevName;
+
     if (user && user.email) {
         const xpVal = typeof user.xp === 'number' ? user.xp : 100;
         const genVal = typeof user.totalGenerates === 'number' ? user.totalGenerates : 0;
         const levelInfo = calculateLevel(xpVal);
         const isSuper = isSuperAdmin(user);
         const myLicenses = getLicenses();
+        const isAllDevLicense = (myLicenses['all_access']?.deviceScope === 'all_devices') ||
+                                (myLicenses['ugc']?.deviceScope === 'all_devices') ||
+                                (myLicenses['drama']?.deviceScope === 'all_devices');
         const isDeviceLicensed = isSuper || (user.subscription && user.subscription.active && (myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
 
         if (avatarEl) avatarEl.src = user.picture || 'assets/icons/favicon.png';
@@ -3160,12 +3243,12 @@ function openUserProfileModal() {
         if (planBadge) {
             planBadge.textContent = isSuper
                 ? 'Superadmin'
-                : (isDeviceLicensed ? (user.subscription?.plan || 'VIP Master (Device Ini)') : 'Trial Pengunjung');
+                : (isAllDevLicense ? 'VIP All-Device' : (isDeviceLicensed ? (user.subscription?.plan || 'VIP Master (Device Ini)') : 'Trial Pengunjung'));
         }
         if (planName) {
             planName.textContent = isSuper
                 ? 'Superadmin Official (Unlimited All Features)'
-                : (isDeviceLicensed ? (user.subscription?.plan || 'Akses Penuh Semua Tools (Perangkat Terkunci)') : 'Trial Pengunjung (Lisensi Belum Terikat di Device Ini)');
+                : (isAllDevLicense ? 'Akses Penuh Semua Tools (Bebas di Semua HP & PC Anda)' : (isDeviceLicensed ? (user.subscription?.plan || 'Akses Penuh Semua Tools (Perangkat Terkunci)') : 'Trial Pengunjung (Lisensi Belum Terikat di Device Ini)'));
         }
         if (levelEl) {
             levelEl.textContent = `${levelInfo.icon} ${levelInfo.title}`;
@@ -3174,6 +3257,27 @@ function openUserProfileModal() {
         if (xpEl) xpEl.textContent = `${xpVal} XP`;
         if (genEl) genEl.textContent = `${genVal} Video Dibuat`;
         if (logoutContainer) logoutContainer.classList.remove('hidden');
+
+        // Update Device License Status Details
+        if (profileLicStatusEl) {
+            if (isSuper) {
+                profileLicStatusEl.className = 'font-bold text-emerald-400';
+                profileLicStatusEl.textContent = '👑 Superadmin (Semua Perangkat)';
+                if (profileLicNoteEl) profileLicNoteEl.textContent = 'Status Superadmin memiliki akses penuh tanpa batas di semua HP & PC.';
+            } else if (isAllDevLicense) {
+                profileLicStatusEl.className = 'font-bold text-emerald-400';
+                profileLicStatusEl.textContent = '✅ Lisensi All-Device Aktif (Akses Selamanya)';
+                if (profileLicNoteEl) profileLicNoteEl.textContent = `Lisensi aktif bebas di semua perangkat Anda selama masuk dengan akun Google ${user.email}.`;
+            } else if (isDeviceLicensed) {
+                profileLicStatusEl.className = 'font-bold text-emerald-400';
+                profileLicStatusEl.textContent = `✅ Terikat & Aktif di Perangkat Ini (${myDevName})`;
+                if (profileLicNoteEl) profileLicNoteEl.textContent = 'Lisensi berlaku seumur hidup (akses selamanya) khusus untuk perangkat fisik ini.';
+            } else {
+                profileLicStatusEl.className = 'font-bold text-amber-400';
+                profileLicStatusEl.textContent = '⏳ Trial Pengunjung (3x Coba)';
+                if (profileLicNoteEl) profileLicNoteEl.textContent = 'Perangkat ini belum memiliki lisensi terikat. Buka menu Paket Langganan & Lisensi untuk aktivasi perangkat.';
+            }
+        }
 
         if (googleLoginContainer) {
             googleLoginContainer.innerHTML = `
@@ -3203,6 +3307,14 @@ function openUserProfileModal() {
         if (xpEl) xpEl.textContent = '0 XP';
         if (genEl) genEl.textContent = '0 Video Dibuat';
         if (logoutContainer) logoutContainer.classList.add('hidden');
+
+        if (profileLicStatusEl) {
+            profileLicStatusEl.className = 'font-bold text-slate-400';
+            profileLicStatusEl.textContent = 'Tamu / Belum Masuk';
+        }
+        if (profileLicNoteEl) {
+            profileLicNoteEl.textContent = 'Silakan hubungkan akun Google Anda untuk mengaktifkan lisensi atau mencoba fitur.';
+        }
 
         if (googleLoginContainer) {
             googleLoginContainer.innerHTML = `
@@ -3387,6 +3499,7 @@ function initAdminConsole() {
 
     const atabs = {
         'members': { btn: document.getElementById('btn-atab-members'), panel: document.getElementById('admin-section-members') },
+        'licenses': { btn: document.getElementById('btn-atab-licenses'), panel: document.getElementById('admin-section-licenses') },
         'analytics': { btn: document.getElementById('btn-atab-analytics'), panel: document.getElementById('admin-section-analytics') },
         'flags': { btn: document.getElementById('btn-atab-flags'), panel: document.getElementById('admin-section-flags') },
         'products': { btn: document.getElementById('btn-atab-products'), panel: document.getElementById('admin-section-products') },
@@ -3413,6 +3526,10 @@ function initAdminConsole() {
     document.getElementById('btn-atab-members')?.addEventListener('click', () => {
         switchAdminTab('members');
         renderAdminMembers();
+    });
+    document.getElementById('btn-atab-licenses')?.addEventListener('click', () => {
+        switchAdminTab('licenses');
+        renderAdminLicenses();
     });
     document.getElementById('btn-atab-analytics')?.addEventListener('click', () => {
         switchAdminTab('analytics');
@@ -3485,11 +3602,167 @@ function initAdminConsole() {
         document.getElementById('modal-tutorial-editor')?.classList.add('hidden');
     });
     document.getElementById('btn-save-tutorial-editor')?.addEventListener('click', saveTutorialFromEditor);
+
+    // Generator Kunci Lisensi Baru
+    document.getElementById('btn-generate-license')?.addEventListener('click', async () => {
+        const tier = document.getElementById('gen-lic-tier')?.value || 'all_access';
+        const scope = document.getElementById('gen-lic-scope')?.value || 'single_device';
+        const notes = document.getElementById('gen-lic-notes')?.value.trim();
+
+        const btn = document.getElementById('btn-generate-license');
+        btn.disabled = true;
+        const origText = btn.innerHTML;
+        btn.innerHTML = 'Menerbitkan...';
+
+        try {
+            const res = await fetch('/api/admin/licenses/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tier, device_scope: scope, notes })
+            });
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                const lic = data.data;
+                const resultBox = document.getElementById('gen-lic-result-box');
+                const keyInput = document.getElementById('gen-result-key');
+                const scopeBadge = document.getElementById('gen-result-scope-badge');
+
+                if (resultBox) resultBox.classList.remove('hidden');
+                if (keyInput) keyInput.value = lic.license_key;
+                if (scopeBadge) {
+                    scopeBadge.textContent = scope === 'all_devices' ? 'All Device (Multi-Perangkat)' : '1 Device Terkunci';
+                    scopeBadge.className = scope === 'all_devices' 
+                        ? 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300'
+                        : 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300';
+                }
+
+                document.getElementById('btn-copy-gen-key').onclick = () => {
+                    window.kdCopyText(lic.license_key, 'Kunci lisensi berhasil disalin!');
+                };
+
+                document.getElementById('btn-copy-gen-wa').onclick = () => {
+                    window.kdCopyWaMessage(lic.license_key, lic.tier_name, scope === 'all_devices' ? 'All Device (Semua Perangkat Anda)' : '1 Device Terkunci', notes);
+                };
+
+                showToast(`Kunci lisensi ${lic.license_key} berhasil diterbitkan!`, 'success');
+                renderAdminLicenses();
+            } else {
+                showToast(data.error || 'Gagal membuat kunci lisensi', 'error');
+            }
+        } catch (e) {
+            showToast('Koneksi server gagal.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origText;
+            if (window.lucide) window.lucide.createIcons();
+        }
+    });
+
+    document.getElementById('admin-search-licenses')?.addEventListener('input', (e) => {
+        renderAdminLicenses(e.target.value);
+    });
+
+    document.getElementById('btn-refresh-licenses')?.addEventListener('click', () => {
+        renderAdminLicenses();
+        showToast('Data lisensi disegarkan!', 'info');
+    });
+}
+
+
+let adminLicensesCache = [];
+
+async function renderAdminLicenses(searchFilter = '') {
+    const tbody = document.getElementById('admin-license-table-body');
+    const countEl = document.getElementById('admin-license-count');
+    if (!tbody) return;
+
+    try {
+        const res = await fetch('/api/admin/licenses');
+        const json = await res.json();
+        if (json.status === 'success' && Array.isArray(json.data)) {
+            adminLicensesCache = json.data;
+        }
+    } catch (e) {
+        console.warn('Fetch admin licenses error:', e);
+    }
+
+    let filtered = adminLicensesCache;
+    if (searchFilter) {
+        const q = searchFilter.toLowerCase();
+        filtered = filtered.filter(l => 
+            (l.license_key || '').toLowerCase().includes(q) ||
+            (l.tier_name || '').toLowerCase().includes(q) ||
+            (l.email || '').toLowerCase().includes(q) ||
+            (l.notes || '').toLowerCase().includes(q) ||
+            (l.device_name || '').toLowerCase().includes(q)
+        );
+    }
+
+    if (countEl) countEl.textContent = adminLicensesCache.length;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">Belum ada kunci lisensi yang diterbitkan. Silakan gunakan generator di atas.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(l => {
+        const isUsed = l.status === 'active' && (l.device_id || l.email);
+        const isAllDev = (l.device_scope === 'all_devices') || l.license_key.includes('-ALL-');
+        const scopeBadge = isAllDev
+            ? `<span class="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold text-[10px] border border-purple-500/30">🌐 All Device</span>`
+            : `<span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold text-[10px] border border-blue-500/30">🔒 1 Device</span>`;
+        
+        const statusBadge = isUsed
+            ? `<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30">Aktif Terikat</span>`
+            : `<span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30">Belum Digunakan</span>`;
+
+        let boundText = '<span class="text-slate-500">Belum diaktivasi</span>';
+        if (isUsed) {
+            boundText = `<div class="space-y-0.5">
+                <div class="font-bold text-white">${l.device_name || (isAllDev ? 'Bebas Semua Perangkat' : 'Perangkat Terdaftar')}</div>
+                <div class="text-[10px] text-slate-400 font-mono">${l.email || l.device_id || '-'}</div>
+            </div>`;
+        }
+
+        const dateStr = l.created_at ? new Date(l.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+
+        return `
+            <tr class="hover:bg-slate-900/60 transition">
+                <td class="p-3">
+                    <div class="flex items-center gap-1.5 font-mono font-bold text-amber-300">
+                        <span>${l.license_key}</span>
+                        <button type="button" onclick="window.kdCopyText('${l.license_key}', 'Kunci lisensi disalin!')" class="p-1 hover:text-white text-slate-400 transition" title="Salin Kode">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </td>
+                <td class="p-3 font-semibold text-white">${l.tier_name || l.tier}</td>
+                <td class="p-3">${scopeBadge}</td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3">${boundText}</td>
+                <td class="p-3 text-slate-400 italic">${l.notes || '-'}</td>
+                <td class="p-3 text-slate-400 whitespace-nowrap">${dateStr}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                        <button type="button" onclick="window.kdCopyWaMessage('${l.license_key}', '${l.tier_name || l.tier}', '${isAllDev ? 'All Device (Semua Perangkat Anda)' : '1 Device Terkunci'}', '${(l.notes || '').replace(/'/g, "\\'")}')" class="p-1.5 hover:bg-emerald-950/40 text-emerald-400 rounded-lg transition" title="Salin Format Chat WA">
+                            <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="window.kdRevokeLicense('${l.license_key}')" class="p-1.5 hover:bg-rose-950/40 text-rose-400 rounded-lg transition" title="Hapus Lisensi">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
 }
 
 function openAdminConsole() {
     switchTab('admin');
     renderAdminMembers();
+    renderAdminLicenses();
     renderAdminAnalytics();
     renderAdminFlags();
     renderAdminProducts();
@@ -3870,9 +4143,53 @@ window.kdDeleteMember = (email) => {
 };
 window.kdToggleFlag = (toolId, state) => {
     toggleToolStatus(toolId, state);
+    applyFeatureFlagVisibility();
     renderAdminFlags();
     renderToolsCatalog();
-    showToast(`Status tool diperbarui: ${state ? 'Aktif' : 'Non-Aktif'}`, 'info');
+    showToast(`Status tool diperbarui: ${state ? 'Aktif' : 'Non-Aktif (Disembunyikan)'}`, 'info');
+};
+
+window.kdCopyText = (text, toastMsg = 'Teks disalin!') => {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast(toastMsg, 'success');
+    }).catch(() => {
+        showToast('Gagal menyalin.', 'warning');
+    });
+};
+
+window.kdCopyWaMessage = (key, tierName, scopeName, notes = '') => {
+    const buyerName = notes ? notes.split('-')[0].trim() : 'Kreator';
+    const msg = `Halo ${buyerName}, terima kasih telah memesan lisensi resmi KawanDigi Creator Studio! 🙌\n\n` +
+        `Berikut adalah detail Kunci Lisensi Anda:\n` +
+        `🔑 KUNCI LISENSI: ${key}\n` +
+        `📦 PAKET: ${tierName} (Akses Selamanya)\n` +
+        `📱 CAKUPAN PERANGKAT: ${scopeName}\n\n` +
+        `Petunjuk Aktivasi Cepat:\n` +
+        `1. Buka aplikasi: https://kawandigi-creator-tools.admin-kawandigi.workers.dev\n` +
+        `2. Masuk / Hubungkan dengan akun Google Anda\n` +
+        `3. Buka menu "Paket Langganan & Lisensi"\n` +
+        `4. Tempel kunci lisensi di atas pada kolom yang tersedia, lalu klik "Aktivasi Perangkat"\n\n` +
+        `Selamat berkarya dan semoga naskah video Anda menghasilkan cuan maksimal bersama KawanDigi! ✨`;
+
+    window.kdCopyText(msg, 'Format chat WhatsApp untuk pembeli berhasil disalin!');
+};
+
+window.kdRevokeLicense = async (key) => {
+    if (!confirm(`Hapus/cabut kunci lisensi ${key}?`)) return;
+    try {
+        const res = await fetch('/api/admin/licenses/revoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            showToast('Kunci lisensi berhasil dihapus.', 'info');
+            renderAdminLicenses();
+        }
+    } catch (e) {
+        showToast('Gagal menghapus lisensi.', 'error');
+    }
 };
 window.kdEditProduct = (prodId) => {
     const p = getDigitalProducts().find(item => item.id === prodId);
@@ -3925,6 +4242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAuthManager();
     initAdminConsole();
     renderCatalog();
+    applyFeatureFlagVisibility();
 
     // Check if API Key is configured on launch
     if (!getSavedApiKey() && getActiveProvider() !== 'custom') {

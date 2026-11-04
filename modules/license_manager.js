@@ -50,7 +50,7 @@ export function getDeviceName() {
 }
 
 /**
- * Get active licenses strictly valid for THIS physical device
+ * Get active licenses strictly valid for THIS physical device or ALL devices
  */
 export function getLicenses() {
     try {
@@ -58,23 +58,34 @@ export function getLicenses() {
         if (!raw) return {};
         const parsed = JSON.parse(raw);
         const myDevId = getDeviceId();
+        const user = getCurrentUser();
+        const userEmail = user?.email?.toLowerCase().trim();
 
-        const validForThisDevice = {};
+        const validLicenses = {};
         for (const [tool, lic] of Object.entries(parsed)) {
             if (lic && lic.active) {
-                // If legacy license has no boundDeviceId, lock it to this device now
-                if (!lic.boundDeviceId) {
+                // All-devices license: valid if user is logged in with matching email
+                if (lic.deviceScope === 'all_devices') {
+                    if (userEmail && (!lic.boundEmail || lic.boundEmail === userEmail)) {
+                        validLicenses[tool] = lic;
+                        continue;
+                    }
+                }
+
+                // If legacy license has no boundDeviceId, lock it to this device
+                if (!lic.boundDeviceId && !lic.deviceScope) {
                     lic.boundDeviceId = myDevId;
                     lic.boundDeviceName = getDeviceName();
                     saveLicenses(parsed);
                 }
-                // Only treat license as active if it is bound to THIS device
+
+                // Single-device license: valid only if bound to THIS physical device
                 if (lic.boundDeviceId === myDevId) {
-                    validForThisDevice[tool] = lic;
+                    validLicenses[tool] = lic;
                 }
             }
         }
-        return validForThisDevice;
+        return validLicenses;
     } catch {
         return {};
     }
@@ -130,19 +141,19 @@ export function hasToolAccess(toolId) {
     const currentDeviceId = getDeviceId();
     const licenses = getLicenses();
     
-    // 2. Master All-Access VIP (Locked to this device)
+    // 2. Master All-Access VIP (Locked to this device OR All-Device)
     const vip = licenses['all_access'];
-    if (vip && vip.active && vip.boundDeviceId === currentDeviceId) {
+    if (vip && vip.active) {
         if (!vip.expires || new Date(vip.expires) > new Date()) {
-            return { allowed: true, type: 'all_access', trialLeft: 0, deviceId: currentDeviceId };
+            return { allowed: true, type: 'all_access', trialLeft: 0, deviceScope: vip.deviceScope || 'single_device' };
         }
     }
 
-    // 3. Tool Specific License (Locked to this device)
+    // 3. Tool Specific License (Locked to this device OR All-Device)
     const toolLic = licenses[toolId];
-    if (toolLic && toolLic.active && toolLic.boundDeviceId === currentDeviceId) {
+    if (toolLic && toolLic.active) {
         if (!toolLic.expires || new Date(toolLic.expires) > new Date()) {
-            return { allowed: true, type: 'licensed', trialLeft: 0, deviceId: currentDeviceId };
+            return { allowed: true, type: 'licensed', trialLeft: 0, deviceScope: toolLic.deviceScope || 'single_device' };
         }
     }
 
@@ -157,8 +168,43 @@ export function hasToolAccess(toolId) {
 }
 
 /**
- * Activate a license key and lock it to THIS physical device
- * Verifies with Cloudflare Backend to prevent the same key from being activated on a 2nd device
+ * Fetch and sync user license status from Cloudflare D1
+ */
+export async function fetchUserLicenseStatus(user) {
+    if (!user || !user.email) return { activeLicenses: [], otherBoundDevice: null };
+    try {
+        const devId = getDeviceId();
+        const res = await fetch(`/api/license/user-status?email=${encodeURIComponent(user.email)}&device_id=${encodeURIComponent(devId)}`);
+        const data = await res.json();
+        if (data.status === 'success' && data.activeLicenses && data.activeLicenses.length > 0) {
+            const rawLocal = localStorage.getItem(LICENSE_STORAGE_KEY);
+            const allLicenses = rawLocal ? JSON.parse(rawLocal) : {};
+            
+            for (const lic of data.activeLicenses) {
+                allLicenses[lic.tier] = {
+                    active: true,
+                    tier: lic.tier_name || lic.tier,
+                    key: lic.license_key,
+                    deviceScope: lic.device_scope || 'single_device',
+                    boundDeviceId: lic.device_id,
+                    boundDeviceName: lic.device_name,
+                    boundEmail: lic.email,
+                    activatedAt: lic.activated_at || new Date().toISOString(),
+                    expires: null
+                };
+            }
+            saveLicenses(allLicenses);
+        }
+        return data;
+    } catch (e) {
+        console.warn('Fetch user license status error:', e);
+        return { activeLicenses: [], otherBoundDevice: null };
+    }
+}
+
+/**
+ * Activate a license key (1-Device or All-Device)
+ * Verifies with Cloudflare Backend
  */
 export async function activateLicenseKey(rawKey) {
     if (!rawKey) return { success: false, message: 'Masukkan kode lisensi Anda.' };
@@ -168,7 +214,6 @@ export async function activateLicenseKey(rawKey) {
     const user = getCurrentUser();
     const email = user?.email || '';
 
-    // Online verification with Cloudflare Backend (Device Binding Validation)
     try {
         const res = await fetch('/api/license/activate', {
             method: 'POST',
@@ -190,7 +235,7 @@ export async function activateLicenseKey(rawKey) {
             };
         }
 
-        // Successfully bound to this device in Cloudflare D1
+        const isAllDevice = (data.device_scope === 'all_devices') || key.includes('-ALL-');
         const rawLocal = localStorage.getItem(LICENSE_STORAGE_KEY);
         const allLicenses = rawLocal ? JSON.parse(rawLocal) : {};
         
@@ -198,19 +243,24 @@ export async function activateLicenseKey(rawKey) {
             active: true,
             tier: data.tierName || data.tier,
             key: key,
-            boundDeviceId: deviceId,
-            boundDeviceName: deviceName,
+            deviceScope: isAllDevice ? 'all_devices' : 'single_device',
+            boundDeviceId: isAllDevice ? '' : deviceId,
+            boundDeviceName: isAllDevice ? 'Semua Perangkat (All-Device)' : deviceName,
+            boundEmail: email.toLowerCase(),
             activatedAt: new Date().toISOString(),
-            expires: null // Lifetime validity tied to this device!
+            expires: null
         };
         saveLicenses(allLicenses);
 
-        // Update current user session plan on this device
         if (user) {
+            const planText = isAllDevice 
+                ? `${data.tierName || 'All-Access VIP'} (All-Device Selamanya)`
+                : `${data.tierName || 'All-Access VIP'} (Perangkat Ini - Selamanya)`;
             user.subscription = {
-                plan: `${data.tierName || 'All-Access VIP'} (Device Ini)`,
+                plan: planText,
                 active: true,
-                boundDeviceId: deviceId
+                deviceScope: isAllDevice ? 'all_devices' : 'single_device',
+                boundDeviceId: isAllDevice ? '' : deviceId
             };
             localStorage.setItem('kawandigi_user_session', JSON.stringify(user));
         }
@@ -218,7 +268,8 @@ export async function activateLicenseKey(rawKey) {
         return {
             success: true,
             tier: data.tier,
-            message: data.message || `Selamat! Lisensi ${data.tierName} berhasil diaktifkan dan dikunci khusus untuk perangkat ini (${deviceName}).`
+            deviceScope: isAllDevice ? 'all_devices' : 'single_device',
+            message: data.message || `Selamat! Lisensi ${data.tierName} berhasil diaktifkan.`
         };
 
     } catch (err) {

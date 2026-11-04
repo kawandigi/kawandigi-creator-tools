@@ -72,10 +72,20 @@ export default {
               device_id TEXT NOT NULL,
               device_name TEXT,
               email TEXT,
+              device_scope TEXT DEFAULT 'single_device',
+              status TEXT DEFAULT 'active',
+              notes TEXT DEFAULT '',
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
               activated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
               last_verified DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `).run();
+
+          // Safely add any new columns for migrations
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN device_scope TEXT DEFAULT 'single_device'").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN status TEXT DEFAULT 'active'").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN notes TEXT DEFAULT ''").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP").run(); } catch (_) {}
         } catch (e) {
           console.warn('D1 table creation check:', e.message);
         }
@@ -373,7 +383,149 @@ export default {
         }
       }
 
-      // 6. License Device-Lock API (Strictly 1 License per 1 Physical Device)
+      // 6. Admin License Management API (List All Licenses)
+      if (url.pathname === '/api/admin/licenses' && request.method === 'GET') {
+        let list = [];
+        if (db) {
+          try {
+            await ensureD1Tables();
+            const res = await db.prepare(`
+              SELECT license_key, tier, tier_name, device_scope, status, notes, device_id, device_name, email, created_at, activated_at, last_verified
+              FROM device_licenses
+              ORDER BY created_at DESC
+            `).all();
+            list = res.results || [];
+          } catch (e) {
+            console.warn('D1 get admin licenses error:', e.message);
+          }
+        }
+        if (list.length === 0 && globalThis.__kd_device_licenses) {
+          list = Object.values(globalThis.__kd_device_licenses);
+        }
+        return new Response(JSON.stringify({ status: 'success', data: list }), { headers: corsHeaders });
+      }
+
+      // 7. Admin License Generator API (Create 1-Device or All-Device License Keys)
+      if (url.pathname === '/api/admin/licenses/generate' && request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const tier = (body.tier || 'all_access').toLowerCase().trim();
+          const deviceScope = (body.device_scope || 'single_device').toLowerCase().trim(); // 'single_device' | 'all_devices'
+          const notes = (body.notes || '').trim();
+
+          let tierName = 'All-Access VIP';
+          let prefix = 'KD-VIP';
+          if (tier === 'ugc') {
+            tierName = 'AI UGC Affiliate Pro';
+            prefix = 'KD-UGC';
+          } else if (tier === 'drama') {
+            tierName = 'AI Drama & Series Pro';
+            prefix = 'KD-DRAMA';
+          }
+
+          const scopePrefix = deviceScope === 'all_devices' ? 'ALL' : '1DEV';
+          const randPart = Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Date.now().toString(36).substring(4).toUpperCase();
+          const newKey = `${prefix}-${scopePrefix}-${randPart}`;
+
+          const newRecord = {
+            license_key: newKey,
+            tier: tier,
+            tier_name: tierName,
+            device_scope: deviceScope,
+            status: 'unused',
+            notes: notes,
+            device_id: '',
+            device_name: '',
+            email: '',
+            created_at: new Date().toISOString(),
+            activated_at: null,
+            last_verified: null
+          };
+
+          globalThis.__kd_device_licenses = globalThis.__kd_device_licenses || {};
+          globalThis.__kd_device_licenses[newKey] = newRecord;
+
+          if (db) {
+            await ensureD1Tables();
+            try {
+              await db.prepare(`
+                INSERT INTO device_licenses (license_key, tier, tier_name, device_scope, status, notes, device_id, device_name, email, created_at)
+                VALUES (?, ?, ?, ?, 'unused', ?, '', '', '', CURRENT_TIMESTAMP)
+              `).bind(newKey, tier, tierName, deviceScope, notes).run();
+            } catch (e) {
+              console.warn('D1 insert generated license error:', e.message);
+            }
+          }
+
+          return new Response(JSON.stringify({ status: 'success', data: newRecord }), { headers: corsHeaders });
+        } catch (e) {
+          return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
+        }
+      }
+
+      // 8. Admin License Revoke / Delete API
+      if (url.pathname === '/api/admin/licenses/revoke' && request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const key = (body.key || '').trim().toUpperCase();
+          if (db) {
+            await ensureD1Tables();
+            await db.prepare('DELETE FROM device_licenses WHERE license_key = ?').bind(key).run();
+          }
+          if (globalThis.__kd_device_licenses) {
+            delete globalThis.__kd_device_licenses[key];
+          }
+          return new Response(JSON.stringify({ status: 'success', message: 'Lisensi berhasil dihapus' }), { headers: corsHeaders });
+        } catch (e) {
+          return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
+        }
+      }
+
+      // 9. License User & Device Status Query API
+      if (url.pathname === '/api/license/user-status' && request.method === 'GET') {
+        const email = (url.searchParams.get('email') || '').toLowerCase().trim();
+        const deviceId = (url.searchParams.get('device_id') || '').trim();
+
+        let activeLicenses = [];
+        let otherBoundDevice = null;
+
+        if (db && (email || deviceId)) {
+          try {
+            await ensureD1Tables();
+            const rows = await db.prepare(`
+              SELECT license_key, tier, tier_name, device_scope, status, device_id, device_name, email
+              FROM device_licenses
+              WHERE (email = ? AND email != '') OR (device_id = ? AND device_id != '')
+            `).bind(email, deviceId).all();
+
+            const list = rows.results || [];
+            for (const r of list) {
+              if (r.status === 'revoked') continue;
+              if (r.device_scope === 'all_devices') {
+                if (email && r.email === email) {
+                  activeLicenses.push(r);
+                }
+              } else {
+                if (r.device_id === deviceId) {
+                  activeLicenses.push(r);
+                } else if (email && r.email === email && r.device_id && r.device_id !== deviceId) {
+                  otherBoundDevice = r.device_name || 'Perangkat Lain';
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('D1 query user-status error:', e.message);
+          }
+        }
+
+        return new Response(JSON.stringify({
+          status: 'success',
+          activeLicenses: activeLicenses,
+          otherBoundDevice: otherBoundDevice
+        }), { headers: corsHeaders });
+      }
+
+      // 10. License Activation API (Handles 1-Device and All-Device Lifetime Keys)
       if (url.pathname === '/api/license/activate' && request.method === 'POST') {
         try {
           const body = await request.json();
@@ -405,15 +557,22 @@ export default {
             return new Response(JSON.stringify({ success: false, message: 'Kode lisensi tidak valid atau format salah.' }), { status: 400, headers: corsHeaders });
           }
 
+          let isAllDevice = rawKey.includes('-ALL-');
+          let deviceScope = isAllDevice ? 'all_devices' : 'single_device';
+
           globalThis.__kd_device_licenses = globalThis.__kd_device_licenses || {};
           let existing = globalThis.__kd_device_licenses[rawKey];
 
           if (db) {
             await ensureD1Tables();
             try {
-              const row = await db.prepare('SELECT license_key, tier, tier_name, device_id, device_name, email, activated_at FROM device_licenses WHERE license_key = ?').bind(rawKey).first();
+              const row = await db.prepare('SELECT license_key, tier, tier_name, device_scope, status, device_id, device_name, email, activated_at FROM device_licenses WHERE license_key = ?').bind(rawKey).first();
               if (row) {
                 existing = row;
+                if (row.device_scope) {
+                  deviceScope = row.device_scope;
+                  isAllDevice = (deviceScope === 'all_devices');
+                }
                 globalThis.__kd_device_licenses[rawKey] = row;
               }
             } catch (e) {
@@ -421,20 +580,50 @@ export default {
             }
           }
 
-          // DEVICE MISMATCH CHECK: Key is already bound to another physical device!
-          if (existing && existing.device_id && existing.device_id !== deviceId) {
+          // Check if key is revoked
+          if (existing && existing.status === 'revoked') {
             return new Response(JSON.stringify({
               success: false,
-              code: 'DEVICE_MISMATCH',
-              message: `Kode lisensi ini sudah aktif dan terikat pada perangkat lain (${existing.device_name || 'Device Sebelumnya'}). Sesuai ketentuan, 1 lisensi berlaku seumur hidup khusus untuk 1 device. Silakan beli lisensi tambahan untuk perangkat baru ini.`
+              code: 'LICENSE_REVOKED',
+              message: 'Kode lisensi ini telah dinonaktifkan oleh Admin.'
             }), { headers: corsHeaders });
           }
 
-          // Bind key to this device
+          // Check Scope Validation
+          if (isAllDevice) {
+            // All Devices: Bound to Google Account Email
+            if (!userEmail) {
+              return new Response(JSON.stringify({
+                success: false,
+                code: 'EMAIL_REQUIRED',
+                message: 'Lisensi All-Device memerlukan Anda masuk dengan akun Google terlebih dahulu agar lisensi dapat digunakan bebas di semua HP & PC Anda.'
+              }), { headers: corsHeaders });
+            }
+            if (existing && existing.email && existing.email !== userEmail) {
+              return new Response(JSON.stringify({
+                success: false,
+                code: 'EMAIL_MISMATCH',
+                message: `Lisensi All-Device ini sudah terikat ke akun Google lain (${existing.email}). Silakan masuk dengan akun Google tersebut.`
+              }), { headers: corsHeaders });
+            }
+          } else {
+            // Single Device (1 Device): Bound strictly to hardware device_id
+            if (existing && existing.device_id && existing.device_id !== '' && existing.device_id !== deviceId) {
+              return new Response(JSON.stringify({
+                success: false,
+                code: 'DEVICE_MISMATCH',
+                message: `Kode lisensi ini sudah aktif dan terikat pada perangkat lain (${existing.device_name || 'Device Sebelumnya'}). Sesuai ketentuan, 1 lisensi berlaku seumur hidup khusus untuk 1 device. Silakan beli lisensi tambahan untuk perangkat baru ini.`
+              }), { headers: corsHeaders });
+            }
+          }
+
+          // Bind and save
           const record = {
             license_key: rawKey,
             tier: tier,
             tier_name: tierName,
+            device_scope: deviceScope,
+            status: 'active',
             device_id: deviceId,
             device_name: deviceName,
             email: userEmail,
@@ -446,32 +635,43 @@ export default {
             await ensureD1Tables();
             try {
               await db.prepare(`
-                INSERT INTO device_licenses (license_key, tier, tier_name, device_id, device_name, email, activated_at, last_verified)
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                INSERT INTO device_licenses (license_key, tier, tier_name, device_scope, status, device_id, device_name, email, activated_at, last_verified)
+                VALUES (?, ?, ?, ?, 'active', ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 ON CONFLICT(license_key) DO UPDATE SET
+                  device_scope = excluded.device_scope,
+                  status = 'active',
+                  device_id = excluded.device_id,
                   device_name = excluded.device_name,
                   email = excluded.email,
                   last_verified = CURRENT_TIMESTAMP
-              `).bind(rawKey, tier, tierName, deviceId, deviceName, userEmail).run();
+              `).bind(rawKey, tier, tierName, deviceScope, deviceId, deviceName, userEmail).run();
 
               if (userEmail) {
+                const planTitle = isAllDevice 
+                  ? `${tierName} (All-Device Selamanya)` 
+                  : `${tierName} (${deviceName})`;
                 await db.prepare(`
                   UPDATE members SET plan = ?, last_active = CURRENT_TIMESTAMP WHERE email = ?
-                `).bind(`${tierName} (${deviceName})`, userEmail).run();
+                `).bind(planTitle, userEmail).run();
               }
             } catch (e) {
               console.warn('D1 insert device license error:', e.message);
             }
           }
 
+          const successMsg = isAllDevice
+            ? `Selamat! Lisensi ${tierName} (All-Device) berhasil diaktifkan! Anda bebas menggunakannya di semua perangkat dengan akun Google ${userEmail}.`
+            : `Selamat! Lisensi ${tierName} berhasil diaktifkan dan dikunci khusus untuk perangkat ini (${deviceName}) seumur hidup.`;
+
           return new Response(JSON.stringify({
             success: true,
             tier: tier,
             tierName: tierName,
             key: rawKey,
+            device_scope: deviceScope,
             device_id: deviceId,
             device_name: deviceName,
-            message: `Selamat! Lisensi ${tierName} berhasil diaktifkan dan dikunci khusus untuk perangkat ini (${deviceName}).`
+            message: successMsg
           }), { headers: corsHeaders });
 
         } catch (e) {
