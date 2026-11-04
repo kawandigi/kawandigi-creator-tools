@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Catalog, Feature Flags & Digital Store Manager
+ * KawanDigi Creator Tools - Catalog, Feature Flags & Digital Store Manager
  * Gives admin complete control over tool accessibility, digital product sales, and video tutorials
  */
 

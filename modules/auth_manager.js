@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Authentication & Member Management
+ * KawanDigi Creator Tools - Authentication & Member Management
  * Supports Google OAuth (Google Identity Services / GIS), User Dashboard, and Admin Member Management
  * Privacy-friendly: Does NOT store phone numbers or unnecessary personal data.
  */
@@ -186,8 +186,8 @@ export function deleteMemberRecord(email) {
  * Direct Email Offer Helper
  */
 export function generateEmailOfferUrl(email, memberName, offerType = 'promo') {
-    let subject = 'Penawaran Spesial KawanDigi Creator Studio';
-    let body = `Halo Kak ${memberName || ''},\n\nTerima kasih telah aktif berkarya di KawanDigi Creator Studio.\n\nKami memiliki penawaran eksklusif khusus member untuk meningkatkan produktivitas pembuatan konten AI Anda.\n\nSilakan balas email ini jika ada pertanyaan.\n\nSalam hangat,\nTim KawanDigi`;
+    let subject = 'Penawaran Spesial KawanDigi Creator Tools';
+    let body = `Halo Kak ${memberName || ''},\n\nTerima kasih telah aktif berkarya di KawanDigi Creator Tools.\n\nKami memiliki penawaran eksklusif khusus member untuk meningkatkan produktivitas pembuatan konten AI Anda.\n\nSilakan balas email ini jika ada pertanyaan.\n\nSalam hangat,\nTim KawanDigi`;
     
     if (offerType === 'tutorial') {
         subject = 'Update Panduan & Video Tutorial Baru KawanDigi';

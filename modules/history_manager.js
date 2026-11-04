@@ -1,5 +1,5 @@
 /**
- * KAWANDIGI CREATOR STUDIO - HISTORY MANAGER
+ * KAWANDIGI CREATOR TOOLS - HISTORY MANAGER
  * Module untuk menyimpan, mengelola, dan memulihkan riwayat project (maksimal 20 project).
  * Tersimpan secara lokal di browser (localStorage) sehingga data tidak hilang saat refresh.
  */

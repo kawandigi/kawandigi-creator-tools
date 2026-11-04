@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Multi-Provider AI Gateway & Video API Client
+ * KawanDigi Creator Tools - Multi-Provider AI Gateway & Video API Client
  * Supports: Google Gemini, DeepSeek (Official), OpenRouter, Groq, & Custom OpenAI-Compatible
  * 100% Client-Side (BYOK: Bring Your Own Key) - Zero VPS / Serverless
  */
@@ -430,7 +430,7 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
                     'HTTP-Referer': window.location.origin || 'http://localhost:8080',
-                    'X-Title': 'KawanDigi Creator Studio'
+                    'X-Title': 'KawanDigi Creator Tools'
                 },
                 body: JSON.stringify(payload)
             });

@@ -1,4 +1,4 @@
--- KawanDigi Creator Studio - Cloudflare D1 Distributed SQL Schema
+-- KawanDigi Creator Tools - Cloudflare D1 Distributed SQL Schema
 -- Ultra-high scalability: supports millions of members and activity logs with zero quotas bottlenecks.
 -- Privacy friendly: zero phone numbers or unnecessary personal data.
 

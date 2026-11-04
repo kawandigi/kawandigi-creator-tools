@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Cloudflare Worker & D1 API Backend
+ * KawanDigi Creator Tools - Cloudflare Worker & D1 API Backend
  * Serves Static Assets and Ultra-Scalable REST API for Centralized Member Hub, Gamification & 24h Peak Usage Analytics
  */
 

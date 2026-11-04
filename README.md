@@ -91,14 +91,14 @@ Dalam 15–30 detik, webapp kawandigi CREATOR TOOLS Anda sudah langsung aktif di
 2. Login dengan akun Google.
 3. Klik tombol biru **"Get API key"** atau **"Create API key"**.
 4. Salin kode yang diawali dengan `AIzaSy...`.
-5. Buka **KawanDigi Creator Studio**, klik tombol **API Key** di pojok kanan atas, lalu tempelkan dan simpan.
+5. Buka **KawanDigi Creator Tools**, klik tombol **API Key** di pojok kanan atas, lalu tempelkan dan simpan.
 
 ---
 
 ## 📂 Struktur Direktori
 
 ```text
-KawanDigi-Creator-Studio/
+KawanDigi-Creator-Tools/
 ├── index.html                 # Antarmuka SPA Modern (Tailwind CSS & Lucide Icons)
 ├── style.css                  # Custom Styles, Font Jakarta Sans, Toast, Glassmorphism
 ├── app.js                     # Main Controller & Event Listener
@@ -116,4 +116,4 @@ KawanDigi-Creator-Studio/
 
 ---
 
-© 2026 KawanDigi Studio. All rights reserved.
+© 2026 KawanDigi Creator Tools. All rights reserved.

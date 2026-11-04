@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - AI UGC Affiliate Video Creator
+ * KawanDigi Creator Tools - AI UGC Affiliate Video Creator
  * Handles intelligent product extraction via AI, fast-paced affiliate scene duration, and AIDA reasoning
  */
 

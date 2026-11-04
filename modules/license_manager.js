@@ -1,7 +1,7 @@
 import { getCurrentUser, getAdminEmail } from './auth_manager.js';
 
 /**
- * KawanDigi Creator Studio - License & Tool Access Manager
+ * KawanDigi Creator Tools - License & Tool Access Manager
  * Device-Locked Licensing Model: 1 License = 1 Physical Device.
  * Lifetime validity is tied to the customer's specific hardware device.
  * Multi-device usage requires purchasing a separate license per device.

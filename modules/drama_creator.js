@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - AI Drama & Micro-Series Creator
+ * KawanDigi Creator Tools - AI Drama & Micro-Series Creator
  * Generates viral serialized short drama episodes with character consistency & cliffhanger engine
  */
 

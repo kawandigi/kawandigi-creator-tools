@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - In-App Video Renderer
+ * KawanDigi Creator Tools - In-App Video Renderer
  * Generates an animated 9:16 vertical video clip directly in the user's browser
  * using HTML5 Canvas, Pollinations AI visual artwork, and the MediaRecorder API.
  * 100% Free, Zero VPS, Zero Cloud Video API Quotas!
@@ -136,7 +136,7 @@ export async function renderInAppSceneVideo({
         ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
         ctx.font = '600 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText('KawanDigi Creator Studio', 680, 80);
+        ctx.fillText('KawanDigi Creator Tools', 680, 80);
         ctx.restore();
 
         // E. Top Progress Timeline Bar

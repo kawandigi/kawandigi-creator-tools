@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Main Application Controller
+ * KawanDigi Creator Tools - Main Application Controller
  * Handles Navigation, State, Event Listeners, and Dynamic UI Rendering
  */
 
@@ -4337,7 +4337,7 @@ window.kdCopyText = (text, toastMsg = 'Teks disalin!') => {
 
 window.kdCopyWaMessage = (key, tierName, scopeName, notes = '') => {
     const buyerName = notes ? notes.split('-')[0].trim() : 'Kreator';
-    const msg = `Halo ${buyerName}, terima kasih telah memesan lisensi resmi KawanDigi Creator Studio! 🙌\n\n` +
+    const msg = `Halo ${buyerName}, terima kasih telah memesan lisensi resmi KawanDigi Creator Tools! 🙌\n\n` +
         `Berikut adalah detail Kunci Lisensi Anda:\n` +
         `🔑 KUNCI LISENSI: ${key}\n` +
         `📦 PAKET: ${tierName} (Akses Selamanya)\n` +

@@ -1,5 +1,5 @@
 /**
- * KawanDigi Creator Studio - Gamification & Activity Analytics Manager
+ * KawanDigi Creator Tools - Gamification & Activity Analytics Manager
  * Tracks Member Productive Habits, XP Points, Leaderboard Ranking, and 24-Hour Peak Usage Analytics
  */
 
