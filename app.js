@@ -18,7 +18,7 @@ import {
     generateImagen3, 
     generateOmniVideo 
 } from './modules/gemini_api.js';
-import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT } from './modules/license_manager.js';
+import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT, getDeviceId, getDeviceName } from './modules/license_manager.js';
 import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
@@ -2108,6 +2108,34 @@ function updateLicenseCards() {
         }
     }
 
+    // 4. Update Device Information & Hardware Lock Badge in License Form
+    const devIdEl = document.getElementById('current-device-id');
+    const devNameEl = document.getElementById('current-device-name');
+    const devStatusEl = document.getElementById('current-device-status');
+    const myDevId = getDeviceId();
+    const myDevName = getDeviceName();
+
+    if (devIdEl) devIdEl.textContent = myDevId;
+    if (devNameEl) devNameEl.textContent = myDevName;
+    if (devStatusEl) {
+        if (isSuper) {
+            devStatusEl.className = 'font-bold text-emerald-400';
+            devStatusEl.innerHTML = '<span class="inline-flex items-center gap-1">👑 Superadmin (Semua Perangkat)</span>';
+        } else if (isVip) {
+            devStatusEl.className = 'font-bold text-emerald-400';
+            devStatusEl.innerHTML = '<span class="inline-flex items-center gap-1">✓ All-Access VIP (Device Ini)</span>';
+        } else if (licenses['ugc']) {
+            devStatusEl.className = 'font-bold text-cyan-400';
+            devStatusEl.innerHTML = '<span class="inline-flex items-center gap-1">✓ AI UGC Pro (Device Ini)</span>';
+        } else if (licenses['drama']) {
+            devStatusEl.className = 'font-bold text-purple-400';
+            devStatusEl.innerHTML = '<span class="inline-flex items-center gap-1">✓ AI Drama Pro (Device Ini)</span>';
+        } else {
+            devStatusEl.className = 'font-bold text-amber-400';
+            devStatusEl.innerHTML = '<span class="inline-flex items-center gap-1">⏳ Trial Pengunjung (3x Coba)</span>';
+        }
+    }
+
     if (window.lucide) window.lucide.createIcons();
 }
 
@@ -2116,24 +2144,39 @@ function initLicenseManager() {
     const inputKey = document.getElementById('license-key-input');
     const alertBox = document.getElementById('license-alert');
 
-    btnActivate?.addEventListener('click', () => {
+    btnActivate?.addEventListener('click', async () => {
         const raw = inputKey.value.trim();
-        const res = activateLicenseKey(raw);
-
-        alertBox.classList.remove('hidden', 'bg-emerald-950/40', 'border-emerald-500/40', 'text-emerald-300', 'bg-rose-950/40', 'border-rose-500/40', 'text-rose-300');
-
-        if (res.success) {
-            alertBox.classList.add('bg-emerald-950/40', 'border', 'border-emerald-500/40', 'text-emerald-300');
-            alertBox.innerHTML = `✓ ${res.message}`;
-            inputKey.value = '';
-            showToast(res.message, 'success');
-        } else {
-            alertBox.classList.add('bg-rose-950/40', 'border', 'border-rose-500/40', 'text-rose-300');
-            alertBox.innerHTML = `⚠️ ${res.message}`;
-            showToast(res.message, 'error');
+        if (!raw) {
+            showToast('Masukkan kode lisensi Anda', 'info');
+            return;
         }
 
-        updateLicenseCards();
+        btnActivate.disabled = true;
+        const origHtml = btnActivate.innerHTML;
+        btnActivate.innerHTML = '<span class="inline-block animate-spin mr-1">⌛</span> Mengunci Device...';
+
+        try {
+            const res = await activateLicenseKey(raw);
+
+            alertBox.classList.remove('hidden', 'bg-emerald-950/40', 'border-emerald-500/40', 'text-emerald-300', 'bg-rose-950/40', 'border-rose-500/40', 'text-rose-300');
+
+            if (res.success) {
+                alertBox.classList.add('bg-emerald-950/40', 'border', 'border-emerald-500/40', 'text-emerald-300');
+                alertBox.innerHTML = `✓ ${res.message}`;
+                inputKey.value = '';
+                showToast(res.message, 'success');
+                updateHeaderAuthUI();
+            } else {
+                alertBox.classList.add('bg-rose-950/40', 'border', 'border-rose-500/40', 'text-rose-300');
+                alertBox.innerHTML = `⚠️ ${res.message}`;
+                showToast(res.message, 'error');
+            }
+
+            updateLicenseCards();
+        } finally {
+            btnActivate.disabled = false;
+            btnActivate.innerHTML = origHtml;
+        }
     });
 
     updateLicenseCards();
@@ -2951,11 +2994,23 @@ function updateHeaderAuthUI() {
         }
         if (btn) btn.title = `Akun: ${user.name} (${user.email})`;
 
+        const myDevId = getDeviceId();
+        const myLicenses = getLicenses();
+        const isDeviceLicensed = isAdmin || (user.subscription && user.subscription.active && (isAdmin || myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
+
         if (greetingName) greetingName.textContent = (user.name || 'KREATOR KAWANDIGI').toUpperCase();
-        if (greetingRole) greetingRole.textContent = `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`;
+        if (greetingRole) {
+            greetingRole.textContent = isDeviceLicensed 
+                ? `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`
+                : 'TRIAL PENGUNJUNG (DEVICE INI BELUM BERLISENSI)';
+        }
         if (drawerName) drawerName.textContent = user.name || 'Kreator KawanDigi';
         if (drawerAvatar && user.picture) drawerAvatar.src = user.picture;
-        if (drawerTier) drawerTier.textContent = `${levelInfo.icon} ${levelInfo.title} • VIP`;
+        if (drawerTier) {
+            drawerTier.textContent = isDeviceLicensed 
+                ? `${levelInfo.icon} ${levelInfo.title} • Lisensi Aktif`
+                : `${levelInfo.icon} ${levelInfo.title} • Trial Device`;
+        }
     } else {
         if (avatar) avatar.classList.add('hidden');
         if (defaultIcon) defaultIcon.classList.remove('hidden');
@@ -2995,11 +3050,24 @@ function openUserProfileModal() {
 
     if (user && user.email) {
         const levelInfo = calculateLevel(user.xp || 0);
+        const myDevId = getDeviceId();
+        const myLicenses = getLicenses();
+        const isAdmin = isSuperAdmin(user);
+        const isDeviceLicensed = isAdmin || (user.subscription && user.subscription.active && (myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
+
         if (avatarEl) avatarEl.src = user.picture || 'assets/icons/favicon.png';
         if (nameEl) nameEl.textContent = user.name || 'Member KawanDigi';
         if (emailEl) emailEl.textContent = user.email;
-        if (planBadge) planBadge.textContent = user.subscription?.plan || 'VIP Master Lifetime';
-        if (planName) planName.textContent = user.subscription?.plan || 'Akses Penuh Semua Tools';
+        if (planBadge) {
+            planBadge.textContent = isDeviceLicensed 
+                ? (user.subscription?.plan || 'VIP Master Lifetime (Device Ini)') 
+                : 'Trial Pengunjung';
+        }
+        if (planName) {
+            planName.textContent = isDeviceLicensed 
+                ? (user.subscription?.plan || 'Akses Penuh Semua Tools (Perangkat Terkunci)') 
+                : 'Trial Pengunjung (Lisensi Belum Terikat di Device Ini)';
+        }
         if (levelEl) {
             levelEl.textContent = `${levelInfo.icon} ${levelInfo.title}`;
             levelEl.className = `px-2 py-0.5 rounded-full font-bold text-[10px] border ${levelInfo.badgeClass}`;
@@ -3062,6 +3130,29 @@ function initGoogleIdentityServices() {
                         const currentUser = getCurrentUser() || {};
                         const isAdminUser = payload.email.toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase();
 
+                        // Check active license specifically bound to THIS physical device
+                        const devId = getDeviceId();
+                        const myLicenses = getLicenses();
+                        const isVipOnDev = myLicenses['all_access'] && myLicenses['all_access'].active && myLicenses['all_access'].boundDeviceId === devId;
+                        const isUgcOnDev = myLicenses['ugc'] && myLicenses['ugc'].active && myLicenses['ugc'].boundDeviceId === devId;
+                        const isDramaOnDev = myLicenses['drama'] && myLicenses['drama'].active && myLicenses['drama'].boundDeviceId === devId;
+
+                        let assignedPlan = 'Trial Pengunjung';
+                        let isPlanActive = false;
+                        if (isAdminUser) {
+                            assignedPlan = 'Superadmin Official Lifetime';
+                            isPlanActive = true;
+                        } else if (isVipOnDev) {
+                            assignedPlan = 'VIP Master Lifetime (Device Ini)';
+                            isPlanActive = true;
+                        } else if (isUgcOnDev) {
+                            assignedPlan = 'AI UGC Pro (Device Ini)';
+                            isPlanActive = true;
+                        } else if (isDramaOnDev) {
+                            assignedPlan = 'AI Drama Pro (Device Ini)';
+                            isPlanActive = true;
+                        }
+
                         const user = {
                             id: payload.sub,
                             name: payload.name || (isAdminUser ? 'Admin KawanDigi' : 'Member Google'),
@@ -3070,9 +3161,7 @@ function initGoogleIdentityServices() {
                             whatsapp: currentUser.whatsapp || '',
                             joinedAt: currentUser.joinedAt || new Date().toISOString(),
                             role: isAdminUser ? 'superadmin' : 'member',
-                            subscription: isAdminUser 
-                                ? { plan: 'Superadmin Official Lifetime', active: true } 
-                                : (currentUser.subscription || { plan: 'VIP Master Lifetime', active: true }),
+                            subscription: { plan: assignedPlan, active: isPlanActive },
                             level: isAdminUser ? 'Mythic Legend' : (currentUser.level || 'Diamond Creator'),
                             xp: isAdminUser ? Math.max(currentUser.xp || 0, 1500) : (currentUser.xp || 100)
                         };
@@ -3090,7 +3179,7 @@ function initGoogleIdentityServices() {
                                 name: user.name,
                                 email: user.email,
                                 picture: user.picture,
-                                plan: user.subscription?.plan || 'VIP Master Lifetime',
+                                plan: user.subscription?.plan || 'Trial Pengunjung',
                                 total_generates: user.totalGenerates || 0,
                                 xp: user.xp || 10,
                                 level: user.level || 'Novice Creator'

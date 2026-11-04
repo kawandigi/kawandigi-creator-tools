@@ -63,6 +63,19 @@ export default {
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS device_licenses (
+              license_key TEXT PRIMARY KEY,
+              tier TEXT NOT NULL,
+              tier_name TEXT NOT NULL,
+              device_id TEXT NOT NULL,
+              device_name TEXT,
+              email TEXT,
+              activated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              last_verified DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
         } catch (e) {
           console.warn('D1 table creation check:', e.message);
         }
@@ -357,6 +370,112 @@ export default {
           } catch (e) {
             return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
           }
+        }
+      }
+
+      // 6. License Device-Lock API (Strictly 1 License per 1 Physical Device)
+      if (url.pathname === '/api/license/activate' && request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const rawKey = (body.key || '').trim().toUpperCase();
+          const deviceId = (body.device_id || '').trim();
+          const deviceName = (body.device_name || 'Perangkat Web').trim();
+          const userEmail = (body.email || '').toLowerCase().trim();
+
+          if (!rawKey) {
+            return new Response(JSON.stringify({ success: false, message: 'Kode lisensi harus diisi.' }), { status: 400, headers: corsHeaders });
+          }
+          if (!deviceId) {
+            return new Response(JSON.stringify({ success: false, message: 'Device ID tidak terdeteksi.' }), { status: 400, headers: corsHeaders });
+          }
+
+          // Validate key format and determine tier
+          let tier = '';
+          let tierName = '';
+          if (rawKey === 'KAWANDIGI-VIP-UNLIMITED' || rawKey.startsWith('KD-VIP-')) {
+            tier = 'all_access';
+            tierName = 'All-Access VIP';
+          } else if (rawKey === 'KAWANDIGI-UGC-PRO' || rawKey.startsWith('KD-UGC-')) {
+            tier = 'ugc';
+            tierName = 'AI UGC Affiliate Pro';
+          } else if (rawKey === 'KAWANDIGI-DRAMA-PRO' || rawKey.startsWith('KD-DRAMA-')) {
+            tier = 'drama';
+            tierName = 'AI Drama & Series Pro';
+          } else {
+            return new Response(JSON.stringify({ success: false, message: 'Kode lisensi tidak valid atau format salah.' }), { status: 400, headers: corsHeaders });
+          }
+
+          globalThis.__kd_device_licenses = globalThis.__kd_device_licenses || {};
+          let existing = globalThis.__kd_device_licenses[rawKey];
+
+          if (db) {
+            await ensureD1Tables();
+            try {
+              const row = await db.prepare('SELECT license_key, tier, tier_name, device_id, device_name, email, activated_at FROM device_licenses WHERE license_key = ?').bind(rawKey).first();
+              if (row) {
+                existing = row;
+                globalThis.__kd_device_licenses[rawKey] = row;
+              }
+            } catch (e) {
+              console.warn('D1 query license error:', e.message);
+            }
+          }
+
+          // DEVICE MISMATCH CHECK: Key is already bound to another physical device!
+          if (existing && existing.device_id && existing.device_id !== deviceId) {
+            return new Response(JSON.stringify({
+              success: false,
+              code: 'DEVICE_MISMATCH',
+              message: `Kode lisensi ini sudah aktif dan terikat pada perangkat lain (${existing.device_name || 'Device Sebelumnya'}). Sesuai ketentuan, 1 lisensi berlaku seumur hidup khusus untuk 1 device. Silakan beli lisensi tambahan untuk perangkat baru ini.`
+            }), { headers: corsHeaders });
+          }
+
+          // Bind key to this device
+          const record = {
+            license_key: rawKey,
+            tier: tier,
+            tier_name: tierName,
+            device_id: deviceId,
+            device_name: deviceName,
+            email: userEmail,
+            activated_at: existing?.activated_at || new Date().toISOString()
+          };
+          globalThis.__kd_device_licenses[rawKey] = record;
+
+          if (db) {
+            await ensureD1Tables();
+            try {
+              await db.prepare(`
+                INSERT INTO device_licenses (license_key, tier, tier_name, device_id, device_name, email, activated_at, last_verified)
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ON CONFLICT(license_key) DO UPDATE SET
+                  device_name = excluded.device_name,
+                  email = excluded.email,
+                  last_verified = CURRENT_TIMESTAMP
+              `).bind(rawKey, tier, tierName, deviceId, deviceName, userEmail).run();
+
+              if (userEmail) {
+                await db.prepare(`
+                  UPDATE members SET plan = ?, last_active = CURRENT_TIMESTAMP WHERE email = ?
+                `).bind(`${tierName} (${deviceName})`, userEmail).run();
+              }
+            } catch (e) {
+              console.warn('D1 insert device license error:', e.message);
+            }
+          }
+
+          return new Response(JSON.stringify({
+            success: true,
+            tier: tier,
+            tierName: tierName,
+            key: rawKey,
+            device_id: deviceId,
+            device_name: deviceName,
+            message: `Selamat! Lisensi ${tierName} berhasil diaktifkan dan dikunci khusus untuk perangkat ini (${deviceName}).`
+          }), { headers: corsHeaders });
+
+        } catch (e) {
+          return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: corsHeaders });
         }
       }
     }

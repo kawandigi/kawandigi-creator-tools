@@ -1142,16 +1142,49 @@
                     </div>
 
                     <div id="license-form-area" class="space-y-3">
-                        <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
-                            <i data-lucide="key" class="w-4 h-4 text-brand-500"></i>
-                            Masukkan Kunci Lisensi Anda
-                        </h3>
-                        <p class="text-xs text-slate-400 mb-3">Dapatkan kode lisensi setelah melakukan pembayaran di admin atau toko.</p>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="key" class="w-4 h-4 text-brand-500"></i>
+                                Masukkan Kunci Lisensi Anda
+                            </h3>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                                🔒 1 Lisensi = 1 Device
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400">Dapatkan kode lisensi setelah melakukan pembayaran di admin atau toko resmi KawanDigi.</p>
 
-                        <div class="flex gap-2">
-                            <input type="text" id="license-key-input" placeholder="Contoh: KD-UGC-XXXXX atau KAWANDIGI-VIP-UNLIMITED" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase tracking-wider focus:outline-none focus:border-brand-500">
+                        <!-- Device Fingerprint & Binding Status Badge -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-slate-400 flex items-center gap-1.5">
+                                    <i data-lucide="smartphone" class="w-3.5 h-3.5 text-brand-400"></i>
+                                    Perangkat Ini:
+                                </span>
+                                <span id="current-device-name" class="font-bold text-white">Mendeteksi...</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800/60">
+                                <span class="text-slate-400 flex items-center gap-1.5">
+                                    <i data-lucide="fingerprint" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                    Hardware ID:
+                                </span>
+                                <code id="current-device-id" class="font-mono text-[10px] text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">DEV-...</code>
+                            </div>
+                            <div class="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800/60">
+                                <span class="text-slate-400 flex items-center gap-1.5">
+                                    <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    Status Lisensi Device:
+                                </span>
+                                <span id="current-device-status" class="font-bold text-amber-400">Trial Pengunjung (3x Coba)</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 pt-1 leading-relaxed border-t border-slate-800/40">
+                                💡 <em>Lisensi berlaku seumur hidup (lifetime) khusus untuk perangkat ini. Jika menggunakan 2 HP/laptop atau berganti perangkat baru, silakan beli lisensi terpisah untuk perangkat tersebut.</em>
+                            </p>
+                        </div>
+
+                        <div class="flex gap-2 pt-1">
+                            <input type="text" id="license-key-input" placeholder="Contoh: KD-VIP-XXXXX atau KD-UGC-XXXXX" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase tracking-wider focus:outline-none focus:border-brand-500">
                             <button id="btn-activate-license" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-xl shadow transition">
-                                Aktivasi
+                                Aktivasi Perangkat
                             </button>
                         </div>
 
