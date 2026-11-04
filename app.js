@@ -3004,14 +3004,14 @@ export function recordGenerationActivity(tool, detail, xpBonus = 10) {
     if (currentUser) {
         currentUser.totalGenerates = (currentUser.totalGenerates || 0) + 1;
         currentUser.xp = (currentUser.xp || 0) + xpBonus;
-        saveUserSession(currentUser);
+        saveCurrentUser(currentUser);
         syncSessionToD1(currentUser);
     } else {
         const guestGens = (parseInt(localStorage.getItem('kawandigi_guest_generates') || '0', 10) || 0) + 1;
         localStorage.setItem('kawandigi_guest_generates', guestGens);
     }
 
-    syncUserUI();
+    updateHeaderAuthUI();
     updateHistoryBadge();
 }
 

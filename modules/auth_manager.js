@@ -305,3 +305,8 @@ export function saveAdminEmail(email) {
     cachedAdminEmail = clean;
     localStorage.setItem(STORAGE_ADMIN_EMAIL, clean);
 }
+
+
+// Backward compatibility aliases
+export const saveUserSession = saveCurrentUser;
+export const getUserSession = getCurrentUser;
