@@ -184,10 +184,10 @@
                 </button>
 
                 <!-- User Profile / Auth Button -->
-                <button id="btn-header-auth" class="flex items-center gap-1.5 text-xs font-semibold p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-600 dark:text-brand-300 transition flex-shrink-0" title="Profil Akun Member">
-                    <img id="auth-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="hidden w-5 h-5 rounded-full object-cover">
-                    <i id="auth-default-icon" data-lucide="user" class="w-4 h-4 text-brand-500 dark:text-brand-400"></i>
-                    <span id="auth-user-name" class="text-xs font-bold hidden sm:inline">Akun</span>
+                <button id="btn-header-auth" type="button" onclick="window.kdOpenProfileModal()" class="flex items-center gap-1.5 text-xs font-semibold p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-600 dark:text-brand-300 transition flex-shrink-0 cursor-pointer active:scale-95" title="Profil Akun Member">
+                    <img id="auth-user-avatar" src="assets/icons/favicon.png" alt="Avatar" class="hidden w-6 h-6 rounded-full object-cover pointer-events-none border border-brand-500/40">
+                    <i id="auth-default-icon" data-lucide="user" class="w-4 h-4 text-brand-500 dark:text-brand-400 pointer-events-none"></i>
+                    <span id="auth-user-name" class="text-xs font-bold hidden sm:inline pointer-events-none">Akun</span>
                 </button>
 
                 <!-- Admin Button (Hidden unless admin) -->
@@ -218,8 +218,8 @@
         <section id="section-catalog" class="tab-content active space-y-5 sm:space-y-6">
             <!-- Greeting & Role Pill -->
             <div class="space-y-1">
-                <span id="home-greeting-role" class="inline-block px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase">
-                    MEMBER VIP (AKTIF)
+                <span id="home-greeting-role" class="inline-block px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase">
+                    TRIAL PENGUNJUNG
                 </span>
                 <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
                     HALO, <span id="home-greeting-name" class="uppercase">KREATOR KAWANDIGI</span>
@@ -244,20 +244,20 @@
                 <div class="mt-4 sm:mt-5 space-y-2 relative z-10">
                     <p class="text-xs text-blue-100 font-semibold tracking-wide">Video Dibuat / Target Peringkat</p>
                     <div class="flex items-baseline gap-2">
-                        <span id="home-hero-xp" class="text-3xl sm:text-4xl font-black text-white">1.120</span>
-                        <span class="text-sm sm:text-base font-bold text-blue-200">/ 1.500 XP (<span id="home-hero-pct">75%</span>)</span>
+                        <span id="home-hero-xp" class="text-3xl sm:text-4xl font-black text-white">0</span>
+                        <span class="text-sm sm:text-base font-bold text-blue-200">/ 1.500 XP (<span id="home-hero-pct">0%</span>)</span>
                     </div>
 
                     <!-- Sleek Progress Bar -->
                     <div class="w-full h-3 bg-blue-950/60 rounded-full overflow-hidden p-0.5 mt-2 border border-blue-400/20">
-                        <div id="home-hero-progress" class="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-400 transition-all duration-700 shadow-sm" style="width: 75%;"></div>
+                        <div id="home-hero-progress" class="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-400 transition-all duration-700 shadow-sm" style="width: 0%;"></div>
                     </div>
                 </div>
 
                 <!-- Bottom Stats Row -->
                 <div class="mt-4 pt-3 border-t border-blue-400/30 flex items-center justify-between text-xs text-blue-100 relative z-10 font-semibold">
-                    <div>Total Video: <strong id="home-hero-vids" class="text-white font-bold">94 Klip</strong></div>
-                    <div>Status Kuota: <strong class="text-cyan-200 font-bold">Unlimited</strong></div>
+                    <div>Total Video: <strong id="home-hero-vids" class="text-white font-bold">0 Klip</strong></div>
+                    <div>Status Kuota: <strong id="home-hero-quota" class="text-cyan-200 font-bold">Trial 3x</strong></div>
                 </div>
 
                 <!-- Background Subtle Glows -->
@@ -353,24 +353,24 @@
                     <!-- Card 1: Total Video Dibuat -->
                     <div class="home-stat-card bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
                         <div class="space-y-1">
-                            <h4 id="stat-card-vids" class="text-3xl font-black text-white">94</h4>
+                            <h4 id="stat-card-vids" class="text-3xl font-black text-white">0</h4>
                             <p class="text-xs font-semibold text-slate-300">Total Video Dibuat</p>
-                            <p class="text-[11px] text-slate-400">Dari batas kuota tanpa batas</p>
+                            <p class="text-[11px] text-slate-400">Total karya video AI Anda</p>
                         </div>
-                        <div class="radial-ring text-xs font-black text-cyan-400" style="--ring-color: #06b6d4; --ring-pct: 89;">
-                            <span>89%</span>
+                        <div id="stat-ring-vids" class="radial-ring text-xs font-black text-cyan-400" style="--ring-color: #06b6d4; --ring-pct: 0;">
+                            <span>0%</span>
                         </div>
                     </div>
 
                     <!-- Card 2: Skor XP & Level -->
                     <div class="home-stat-card bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
                         <div class="space-y-1">
-                            <h4 id="stat-card-xp" class="text-3xl font-black text-emerald-400">1.120</h4>
+                            <h4 id="stat-card-xp" class="text-3xl font-black text-emerald-400">0</h4>
                             <p class="text-xs font-semibold text-slate-300">Total Skor XP</p>
-                            <p class="text-[11px] text-slate-400">Status: <strong class="text-amber-400">Diamond Creator</strong></p>
+                            <p class="text-[11px] text-slate-400">Status: <strong id="stat-rank-status" class="text-amber-400">Novice Creator</strong></p>
                         </div>
-                        <div class="radial-ring text-xs font-black text-emerald-400" style="--ring-color: #10b981; --ring-pct: 75;">
-                            <span>75%</span>
+                        <div id="stat-ring-xp" class="radial-ring text-xs font-black text-emerald-400" style="--ring-color: #10b981; --ring-pct: 0;">
+                            <span>0%</span>
                         </div>
                     </div>
                 </div>
@@ -1852,24 +1852,13 @@
 
                     <!-- Official Google GIS Button Container -->
                     <div id="g_id_signin_button" class="w-full flex justify-center min-h-[44px]"></div>
-
-                    <!-- Sync Status Info when already logged in -->
-                    <div id="profile-sync-box" class="hidden flex items-center justify-between p-2.5 bg-brand-500/10 border border-brand-500/30 rounded-xl text-xs">
-                        <span class="text-brand-300 font-semibold flex items-center gap-1.5">
-                            <i data-lucide="cloud" class="w-4 h-4 text-emerald-400"></i>
-                            Sinkronisasi Cloudflare D1
-                        </span>
-                        <button type="button" id="btn-sync-profile-now" class="px-2.5 py-1 bg-brand-600 hover:bg-brand-500 text-white rounded text-[11px] font-bold transition">
-                            Sync Sekarang
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Logout Button -->
                 <div id="profile-logout-container" class="pt-2 border-t border-slate-800">
-                    <button type="button" id="btn-logout-user" class="w-full py-2 bg-rose-950/30 hover:bg-rose-900/40 border border-rose-800/40 text-rose-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition">
-                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                        <span>Keluar dari Akun</span>
+                    <button type="button" id="btn-logout-user" onclick="window.kdLogoutUser()" class="w-full py-2.5 bg-rose-950/30 hover:bg-rose-900/40 border border-rose-800/40 text-rose-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition active:scale-[0.98] cursor-pointer">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5 pointer-events-none"></i>
+                        <span class="pointer-events-none">Keluar dari Akun</span>
                     </button>
                 </div>
             </div>

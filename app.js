@@ -2915,37 +2915,51 @@ export async function syncSessionToD1(user) {
 // =========================================================================
 // USER AUTHENTICATION & GOOGLE OAUTH / GIS
 // =========================================================================
+export function handleLogoutUser() {
+    try {
+        logoutUser();
+        localStorage.removeItem('kawandigi_user_session');
+        sessionStorage.removeItem('kd_admin_unlocked');
+        if (window.google?.accounts?.id?.disableAutoSelect) {
+            window.google.accounts.id.disableAutoSelect();
+        }
+    } catch (e) {
+        console.warn('Logout error:', e);
+    }
+    const modal = document.getElementById('modal-user-profile');
+    if (modal) modal.classList.add('hidden');
+    updateHeaderAuthUI();
+    showToast('Anda telah keluar dari akun.', 'info');
+}
+
+// Bind early to window so inline onclick handlers never fail
+window.kdLogoutUser = handleLogoutUser;
+window.kdOpenProfileModal = openUserProfileModal;
+
 async function initAuthManager() {
     // 1. Centralized Google OAuth from Cloudflare backend
     await fetchGoogleClientIdFromServer();
 
     updateHeaderAuthUI();
 
-    // 2. Proactively auto-sync existing active session to Cloudflare D1
+    // 2. Proactively auto-sync existing active session to Cloudflare D1 silently
     const activeUser = getCurrentUser();
     if (activeUser && activeUser.email) {
         syncSessionToD1(activeUser);
     }
 
-    document.getElementById('btn-sync-profile-now')?.addEventListener('click', async () => {
-        const u = getCurrentUser();
-        if (u && u.email) {
-            showToast('Menyinkronkan ke Database Cloudflare D1...', 'info');
-            await syncSessionToD1(u);
-            showToast('Akun berhasil terekam di Database Cloudflare!', 'success');
-        }
-    });
-
-    document.getElementById('btn-header-auth')?.addEventListener('click', () => {
-        openUserProfileModal();
-    });
-
-    document.getElementById('btn-dock-profile')?.addEventListener('click', () => {
+    document.getElementById('btn-header-auth')?.addEventListener('click', (e) => {
+        e.preventDefault();
         openUserProfileModal();
     });
 
     document.getElementById('btn-close-profile-modal')?.addEventListener('click', () => {
         document.getElementById('modal-user-profile')?.classList.add('hidden');
+    });
+
+    document.getElementById('btn-logout-user')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleLogoutUser();
     });
 
     document.getElementById('btn-save-profile-whatsapp')?.addEventListener('click', () => {
@@ -2957,14 +2971,6 @@ async function initAuthManager() {
         updateCurrentUserProfile({ whatsapp: wa });
         showToast('Nomor WhatsApp profil berhasil diperbarui!', 'success');
         updateHeaderAuthUI();
-    });
-
-    document.getElementById('btn-logout-user')?.addEventListener('click', () => {
-        logoutUser();
-        sessionStorage.removeItem('kd_admin_unlocked');
-        document.getElementById('modal-user-profile')?.classList.add('hidden');
-        updateHeaderAuthUI();
-        showToast('Anda telah keluar dari akun.', 'info');
     });
 
     document.getElementById('btn-submit-wa-prompt')?.addEventListener('click', () => {
@@ -2989,7 +2995,7 @@ function updateHeaderAuthUI() {
     const defaultIcon = document.getElementById('auth-default-icon');
     const nameEl = document.getElementById('auth-user-name');
 
-    // Home & Drawer Elements (Matching ambiltiketnya.online)
+    // Home & Drawer Elements
     const greetingName = document.getElementById('home-greeting-name');
     const greetingRole = document.getElementById('home-greeting-role');
     const drawerName = document.getElementById('drawer-user-name');
@@ -2999,11 +3005,15 @@ function updateHeaderAuthUI() {
     const heroPct = document.getElementById('home-hero-pct');
     const heroProgress = document.getElementById('home-hero-progress');
     const heroVids = document.getElementById('home-hero-vids');
+    const heroQuota = document.getElementById('home-hero-quota');
     const statVids = document.getElementById('stat-card-vids');
     const statXp = document.getElementById('stat-card-xp');
+    const statRingVids = document.getElementById('stat-ring-vids');
+    const statRingXp = document.getElementById('stat-ring-xp');
+    const statRankStatus = document.getElementById('stat-rank-status');
 
-    const xpVal = (user && typeof user.xp === 'number') ? user.xp : 1120;
-    const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 94;
+    const xpVal = (user && typeof user.xp === 'number') ? user.xp : (user ? 100 : 0);
+    const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 0;
     const levelInfo = calculateLevel(xpVal);
 
     // Toggle Admin Visibility: strictly only for active Superadmin
@@ -3022,6 +3032,10 @@ function updateHeaderAuthUI() {
         if (drawerAdmin) { drawerAdmin.classList.add('hidden'); drawerAdmin.classList.remove('flex'); }
     }
 
+    const myDevId = getDeviceId();
+    const myLicenses = getLicenses();
+    const isDeviceLicensed = isSuper || (user && user.subscription && user.subscription.active && (myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
+
     if (user && user.email) {
         if (avatar) {
             avatar.src = user.picture || 'assets/icons/favicon.png';
@@ -3034,23 +3048,41 @@ function updateHeaderAuthUI() {
         }
         if (btn) btn.title = `Akun: ${user.name} (${user.email})`;
 
-        const myDevId = getDeviceId();
-        const myLicenses = getLicenses();
-        const isDeviceLicensed = isAdmin || (user.subscription && user.subscription.active && (isAdmin || myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
-
         if (greetingName) greetingName.textContent = (user.name || 'KREATOR KAWANDIGI').toUpperCase();
         if (greetingRole) {
-            greetingRole.textContent = isDeviceLicensed 
-                ? `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`
-                : 'TRIAL PENGUNJUNG (DEVICE INI BELUM BERLISENSI)';
+            if (isSuper) {
+                greetingRole.className = "inline-block px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
+                greetingRole.textContent = "SUPERADMIN OFFICIAL (UNLIMITED)";
+            } else if (isDeviceLicensed) {
+                greetingRole.className = "inline-block px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
+                greetingRole.textContent = `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`;
+            } else {
+                greetingRole.className = "inline-block px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
+                greetingRole.textContent = "TRIAL PENGUNJUNG";
+            }
         }
         if (drawerName) drawerName.textContent = user.name || 'Kreator KawanDigi';
         if (drawerAvatar && user.picture) drawerAvatar.src = user.picture;
         if (drawerTier) {
-            drawerTier.textContent = isDeviceLicensed 
-                ? `${levelInfo.icon} ${levelInfo.title} • Lisensi Aktif`
-                : `${levelInfo.icon} ${levelInfo.title} • Trial Device`;
+            drawerTier.textContent = isSuper
+                ? "👑 Superadmin • Akses Penuh"
+                : (isDeviceLicensed 
+                    ? `${levelInfo.icon} ${levelInfo.title} • Lisensi Aktif`
+                    : `${levelInfo.icon} ${levelInfo.title} • Trial`);
         }
+        if (heroQuota) {
+            if (isSuper || isDeviceLicensed) {
+                heroQuota.textContent = 'Unlimited';
+                heroQuota.className = 'text-cyan-200 font-bold';
+            } else {
+                const trialLeft = typeof getRemainingTrials === 'function' ? getRemainingTrials() : 3;
+                heroQuota.textContent = `Trial ${trialLeft}x`;
+                heroQuota.className = 'text-amber-300 font-bold';
+            }
+        }
+
+        // Silently sync session to Cloudflare D1 database in background
+        syncSessionToD1(user);
     } else {
         if (avatar) avatar.classList.add('hidden');
         if (defaultIcon) defaultIcon.classList.remove('hidden');
@@ -3058,9 +3090,18 @@ function updateHeaderAuthUI() {
         if (btn) btn.title = 'Masuk Akun Google';
 
         if (greetingName) greetingName.textContent = 'KREATOR KAWANDIGI';
-        if (greetingRole) greetingRole.textContent = 'TRIAL PENGUNJUNG';
+        if (greetingRole) {
+            greetingRole.className = "inline-block px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
+            greetingRole.textContent = 'TRIAL PENGUNJUNG';
+        }
         if (drawerName) drawerName.textContent = 'Tamu / Belum Masuk';
+        if (drawerAvatar) drawerAvatar.src = 'assets/icons/favicon.png';
         if (drawerTier) drawerTier.textContent = 'Hubungkan Akun Google';
+        if (heroQuota) {
+            const trialLeft = typeof getRemainingTrials === 'function' ? getRemainingTrials() : 3;
+            heroQuota.textContent = `Trial ${trialLeft}x`;
+            heroQuota.className = 'text-amber-300 font-bold';
+        }
     }
 
     if (heroXp) heroXp.textContent = xpVal.toLocaleString('id-ID');
@@ -3070,6 +3111,22 @@ function updateHeaderAuthUI() {
     if (heroVids) heroVids.textContent = `${vidsVal} Klip`;
     if (statVids) statVids.textContent = vidsVal;
     if (statXp) statXp.textContent = xpVal.toLocaleString('id-ID');
+
+    if (statRingVids) {
+        const vPct = Math.min(100, vidsVal * 10);
+        statRingVids.style.setProperty('--ring-pct', vPct);
+        const sp = statRingVids.querySelector('span');
+        if (sp) sp.textContent = `${vPct}%`;
+    }
+    if (statRingXp) {
+        statRingXp.style.setProperty('--ring-pct', pct);
+        const sp = statRingXp.querySelector('span');
+        if (sp) sp.textContent = `${pct}%`;
+    }
+    if (statRankStatus) {
+        statRankStatus.textContent = levelInfo.title;
+    }
+
     updateLicenseCards();
 }
 
@@ -3087,35 +3144,51 @@ function openUserProfileModal() {
     const xpEl = document.getElementById('profile-user-xp');
     const genEl = document.getElementById('profile-user-generates');
     const logoutContainer = document.getElementById('profile-logout-container');
+    const googleLoginContainer = document.getElementById('google-login-container');
 
     if (user && user.email) {
-        const levelInfo = calculateLevel(user.xp || 0);
-        const myDevId = getDeviceId();
+        const xpVal = typeof user.xp === 'number' ? user.xp : 100;
+        const genVal = typeof user.totalGenerates === 'number' ? user.totalGenerates : 0;
+        const levelInfo = calculateLevel(xpVal);
+        const isSuper = isSuperAdmin(user);
         const myLicenses = getLicenses();
-        const isAdmin = isSuperAdmin(user);
-        const isDeviceLicensed = isAdmin || (user.subscription && user.subscription.active && (myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
+        const isDeviceLicensed = isSuper || (user.subscription && user.subscription.active && (myLicenses['all_access'] || myLicenses['ugc'] || myLicenses['drama']));
 
         if (avatarEl) avatarEl.src = user.picture || 'assets/icons/favicon.png';
         if (nameEl) nameEl.textContent = user.name || 'Member KawanDigi';
         if (emailEl) emailEl.textContent = user.email;
         if (planBadge) {
-            planBadge.textContent = isDeviceLicensed 
-                ? (user.subscription?.plan || 'VIP Master Lifetime (Device Ini)') 
-                : 'Trial Pengunjung';
+            planBadge.textContent = isSuper
+                ? 'Superadmin'
+                : (isDeviceLicensed ? (user.subscription?.plan || 'VIP Master (Device Ini)') : 'Trial Pengunjung');
         }
         if (planName) {
-            planName.textContent = isDeviceLicensed 
-                ? (user.subscription?.plan || 'Akses Penuh Semua Tools (Perangkat Terkunci)') 
-                : 'Trial Pengunjung (Lisensi Belum Terikat di Device Ini)';
+            planName.textContent = isSuper
+                ? 'Superadmin Official (Unlimited All Features)'
+                : (isDeviceLicensed ? (user.subscription?.plan || 'Akses Penuh Semua Tools (Perangkat Terkunci)') : 'Trial Pengunjung (Lisensi Belum Terikat di Device Ini)');
         }
         if (levelEl) {
             levelEl.textContent = `${levelInfo.icon} ${levelInfo.title}`;
             levelEl.className = `px-2 py-0.5 rounded-full font-bold text-[10px] border ${levelInfo.badgeClass}`;
         }
-        if (xpEl) xpEl.textContent = `${user.xp || 10} XP`;
-        if (genEl) genEl.textContent = `${user.totalGenerates || 0} Video Dibuat`;
+        if (xpEl) xpEl.textContent = `${xpVal} XP`;
+        if (genEl) genEl.textContent = `${genVal} Video Dibuat`;
         if (logoutContainer) logoutContainer.classList.remove('hidden');
-        document.getElementById('profile-sync-box')?.classList.remove('hidden');
+
+        if (googleLoginContainer) {
+            googleLoginContainer.innerHTML = `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0 text-emerald-400"></i>
+                        <span class="text-xs font-bold truncate">Akun Terhubung: ${user.name || user.email}</span>
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 flex-shrink-0">OAuth Aktif</span>
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // Silent background sync
         syncSessionToD1(user);
     } else {
         if (avatarEl) avatarEl.src = 'assets/icons/favicon.png';
@@ -3123,19 +3196,29 @@ function openUserProfileModal() {
         if (emailEl) emailEl.textContent = 'Silakan hubungkan akun Google Anda di bawah.';
         if (planBadge) planBadge.textContent = 'Trial Pengunjung';
         if (planName) planName.textContent = 'Fitur Terbatas';
-        if (levelEl) levelEl.textContent = '🥉 Novice Creator';
+        if (levelEl) {
+            levelEl.textContent = '🥉 Novice Creator';
+            levelEl.className = 'px-2 py-0.5 rounded-full font-bold text-[10px] border border-slate-700 bg-slate-800 text-slate-300';
+        }
         if (xpEl) xpEl.textContent = '0 XP';
         if (genEl) genEl.textContent = '0 Video Dibuat';
         if (logoutContainer) logoutContainer.classList.add('hidden');
-        document.getElementById('profile-sync-box')?.classList.add('hidden');
+
+        if (googleLoginContainer) {
+            googleLoginContainer.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-900 dark:text-white">Hubungkan Akun Google:</span>
+                    <span class="text-[10px] text-slate-500">Aman & Resmi (OAuth)</span>
+                </div>
+                <div id="g_id_signin_button" class="w-full flex justify-center min-h-[44px]"></div>
+            `;
+            setTimeout(() => {
+                renderGoogleSignInButton();
+            }, 80);
+        }
     }
 
     modal.classList.remove('hidden');
-
-    // Pastikan tombol Google OAuth ter-render rapi
-    setTimeout(() => {
-        renderGoogleSignInButton();
-    }, 120);
 }
 
 function waitForGoogleGis(callback, maxAttempts = 30) {
