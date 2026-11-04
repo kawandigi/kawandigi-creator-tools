@@ -61,39 +61,8 @@ export const DEFAULT_FEATURE_FLAGS = [
     }
 ];
 
-// Default initial digital products
-export const DEFAULT_PRODUCTS = [
-    {
-        id: 'prod_1',
-        title: 'Lisensi VIP Master Lifetime (Akses Seluruh Tools Selamanya)',
-        badge: '🔥 Paling Diminati',
-        price: 199000,
-        originalPrice: 499000,
-        thumbnail: 'assets/icons/logo.png',
-        description: 'Akses tanpa batas ke seluruh tools AI KawanDigi tanpa langganan bulanan. Termasuk update tools baru seumur hidup & support VIP.',
-        contactWa: '6282245565454'
-    },
-    {
-        id: 'prod_2',
-        title: 'Paket API Key Google Gemini & DeepSeek Siap Pakai (No CC)',
-        badge: '⚡ Tanpa Ribet',
-        price: 49000,
-        originalPrice: 99000,
-        thumbnail: 'assets/icons/icon-192.png',
-        description: 'Tinggal pakai tanpa perlu kartu kredit. Kuota besar untuk generate ratusan naskah iklan & storyboard siap pakai.',
-        contactWa: '6282245565454'
-    },
-    {
-        id: 'prod_3',
-        title: 'Mentoring Privat 1-on-1: Cuan Jutaan dari Konten UGC Affiliate',
-        badge: '⭐ Kelas Eksklusif',
-        price: 349000,
-        originalPrice: 750000,
-        thumbnail: 'assets/icons/favicon.png',
-        description: 'Bimbingan intensif langsung via Google Meet/Zoom dari nol sampai pecah telur komisi affiliate TikTok Shop & Shopee.',
-        contactWa: '6282245565454'
-    }
-];
+// Default initial digital products (empty by default until configured by admin)
+export const DEFAULT_PRODUCTS = [];
 
 // Default initial tutorial videos
 export const DEFAULT_TUTORIALS = [
@@ -218,17 +187,27 @@ export function getDigitalProducts() {
     try {
         const raw = localStorage.getItem(STORAGE_PRODUCTS_KEY);
         if (!raw) {
-            localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(DEFAULT_PRODUCTS));
-            return DEFAULT_PRODUCTS;
+            return [];
         }
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+            // Auto clean legacy dummy products (prod_1, prod_2, prod_3) if they were the dummy template
+            const isLegacyDummy = parsed.length > 0 && parsed.every(p => ['prod_1', 'prod_2', 'prod_3'].includes(p.id));
+            if (isLegacyDummy) {
+                localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify([]));
+                return [];
+            }
+            return parsed;
+        }
+        return [];
     } catch {
-        return DEFAULT_PRODUCTS;
+        return [];
     }
 }
 
 export function saveDigitalProducts(products) {
-    localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
+    const list = Array.isArray(products) ? products : [];
+    localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(list));
 }
 
 export async function fetchDigitalProductsFromServer() {
@@ -236,9 +215,14 @@ export async function fetchDigitalProductsFromServer() {
         const res = await fetch('/api/settings');
         if (res.ok) {
             const json = await res.json();
-            if (json.status === 'success' && json.data && Array.isArray(json.data.digital_products) && json.data.digital_products.length > 0) {
-                saveDigitalProducts(json.data.digital_products);
-                return json.data.digital_products;
+            if (json.status === 'success' && json.data) {
+                if (Array.isArray(json.data.digital_products)) {
+                    saveDigitalProducts(json.data.digital_products);
+                    return json.data.digital_products;
+                } else if (json.data.digital_products === null || json.data.digital_products === undefined) {
+                    saveDigitalProducts([]);
+                    return [];
+                }
             }
         }
     } catch (e) {

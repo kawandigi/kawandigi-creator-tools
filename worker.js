@@ -390,8 +390,8 @@ export default {
               price_ugc: priceUgc,
               price_drama: priceDrama,
               feature_flags: featureFlags,
-              digital_products: digitalProducts,
-              tutorial_videos: tutorialVideos
+              digital_products: Array.isArray(digitalProducts) ? digitalProducts : [],
+              tutorial_videos: Array.isArray(tutorialVideos) ? tutorialVideos : []
             }
           }), { headers: corsHeaders });
         }
@@ -453,7 +453,7 @@ export default {
                 price_vip_alldev: newPriceVipAllDev || globalThis.__kd_settings.price_vip_alldev || 349000,
                 price_ugc: newPriceUgc || globalThis.__kd_settings.price_ugc || 99000,
                 price_drama: newPriceDrama || globalThis.__kd_settings.price_drama || 149000,
-                digital_products: newDigitalProducts || globalThis.__kd_settings.digital_products || null,
+                digital_products: Array.isArray(newDigitalProducts) ? newDigitalProducts : (Array.isArray(globalThis.__kd_settings.digital_products) ? globalThis.__kd_settings.digital_products : []),
                 tutorial_videos: newTutorialVideos || globalThis.__kd_settings.tutorial_videos || null
               }
             }), { headers: corsHeaders });

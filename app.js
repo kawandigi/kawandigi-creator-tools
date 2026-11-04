@@ -2724,9 +2724,17 @@ function renderToolsCatalog() {
 
 function renderProductsCatalog() {
     const grid = document.getElementById('catalog-products-grid');
+    const container = document.getElementById('home-section-products');
     if (!grid) return;
 
     const products = getDigitalProducts();
+    if (!products || products.length === 0) {
+        grid.innerHTML = '';
+        if (container) container.classList.add('hidden');
+        return;
+    }
+
+    if (container) container.classList.remove('hidden');
     grid.innerHTML = products.map(prod => {
         const currentWa = getPricingSettings().admin_whatsapp;
         const waLink = generateProductWaLink(prod, currentWa);
