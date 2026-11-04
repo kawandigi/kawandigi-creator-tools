@@ -40,6 +40,7 @@ import {
     updateCurrentUserProfile,
     logoutUser,
     getMemberList,
+    saveMemberList,
     upsertMemberRecord,
     deleteMemberRecord,
     generateEmailOfferUrl,
@@ -2363,8 +2364,7 @@ function loadProject(item, quiet = false) {
 
     if (item.type === 'drama') {
         // Switch to Drama tab
-        const navDrama = document.getElementById('nav-drama');
-        navDrama?.click();
+        switchTab('drama');
 
         // Restore inputs
         if (item.inputs) {
@@ -2393,8 +2393,7 @@ function loadProject(item, quiet = false) {
         document.getElementById('drama-actions')?.classList.remove('hidden');
     } else {
         // Default UGC Affiliate
-        const navUgc = document.getElementById('nav-ugc');
-        navUgc?.click();
+        switchTab('ugc');
 
         // Restore inputs
         if (item.inputs) {
@@ -2739,7 +2738,6 @@ function renderLeaderboard() {
                             <img src="${m.picture || 'assets/icons/favicon.png'}" alt="${m.name}" class="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-800">
                             <div>
                                 <div class="font-bold text-slate-900 dark:text-white text-xs">${m.name}</div>
-                                <div class="text-[10px] text-slate-500 dark:text-slate-400">${m.email ? m.email.split('@')[0] + '@***' : 'Kreator'}</div>
                             </div>
                         </td>
                         <td class="p-3.5">
@@ -3083,11 +3081,20 @@ function initGoogleIdentityServices() {
                         updateHeaderAuthUI();
                         document.getElementById('modal-user-profile')?.classList.add('hidden');
 
-                        // Sync session ke Cloudflare backend
+                        // Sync session ke Cloudflare backend & D1 database
                         fetch('/api/auth/google', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(user)
+                            body: JSON.stringify({
+                                id: user.id,
+                                name: user.name,
+                                email: user.email,
+                                picture: user.picture,
+                                plan: user.subscription?.plan || 'VIP Master Lifetime',
+                                total_generates: user.totalGenerates || 0,
+                                xp: user.xp || 10,
+                                level: user.level || 'Novice Creator'
+                            })
                         }).catch(e => console.error('Cloudflare auth sync:', e));
 
                         if (isAdminUser) {
@@ -3276,30 +3283,28 @@ function openAdminConsole() {
     if (window.lucide) window.lucide.createIcons();
 }
 
-function renderAdminMembers(filter = '') {
+function renderAdminMembersTableRows(members, filter = '') {
     const tbody = document.getElementById('admin-member-table-body');
-    const badgeCount = document.getElementById('admin-member-count');
     if (!tbody) return;
 
-    let members = getMemberList();
-    if (badgeCount) badgeCount.textContent = members.length;
-
+    let filtered = members;
     if (filter) {
         const q = filter.toLowerCase();
-        members = members.filter(m => 
+        filtered = filtered.filter(m => 
             (m.name || '').toLowerCase().includes(q) || 
             (m.email || '').toLowerCase().includes(q)
         );
     }
 
-    if (members.length === 0) {
+    if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Tidak ada member yang cocok dengan pencarian.</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = members.map(m => {
+    tbody.innerHTML = filtered.map(m => {
         const emailUrl = generateEmailOfferUrl(m.email, m.name, 'promo');
-        const dateStr = m.joinedAt ? new Date(m.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+        const dateVal = m.joinedAt || m.createdAt;
+        const dateStr = dateVal ? new Date(dateVal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
         const levelInfo = calculateLevel(m.xp || 0);
 
         return `
@@ -3316,7 +3321,7 @@ function renderAdminMembers(filter = '') {
                         ${m.plan || 'Free Trial'}
                     </span>
                 </td>
-                <td class="p-3 text-center font-bold text-white font-mono">${m.totalGenerates || 0}</td>
+                <td class="p-3 text-center font-bold text-white font-mono">${m.totalGenerates || m.total_generates || 0}</td>
                 <td class="p-3">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${levelInfo.badgeClass}">
                         <span>${levelInfo.icon}</span> ${m.xp || 0} XP
@@ -3338,6 +3343,42 @@ function renderAdminMembers(filter = '') {
     }).join('');
 
     if (window.lucide) window.lucide.createIcons();
+}
+
+function renderAdminMembers(filter = '') {
+    const badgeCount = document.getElementById('admin-member-count');
+    const localMembers = getMemberList();
+    if (badgeCount) badgeCount.textContent = localMembers.length;
+    renderAdminMembersTableRows(localMembers, filter);
+
+    // Asynchronous 2-way sync with Cloudflare D1 Backend
+    fetch('/api/members')
+        .then(res => res.json())
+        .then(res => {
+            if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+                const currentLocal = getMemberList();
+                const map = new Map();
+                currentLocal.forEach(m => {
+                    if (m && m.email) map.set(m.email.toLowerCase(), m);
+                });
+                res.data.forEach(m => {
+                    if (m && m.email) {
+                        const existing = map.get(m.email.toLowerCase());
+                        map.set(m.email.toLowerCase(), {
+                            ...existing,
+                            ...m,
+                            totalGenerates: Math.max(m.totalGenerates ?? m.total_generates ?? 0, existing?.totalGenerates ?? 0),
+                            xp: Math.max(m.xp ?? 0, existing?.xp ?? 0)
+                        });
+                    }
+                });
+                const mergedList = Array.from(map.values());
+                saveMemberList(mergedList);
+                if (badgeCount) badgeCount.textContent = mergedList.length;
+                renderAdminMembersTableRows(mergedList, filter);
+            }
+        })
+        .catch(err => console.warn('Sync /api/members error:', err));
 }
 
 function renderAdminFlags() {
@@ -3596,8 +3637,10 @@ window.kdOpenAdminConsole = () => {
     openAdminConsole();
 };
 window.kdOpenHistory = () => {
-    document.getElementById('modal-history-center')?.classList.remove('hidden');
-    renderHistoryList();
+    openHistoryDrawer();
+};
+window.kdCloseHistory = () => {
+    closeHistoryDrawer();
 };
 window.kdDeleteMember = (email) => {
     if (confirm(`Hapus member ${email}?`)) {

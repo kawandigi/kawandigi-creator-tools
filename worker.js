@@ -21,18 +21,85 @@ export default {
       }
 
       const db = env.DB;
+      globalThis.__kd_members = globalThis.__kd_members || [];
 
-      // 1. Leaderboard Ranking API
-      if (url.pathname === '/api/leaderboard' && request.method === 'GET') {
-        if (!db) {
-          return new Response(JSON.stringify({ status: 'local_fallback', message: 'D1 database not bound yet, using client storage' }), { headers: corsHeaders });
-        }
+      // Helper to ensure D1 tables exist
+      const ensureD1Tables = async () => {
+        if (!db) return;
         try {
-          const { results } = await db.prepare('SELECT id, name, email, picture, plan, total_generates, xp, level FROM members ORDER BY xp DESC LIMIT 50').all();
-          return new Response(JSON.stringify({ status: 'success', data: results }), { headers: corsHeaders });
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS members (
+              id TEXT PRIMARY KEY,
+              name TEXT,
+              email TEXT UNIQUE,
+              picture TEXT,
+              plan TEXT,
+              total_generates INTEGER DEFAULT 0,
+              xp INTEGER DEFAULT 10,
+              level TEXT DEFAULT 'Novice Creator',
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              last_active DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+              id TEXT PRIMARY KEY,
+              email TEXT,
+              name TEXT,
+              tool TEXT,
+              detail TEXT,
+              timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+              hour_wib INTEGER,
+              day_wib TEXT,
+              xp_earned INTEGER DEFAULT 10
+            )
+          `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS app_settings (
+              key TEXT PRIMARY KEY,
+              value TEXT NOT NULL,
+              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
         } catch (e) {
-          return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
+          console.warn('D1 table creation check:', e.message);
         }
+      };
+
+      // 1. Leaderboard Ranking API (Email is completely omitted for privacy)
+      if (url.pathname === '/api/leaderboard' && request.method === 'GET') {
+        let results = [];
+        if (db) {
+          try {
+            await ensureD1Tables();
+            const res = await db.prepare('SELECT id, name, picture, plan, total_generates, xp, level FROM members ORDER BY xp DESC LIMIT 50').all();
+            if (res && res.results && res.results.length > 0) {
+              results = res.results;
+            }
+          } catch (e) {
+            console.error('D1 leaderboard error:', e);
+          }
+        }
+
+        if (results.length === 0 && globalThis.__kd_members.length > 0) {
+          results = globalThis.__kd_members
+            .slice()
+            .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+            .slice(0, 50)
+            .map(m => ({
+              id: m.id,
+              name: m.name,
+              picture: m.picture,
+              plan: m.plan,
+              total_generates: m.total_generates || m.totalGenerates || 0,
+              xp: m.xp || 0,
+              level: m.level
+            }));
+        }
+
+        return new Response(JSON.stringify({ status: 'success', data: results }), { headers: corsHeaders });
       }
 
       // 2. 24-Hour Peak Activity Analytics API
@@ -41,6 +108,7 @@ export default {
           return new Response(JSON.stringify({ status: 'local_fallback', message: 'D1 database not bound yet' }), { headers: corsHeaders });
         }
         try {
+          await ensureD1Tables();
           const { results } = await db.prepare('SELECT hour_wib AS hour, COUNT(*) AS count FROM activity_logs GROUP BY hour_wib ORDER BY hour_wib ASC').all();
           return new Response(JSON.stringify({ status: 'success', data: results }), { headers: corsHeaders });
         } catch (e) {
@@ -52,20 +120,30 @@ export default {
       if (url.pathname === '/api/activity/track' && request.method === 'POST') {
         try {
           const body = await request.json();
-          if (db && body.email) {
+          if (body.email) {
             const now = new Date();
             const hourWib = (now.getUTCHours() + 7) % 24;
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const dayWib = days[now.getUTCDay()];
             const actId = 'act_' + Date.now();
 
-            await db.prepare('INSERT INTO activity_logs (id, email, name, tool, detail, timestamp, hour_wib, day_wib, xp_earned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-              .bind(actId, body.email, body.name || 'Member', body.tool, body.detail || '', now.toISOString(), hourWib, dayWib, body.xp || 10)
-              .run();
+            if (db) {
+              await ensureD1Tables();
+              await db.prepare('INSERT INTO activity_logs (id, email, name, tool, detail, timestamp, hour_wib, day_wib, xp_earned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+                .bind(actId, body.email, body.name || 'Member', body.tool, body.detail || '', now.toISOString(), hourWib, dayWib, body.xp || 10)
+                .run();
 
-            await db.prepare('UPDATE members SET total_generates = total_generates + 1, xp = xp + ?, last_active = ? WHERE email = ?')
-              .bind(body.xp || 10, now.toISOString(), body.email)
-              .run();
+              await db.prepare('UPDATE members SET total_generates = total_generates + 1, xp = xp + ?, last_active = ? WHERE email = ?')
+                .bind(body.xp || 10, now.toISOString(), body.email)
+                .run();
+            }
+
+            const mem = globalThis.__kd_members.find(m => m.email.toLowerCase() === body.email.toLowerCase());
+            if (mem) {
+              mem.total_generates = (mem.total_generates || 0) + 1;
+              mem.xp = (mem.xp || 0) + (body.xp || 10);
+              mem.last_active = now.toISOString();
+            }
           }
           return new Response(JSON.stringify({ status: 'success' }), { headers: corsHeaders });
         } catch (e) {
@@ -77,20 +155,121 @@ export default {
       if (url.pathname === '/api/auth/google' && request.method === 'POST') {
         try {
           const body = await request.json();
-          if (db && body.email) {
+          if (!body || !body.email) {
+            return new Response(JSON.stringify({ status: 'error', message: 'Email is required' }), { status: 400, headers: corsHeaders });
+          }
+
+          const plan = body.plan || (body.subscription && body.subscription.plan) || 'VIP Master Lifetime';
+          const totalGenerates = body.totalGenerates ?? body.total_generates ?? 0;
+          const xp = body.xp ?? 10;
+          const level = body.level || 'Novice Creator';
+          const nowStr = new Date().toISOString();
+
+          // Sync into worker memory store fallback
+          const memberIdx = globalThis.__kd_members.findIndex(m => m.email.toLowerCase() === body.email.toLowerCase());
+          const memberRecord = {
+            id: body.id || 'usr_' + Date.now(),
+            name: body.name || 'Member KawanDigi',
+            email: body.email.toLowerCase(),
+            picture: body.picture || 'assets/icons/favicon.png',
+            plan: plan,
+            totalGenerates: totalGenerates,
+            total_generates: totalGenerates,
+            xp: xp,
+            level: level,
+            lastActive: nowStr,
+            last_active: nowStr,
+            createdAt: body.joinedAt || nowStr
+          };
+
+          if (memberIdx >= 0) {
+            globalThis.__kd_members[memberIdx] = {
+              ...globalThis.__kd_members[memberIdx],
+              ...memberRecord,
+              totalGenerates: Math.max(globalThis.__kd_members[memberIdx].totalGenerates || 0, totalGenerates),
+              total_generates: Math.max(globalThis.__kd_members[memberIdx].total_generates || 0, totalGenerates),
+              xp: Math.max(globalThis.__kd_members[memberIdx].xp || 0, xp)
+            };
+          } else {
+            globalThis.__kd_members.push(memberRecord);
+          }
+
+          // Sync into D1 database
+          if (db) {
+            await ensureD1Tables();
             await db.prepare(`
-              INSERT INTO members (id, name, email, picture, plan, total_generates, xp, level, last_active)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+              INSERT INTO members (id, name, email, picture, plan, total_generates, xp, level, created_at, last_active)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
               ON CONFLICT(email) DO UPDATE SET
                 name = excluded.name,
                 picture = excluded.picture,
+                plan = excluded.plan,
+                total_generates = MAX(members.total_generates, excluded.total_generates),
+                xp = MAX(members.xp, excluded.xp),
+                level = excluded.level,
                 last_active = CURRENT_TIMESTAMP
-            `).bind(body.id || 'usr_' + Date.now(), body.name, body.email, body.picture, body.plan || 'Free Trial', body.total_generates || 0, body.xp || 10, body.level || 'Novice Creator').run();
+            `).bind(
+              memberRecord.id,
+              memberRecord.name,
+              memberRecord.email,
+              memberRecord.picture,
+              memberRecord.plan,
+              memberRecord.total_generates,
+              memberRecord.xp,
+              memberRecord.level
+            ).run();
           }
-          return new Response(JSON.stringify({ status: 'success' }), { headers: corsHeaders });
+
+          return new Response(JSON.stringify({ status: 'success', data: memberRecord }), { headers: corsHeaders });
         } catch (e) {
+          console.error('Auth google sync error:', e);
           return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
         }
+      }
+
+      // 4b. Member List API (For Superadmin Console Centralized Sync)
+      if (url.pathname === '/api/members' && request.method === 'GET') {
+        let membersList = [...globalThis.__kd_members];
+
+        if (db) {
+          try {
+            await ensureD1Tables();
+            const { results } = await db.prepare('SELECT id, name, email, picture, plan, total_generates, xp, level, created_at, last_active FROM members ORDER BY last_active DESC').all();
+            if (results && results.length > 0) {
+              const emailMap = new Set();
+              const merged = [];
+              for (const r of results) {
+                if (r.email) {
+                  emailMap.add(r.email.toLowerCase());
+                  merged.push({
+                    id: r.id,
+                    name: r.name,
+                    email: r.email,
+                    picture: r.picture,
+                    plan: r.plan,
+                    totalGenerates: r.total_generates || 0,
+                    xp: r.xp || 10,
+                    level: r.level || 'Novice Creator',
+                    createdAt: r.created_at,
+                    joinedAt: r.created_at,
+                    lastActive: r.last_active,
+                    status: 'Active'
+                  });
+                }
+              }
+              for (const m of membersList) {
+                if (m.email && !emailMap.has(m.email.toLowerCase())) {
+                  merged.push(m);
+                }
+              }
+              membersList = merged;
+            }
+          } catch (e) {
+            console.error('D1 members fetch error:', e);
+          }
+        }
+
+        return new Response(JSON.stringify({ status: 'success', data: membersList }), { headers: corsHeaders });
       }
 
       // 5. Cloudflare Centralized Settings API (Google OAuth & System Config)
@@ -121,7 +300,7 @@ export default {
 
           if (db) {
             try {
-              await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+              await ensureD1Tables();
               const rowClient = await db.prepare("SELECT value FROM app_settings WHERE key = 'google_client_id'").first();
               if (rowClient && rowClient.value) {
                 clientId = rowClient.value.trim();
@@ -153,7 +332,7 @@ export default {
             if (newAdminEmail) globalThis.__kd_settings.admin_email = newAdminEmail;
 
             if (db) {
-              await db.prepare("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+              await ensureD1Tables();
               if (newClientId) {
                 await db.prepare(`
                   INSERT INTO app_settings (key, value, updated_at)
