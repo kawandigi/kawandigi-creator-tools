@@ -81,11 +81,11 @@ export default {
             )
           `).run();
 
-          // Safely add any new columns for migrations
+          // Safely add any new columns for migrations (SQLite forbids CURRENT_TIMESTAMP in ALTER TABLE ADD COLUMN)
           try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN device_scope TEXT DEFAULT 'single_device'").run(); } catch (_) {}
           try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN status TEXT DEFAULT 'active'").run(); } catch (_) {}
           try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN notes TEXT DEFAULT ''").run(); } catch (_) {}
-          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN created_at DATETIME").run(); } catch (_) {}
         } catch (e) {
           console.warn('D1 table creation check:', e.message);
         }
@@ -392,7 +392,7 @@ export default {
             const res = await db.prepare(`
               SELECT license_key, tier, tier_name, device_scope, status, notes, device_id, device_name, email, created_at, activated_at, last_verified
               FROM device_licenses
-              ORDER BY created_at DESC
+              ORDER BY rowid DESC
             `).all();
             list = res.results || [];
           } catch (e) {
@@ -450,7 +450,7 @@ export default {
             try {
               await db.prepare(`
                 INSERT INTO device_licenses (license_key, tier, tier_name, device_scope, status, notes, device_id, device_name, email, created_at)
-                VALUES (?, ?, ?, ?, 'unused', ?, '', '', '', CURRENT_TIMESTAMP)
+                VALUES (?, ?, ?, ?, 'unused', ?, '', '', '', datetime('now'))
               `).bind(newKey, tier, tierName, deviceScope, notes).run();
             } catch (e) {
               console.warn('D1 insert generated license error:', e.message);
