@@ -386,6 +386,7 @@ export default {
       // 6. Admin License Management API (List All Licenses)
       if (url.pathname === '/api/admin/licenses' && request.method === 'GET') {
         let list = [];
+        let d1Error = null;
         if (db) {
           try {
             await ensureD1Tables();
@@ -396,13 +397,14 @@ export default {
             `).all();
             list = res.results || [];
           } catch (e) {
+            d1Error = e.message;
             console.warn('D1 get admin licenses error:', e.message);
           }
         }
         if (list.length === 0 && globalThis.__kd_device_licenses) {
           list = Object.values(globalThis.__kd_device_licenses);
         }
-        return new Response(JSON.stringify({ status: 'success', data: list }), { headers: corsHeaders });
+        return new Response(JSON.stringify({ status: 'success', data: list, d1Error: d1Error }), { headers: corsHeaders });
       }
 
       // 7. Admin License Generator API (Create 1-Device or All-Device License Keys)
