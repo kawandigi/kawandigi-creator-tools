@@ -255,3 +255,103 @@ export function deleteTutorialVideo(tutorialId) {
     const tutorials = getTutorialVideos().filter(t => t.id !== tutorialId);
     saveTutorialVideos(tutorials);
 }
+
+/**
+ * Dynamic Pricing & Admin WhatsApp Contact Manager
+ */
+export const STORAGE_PRICING_KEY = 'kawandigi_pricing_settings';
+
+export const DEFAULT_PRICING_CONFIG = {
+    admin_whatsapp: '6281234567890',
+    price_ugc: 99000,
+    price_drama: 149000,
+    price_vip_1dev: 199000,
+    price_vip_alldev: 349000
+};
+
+export function cleanWhatsAppNumber(input) {
+    if (!input) return '6281234567890';
+    let clean = String(input).replace(/[^0-9]/g, '');
+    if (clean.startsWith('0')) {
+        clean = '62' + clean.slice(1);
+    } else if (clean.startsWith('8')) {
+        clean = '62' + clean;
+    }
+    return clean || '6281234567890';
+}
+
+export function getPricingSettings() {
+    try {
+        const raw = localStorage.getItem(STORAGE_PRICING_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            return {
+                admin_whatsapp: cleanWhatsAppNumber(parsed.admin_whatsapp),
+                price_ugc: Number(parsed.price_ugc) || DEFAULT_PRICING_CONFIG.price_ugc,
+                price_drama: Number(parsed.price_drama) || DEFAULT_PRICING_CONFIG.price_drama,
+                price_vip_1dev: Number(parsed.price_vip_1dev) || DEFAULT_PRICING_CONFIG.price_vip_1dev,
+                price_vip_alldev: Number(parsed.price_vip_alldev) || DEFAULT_PRICING_CONFIG.price_vip_alldev
+            };
+        }
+    } catch {}
+    return { ...DEFAULT_PRICING_CONFIG };
+}
+
+export function savePricingSettings(settings) {
+    const current = getPricingSettings();
+    const updated = {
+        admin_whatsapp: settings.admin_whatsapp ? cleanWhatsAppNumber(settings.admin_whatsapp) : current.admin_whatsapp,
+        price_ugc: Number(settings.price_ugc) || current.price_ugc,
+        price_drama: Number(settings.price_drama) || current.price_drama,
+        price_vip_1dev: Number(settings.price_vip_1dev) || current.price_vip_1dev,
+        price_vip_alldev: Number(settings.price_vip_alldev) || current.price_vip_alldev
+    };
+    localStorage.setItem(STORAGE_PRICING_KEY, JSON.stringify(updated));
+    return updated;
+}
+
+export async function fetchPricingSettingsFromServer() {
+    try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 'success' && json.data) {
+                const d = json.data;
+                const updated = savePricingSettings({
+                    admin_whatsapp: d.admin_whatsapp,
+                    price_ugc: d.price_ugc,
+                    price_drama: d.price_drama,
+                    price_vip_1dev: d.price_vip_1dev,
+                    price_vip_alldev: d.price_vip_alldev
+                });
+                return updated;
+            }
+        }
+    } catch (e) {
+        console.warn('[KawanDigi] Gagal sinkron pricing dari server:', e);
+    }
+    return getPricingSettings();
+}
+
+export async function savePricingSettingsToServer(settings) {
+    const local = savePricingSettings(settings);
+    try {
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_whatsapp: local.admin_whatsapp,
+                price_ugc: local.price_ugc,
+                price_drama: local.price_drama,
+                price_vip_1dev: local.price_vip_1dev,
+                price_vip_alldev: local.price_vip_alldev
+            })
+        });
+        if (res.ok) {
+            return true;
+        }
+    } catch (e) {
+        console.error('[KawanDigi] Gagal simpan pricing ke server:', e);
+    }
+    return false;
+}

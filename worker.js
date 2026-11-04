@@ -295,7 +295,7 @@ export default {
         return new Response(JSON.stringify({ status: 'success', data: membersList }), { headers: corsHeaders });
       }
 
-      // 5. Cloudflare Centralized Settings API (Google OAuth & System Config)
+      // 5. Cloudflare Centralized Settings API (Google OAuth, Admin WhatsApp & Custom Pricing)
       if (url.pathname === '/api/settings') {
         globalThis.__kd_settings = globalThis.__kd_settings || {};
         if (request.method === 'GET') {
@@ -321,16 +321,31 @@ export default {
             'admin.kawandigi@gmail.com'
           ).trim().toLowerCase();
 
+          let adminWhatsapp = (
+            env.ADMIN_WHATSAPP ||
+            globalThis.__kd_settings.admin_whatsapp ||
+            '6281234567890'
+          ).trim();
+
+          let priceVip1Dev = Number(globalThis.__kd_settings.price_vip_1dev) || 199000;
+          let priceVipAllDev = Number(globalThis.__kd_settings.price_vip_alldev) || 349000;
+          let priceUgc = Number(globalThis.__kd_settings.price_ugc) || 99000;
+          let priceDrama = Number(globalThis.__kd_settings.price_drama) || 149000;
+
           if (db) {
             try {
               await ensureD1Tables();
-              const rowClient = await db.prepare("SELECT value FROM app_settings WHERE key = 'google_client_id'").first();
-              if (rowClient && rowClient.value) {
-                clientId = rowClient.value.trim();
-              }
-              const rowAdmin = await db.prepare("SELECT value FROM app_settings WHERE key = 'admin_email'").first();
-              if (rowAdmin && rowAdmin.value) {
-                adminEmail = rowAdmin.value.trim().toLowerCase();
+              const rows = await db.prepare("SELECT key, value FROM app_settings").all();
+              if (rows && rows.results) {
+                for (const r of rows.results) {
+                  if (r.key === 'google_client_id' && r.value) clientId = r.value.trim();
+                  if (r.key === 'admin_email' && r.value) adminEmail = r.value.trim().toLowerCase();
+                  if (r.key === 'admin_whatsapp' && r.value) adminWhatsapp = r.value.trim();
+                  if (r.key === 'price_vip_1dev' && r.value) priceVip1Dev = parseInt(r.value, 10) || priceVip1Dev;
+                  if (r.key === 'price_vip_alldev' && r.value) priceVipAllDev = parseInt(r.value, 10) || priceVipAllDev;
+                  if (r.key === 'price_ugc' && r.value) priceUgc = parseInt(r.value, 10) || priceUgc;
+                  if (r.key === 'price_drama' && r.value) priceDrama = parseInt(r.value, 10) || priceDrama;
+                }
               }
             } catch (e) {
               console.error("D1 app_settings read error:", e);
@@ -340,7 +355,12 @@ export default {
             status: 'success',
             data: {
               google_client_id: clientId || '172006612908-ah493a9uj6hm0csnv6q29q6apgvi1fm1.apps.googleusercontent.com',
-              admin_email: adminEmail
+              admin_email: adminEmail,
+              admin_whatsapp: adminWhatsapp,
+              price_vip_1dev: priceVip1Dev,
+              price_vip_alldev: priceVipAllDev,
+              price_ugc: priceUgc,
+              price_drama: priceDrama
             }
           }), { headers: corsHeaders });
         }
@@ -350,32 +370,50 @@ export default {
             const body = await request.json();
             const newClientId = (body.google_client_id || '').trim();
             const newAdminEmail = (body.admin_email || '').trim();
+            const newAdminWhatsapp = (body.admin_whatsapp || '').trim();
+            const newPriceVip1Dev = body.price_vip_1dev !== undefined ? Number(body.price_vip_1dev) : null;
+            const newPriceVipAllDev = body.price_vip_alldev !== undefined ? Number(body.price_vip_alldev) : null;
+            const newPriceUgc = body.price_ugc !== undefined ? Number(body.price_ugc) : null;
+            const newPriceDrama = body.price_drama !== undefined ? Number(body.price_drama) : null;
 
             if (newClientId) globalThis.__kd_settings.google_client_id = newClientId;
             if (newAdminEmail) globalThis.__kd_settings.admin_email = newAdminEmail;
+            if (newAdminWhatsapp) globalThis.__kd_settings.admin_whatsapp = newAdminWhatsapp;
+            if (newPriceVip1Dev) globalThis.__kd_settings.price_vip_1dev = newPriceVip1Dev;
+            if (newPriceVipAllDev) globalThis.__kd_settings.price_vip_alldev = newPriceVipAllDev;
+            if (newPriceUgc) globalThis.__kd_settings.price_ugc = newPriceUgc;
+            if (newPriceDrama) globalThis.__kd_settings.price_drama = newPriceDrama;
 
             if (db) {
               await ensureD1Tables();
-              if (newClientId) {
+              const upsertSetting = async (k, v) => {
                 await db.prepare(`
                   INSERT INTO app_settings (key, value, updated_at)
-                  VALUES ('google_client_id', ?, CURRENT_TIMESTAMP)
+                  VALUES (?, ?, CURRENT_TIMESTAMP)
                   ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
-                `).bind(newClientId).run();
-              }
-              if (newAdminEmail) {
-                await db.prepare(`
-                  INSERT INTO app_settings (key, value, updated_at)
-                  VALUES ('admin_email', ?, CURRENT_TIMESTAMP)
-                  ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
-                `).bind(newAdminEmail).run();
-              }
+                `).bind(k, String(v)).run();
+              };
+
+              if (newClientId) await upsertSetting('google_client_id', newClientId);
+              if (newAdminEmail) await upsertSetting('admin_email', newAdminEmail);
+              if (newAdminWhatsapp) await upsertSetting('admin_whatsapp', newAdminWhatsapp);
+              if (newPriceVip1Dev !== null) await upsertSetting('price_vip_1dev', newPriceVip1Dev);
+              if (newPriceVipAllDev !== null) await upsertSetting('price_vip_alldev', newPriceVipAllDev);
+              if (newPriceUgc !== null) await upsertSetting('price_ugc', newPriceUgc);
+              if (newPriceDrama !== null) await upsertSetting('price_drama', newPriceDrama);
             }
             return new Response(JSON.stringify({
               status: 'success',
               message: 'Pengaturan berhasil disimpan di Cloudflare',
-              google_client_id: newClientId || globalThis.__kd_settings.google_client_id || '',
-              admin_email: newAdminEmail || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com'
+              data: {
+                google_client_id: newClientId || globalThis.__kd_settings.google_client_id || '',
+                admin_email: newAdminEmail || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com',
+                admin_whatsapp: newAdminWhatsapp || globalThis.__kd_settings.admin_whatsapp || '6281234567890',
+                price_vip_1dev: newPriceVip1Dev || globalThis.__kd_settings.price_vip_1dev || 199000,
+                price_vip_alldev: newPriceVipAllDev || globalThis.__kd_settings.price_vip_alldev || 349000,
+                price_ugc: newPriceUgc || globalThis.__kd_settings.price_ugc || 99000,
+                price_drama: newPriceDrama || globalThis.__kd_settings.price_drama || 149000
+              }
             }), { headers: corsHeaders });
           } catch (e) {
             return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });

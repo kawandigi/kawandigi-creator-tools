@@ -166,7 +166,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     }
 
     try {
-        const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-2.5-flash', null, null, { jsonMode: true, disableThinking: true });
+        const rawResponse = await callGemini(userPrompt, systemPrompt, null, null, null, { jsonMode: true, disableThinking: true });
         if (rawResponse) {
             const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -230,7 +230,7 @@ Ekstrak informasi yang terbaca dari seluruh gambar dan kembalikan HANYA format J
         data: img.base64
     }));
 
-    const rawResponse = await callGemini(prompt, systemPrompt, 'gemini-2.5-flash', null, inlineDataPayload, { jsonMode: true, disableThinking: true });
+    const rawResponse = await callGemini(prompt, systemPrompt, null, null, inlineDataPayload, { jsonMode: true, disableThinking: true });
 
     if (rawResponse) {
         const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
@@ -1150,7 +1150,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     userPrompt += `- Format Teks Video: ${includeTextOverlay ? 'Sertakan teks safe-zone overlay di layar' : 'PROMPT WAJIB BERSIH TANPA TEKS DI LAYAR (Clean Footage)'}\n`;
 
     try {
-        const rawResponse = await callGemini(userPrompt, systemPrompt, 'gemini-2.5-flash', null, null, { jsonMode: true, disableThinking: true });
+        const rawResponse = await callGemini(userPrompt, systemPrompt, null, null, null, { jsonMode: true, disableThinking: true });
         const parsed = parseJsonSafely(rawResponse);
         if (!parsed || !Array.isArray(parsed.scenes) || parsed.scenes.length === 0) {
             throw new Error('Format adegan tidak lengkap');

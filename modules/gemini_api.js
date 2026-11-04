@@ -16,11 +16,11 @@ export const AI_PROVIDERS = {
         name: 'Google Gemini',
         tagline: 'Google AI Studio • Tier Gratis 15 RPM • Multimodal Teks & Gambar',
         badge: '✨ Gemini',
-        defaultModel: 'gemini-2.5-flash',
+        defaultModel: 'gemini-3.8-flash',
         models: [
-            { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (Super Cepat, Multimodal & Akurat — Rekomendasi)' },
-            { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite (Ultra Cepat & Ringan)' },
-            { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' }
+            { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash (Super Cepat, Multimodal & Akurat — Rekomendasi Resmi Google)' },
+            { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite (Ultra Cepat & Ringan)' },
+            { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite (Generasi Baru)' }
         ],
         keyUrl: 'https://aistudio.google.com/app/apikey',
         keyUrlLabel: 'Ambil API Key Gratis di Google AI Studio',
@@ -122,9 +122,12 @@ export function getSelectedModel(providerId = null) {
     const p = providerId || getActiveProvider();
     const saved = localStorage.getItem(STORAGE_MODELS_PREFIX + p);
     if (saved) {
-        if (p === 'gemini' && (saved.startsWith('gemini-3.') || saved === 'gemini-3.8-flash')) {
-            localStorage.setItem(STORAGE_MODELS_PREFIX + 'gemini', 'gemini-2.5-flash');
-            return 'gemini-2.5-flash';
+        if (p === 'gemini') {
+            // Migrasi otomatis jika masih tersimpan model lawas gemini 2.x/1.x yang sudah dideprecate Google
+            if (saved.startsWith('gemini-2.') || saved.startsWith('gemini-1.') || saved === 'gemini-2.5-flash' || saved === 'gemini-2.5-flash-lite') {
+                localStorage.setItem(STORAGE_MODELS_PREFIX + 'gemini', 'gemini-3.8-flash');
+                return 'gemini-3.8-flash';
+            }
         }
         return saved;
     }
@@ -158,10 +161,9 @@ export function saveCustomModel(model) {
  * Multi-tier model fallback list for Google Gemini
  */
 const FALLBACK_GEMINI_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash'
+    'gemini-3.8-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite'
 ];
 
 /**
@@ -184,11 +186,11 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
     if (provider === 'gemini') {
         let activeModel = (preferredModel && preferredModel.startsWith('gemini'))
             ? preferredModel
-            : (getSelectedModel('gemini') || 'gemini-2.5-flash');
+            : (getSelectedModel('gemini') || 'gemini-3.8-flash');
 
-        // Normalisasi model warisan / non-existent
-        if (activeModel.startsWith('gemini-3.') || activeModel === 'gemini-3.8-flash') {
-            activeModel = 'gemini-2.5-flash';
+        // Normalisasi model warisan / terdeprecasi oleh Google
+        if (activeModel.startsWith('gemini-2.') || activeModel.startsWith('gemini-1.') || activeModel === 'gemini-2.5-flash') {
+            activeModel = 'gemini-3.8-flash';
         }
 
         const modelsToTry = [
@@ -219,9 +221,11 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
                 maxOutputTokens: 4096
             };
 
-            // Optimasi Kecepatan: Matikan thinking budget untuk respon super kilat (1-3 detik)
+            // Optimasi Kecepatan: Berikan level thinking low / budget 0
             if (options?.disableThinking !== false) {
-                if (currentModel.includes('2.5') || currentModel.includes('flash')) {
+                if (currentModel.includes('3.8') || currentModel.includes('3.5') || currentModel.includes('3.1')) {
+                    generationConfig.thinkingConfig = { thinkingLevel: 'low' };
+                } else if (currentModel.includes('2.5')) {
                     generationConfig.thinkingConfig = { thinkingBudget: 0 };
                 }
             }
@@ -274,11 +278,12 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
                     const errorData = await response.json().catch(() => ({}));
                     const errMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
 
+                    const isDeprecatedOrNotFound = response.status === 404 || (response.status === 400 && /no longer available|not found|deprecated|Interactions API/i.test(errMsg));
                     const isHighDemand = response.status === 503 || response.status === 429 || /high demand|temporarily unavailable|overloaded|spikes in demand|resource_exhausted/i.test(errMsg);
                     
-                    if (isHighDemand && i < modelsToTry.length - 1) {
+                    if ((isHighDemand || isDeprecatedOrNotFound) && i < modelsToTry.length - 1) {
                         const nextModel = modelsToTry[i + 1];
-                        console.warn(`[KawanDigi AI] Model ${currentModel} sedang sibuk (${errMsg}). Beralih otomatis ke fallback ${nextModel}...`);
+                        console.warn(`[KawanDigi AI] Model ${currentModel} dialihkan (${errMsg}). Beralih otomatis ke fallback ${nextModel}...`);
                         lastError = new Error(errMsg);
                         continue;
                     }
@@ -325,7 +330,7 @@ export async function callAiProvider(prompt, systemInstruction = '', preferredMo
             const geminiKey = getSavedApiKey('gemini');
             if (geminiKey) {
                 console.info('[KawanDigi] Ekstraksi gambar dialihkan sementara ke Google Gemini Multimodal.');
-                return callAiWithSpecificProvider('gemini', prompt, systemInstruction, 'gemini-2.5-flash', tools, inlineData);
+                return callAiWithSpecificProvider('gemini', prompt, systemInstruction, 'gemini-3.8-flash', tools, inlineData);
             }
             throw new Error('DeepSeek API resmi adalah model teks. Masukkan Nama Produk / link etalase secara langsung, atau pasang API Key Gemini/OpenRouter untuk menganalisis screenshot gambar.');
         }
