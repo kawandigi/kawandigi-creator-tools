@@ -120,6 +120,21 @@ export function trackActivity(tool, detail, customXp = null) {
         saveMemberList(members);
     }
 
+    // Proactively send activity track to Cloudflare D1
+    if (user.email && !user.email.endsWith('@kawandigi.local')) {
+        fetch('/api/activity/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: user.email,
+                name: user.name || 'Member',
+                tool: tool,
+                detail: detail || '',
+                xp: xpBonus
+            })
+        }).catch(err => console.warn('[KawanDigi] Gagal kirim activity track ke server:', err));
+    }
+
     return { xpEarned: xpBonus, newXp, tier };
 }
 

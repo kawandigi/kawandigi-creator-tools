@@ -156,9 +156,25 @@ export default {
                 .bind(actId, body.email, body.name || 'Member', body.tool, body.detail || '', now.toISOString(), hourWib, dayWib, body.xp || 10)
                 .run();
 
-              await db.prepare('UPDATE members SET total_generates = total_generates + 1, xp = xp + ?, last_active = ? WHERE email = ?')
+              const resUpdate = await db.prepare('UPDATE members SET total_generates = total_generates + 1, xp = xp + ?, last_active = ? WHERE email = ?')
                 .bind(body.xp || 10, now.toISOString(), body.email)
                 .run();
+
+              if (!resUpdate.meta?.changes || resUpdate.meta.changes === 0) {
+                await db.prepare(`
+                  INSERT INTO members (id, name, email, picture, plan, total_generates, xp, level, created_at, last_active)
+                  VALUES (?, ?, ?, ?, 'Free Trial', 1, ?, 'Novice Creator', ?, ?)
+                  ON CONFLICT(email) DO UPDATE SET total_generates = total_generates + 1, xp = xp + excluded.xp, last_active = excluded.last_active
+                `).bind(
+                  'usr_' + Date.now(),
+                  body.name || 'Member',
+                  body.email,
+                  body.picture || 'assets/icons/favicon.png',
+                  body.xp || 10,
+                  now.toISOString(),
+                  now.toISOString()
+                ).run();
+              }
             }
 
             const mem = globalThis.__kd_members.find(m => m.email.toLowerCase() === body.email.toLowerCase());
@@ -331,6 +347,7 @@ export default {
           let priceVipAllDev = Number(globalThis.__kd_settings.price_vip_alldev) || 349000;
           let priceUgc = Number(globalThis.__kd_settings.price_ugc) || 99000;
           let priceDrama = Number(globalThis.__kd_settings.price_drama) || 149000;
+          let featureFlags = globalThis.__kd_settings.feature_flags || null;
 
           if (db) {
             try {
@@ -345,6 +362,9 @@ export default {
                   if (r.key === 'price_vip_alldev' && r.value) priceVipAllDev = parseInt(r.value, 10) || priceVipAllDev;
                   if (r.key === 'price_ugc' && r.value) priceUgc = parseInt(r.value, 10) || priceUgc;
                   if (r.key === 'price_drama' && r.value) priceDrama = parseInt(r.value, 10) || priceDrama;
+                  if (r.key === 'feature_flags' && r.value) {
+                    try { featureFlags = JSON.parse(r.value); } catch (_) {}
+                  }
                 }
               }
             } catch (e) {
@@ -360,7 +380,8 @@ export default {
               price_vip_1dev: priceVip1Dev,
               price_vip_alldev: priceVipAllDev,
               price_ugc: priceUgc,
-              price_drama: priceDrama
+              price_drama: priceDrama,
+              feature_flags: featureFlags
             }
           }), { headers: corsHeaders });
         }
@@ -375,6 +396,7 @@ export default {
             const newPriceVipAllDev = body.price_vip_alldev !== undefined ? Number(body.price_vip_alldev) : null;
             const newPriceUgc = body.price_ugc !== undefined ? Number(body.price_ugc) : null;
             const newPriceDrama = body.price_drama !== undefined ? Number(body.price_drama) : null;
+            const newFeatureFlags = body.feature_flags !== undefined ? body.feature_flags : null;
 
             if (newClientId) globalThis.__kd_settings.google_client_id = newClientId;
             if (newAdminEmail) globalThis.__kd_settings.admin_email = newAdminEmail;
@@ -383,6 +405,7 @@ export default {
             if (newPriceVipAllDev) globalThis.__kd_settings.price_vip_alldev = newPriceVipAllDev;
             if (newPriceUgc) globalThis.__kd_settings.price_ugc = newPriceUgc;
             if (newPriceDrama) globalThis.__kd_settings.price_drama = newPriceDrama;
+            if (newFeatureFlags) globalThis.__kd_settings.feature_flags = newFeatureFlags;
 
             if (db) {
               await ensureD1Tables();
@@ -401,6 +424,7 @@ export default {
               if (newPriceVipAllDev !== null) await upsertSetting('price_vip_alldev', newPriceVipAllDev);
               if (newPriceUgc !== null) await upsertSetting('price_ugc', newPriceUgc);
               if (newPriceDrama !== null) await upsertSetting('price_drama', newPriceDrama);
+              if (newFeatureFlags !== null) await upsertSetting('feature_flags', JSON.stringify(newFeatureFlags));
             }
             return new Response(JSON.stringify({
               status: 'success',

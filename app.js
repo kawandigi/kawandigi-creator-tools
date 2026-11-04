@@ -71,7 +71,9 @@ import {
     savePricingSettings,
     fetchPricingSettingsFromServer,
     savePricingSettingsToServer,
-    cleanWhatsAppNumber
+    cleanWhatsAppNumber,
+    fetchFeatureFlagsFromServer,
+    saveFeatureFlagsToServer
 } from './modules/catalog_manager.js';
 import {
     trackActivity,
@@ -301,6 +303,9 @@ function switchTab(tabId) {
         renderLeaderboard();
     } else if (tabId === 'tutorial') {
         renderTutorials();
+    } else if (tabId === 'license') {
+        applyPricingToUI();
+        updateLicenseCards();
     } else if (tabId === 'admin') {
         const currentUser = getCurrentUser();
         if (!isSuperAdmin(currentUser)) {
@@ -346,6 +351,7 @@ function openDrawer() {
     const drawer = document.getElementById('sidebar-drawer');
     const backdrop = document.getElementById('drawer-backdrop');
     if (!drawer || !backdrop) return;
+    updateHistoryBadge();
     backdrop.classList.remove('hidden');
     void backdrop.offsetWidth; // Force reflow
     backdrop.classList.add('opacity-100');
@@ -1453,7 +1459,7 @@ async function handleGenerateUgc() {
             },
             data: campaign
         });
-        updateHistoryBadge();
+        recordGenerationActivity('UGC Affiliate', campaign.product_analysis?.product_name || 'UGC Script', 10);
 
         showToast('Storyboard UGC Affiliate berhasil dirancang & disimpan ke Riwayat!', 'success');
     } catch (err) {
@@ -1771,7 +1777,7 @@ async function handleGenerateDrama() {
             },
             data: drama
         });
-        updateHistoryBadge();
+        recordGenerationActivity('AI Drama', drama.series_title || 'Drama Script', 15);
 
         showToast(`Episode ${episodeNumber} berhasil ditulis & disimpan ke Riwayat!`, 'success');
     } catch (err) {
@@ -2351,11 +2357,13 @@ function updateHistoryBadge() {
     const list = getHistory();
     const count = list.length;
     const headerBadge = document.getElementById('history-counter-badge');
-    const drawerBadge = document.getElementById('drawer-count-badge');
+    const drawerCountBadge = document.getElementById('drawer-count-badge');
+    const sidebarBadge = document.getElementById('drawer-history-badge');
     const mobileBadge = document.getElementById('m-history-badge');
 
     if (headerBadge) headerBadge.textContent = count;
-    if (drawerBadge) drawerBadge.textContent = `${count} / 20`;
+    if (drawerCountBadge) drawerCountBadge.textContent = `${count} / 20`;
+    if (sidebarBadge) sidebarBadge.textContent = count;
     if (mobileBadge) {
         mobileBadge.textContent = count;
         if (count > 0) mobileBadge.classList.remove('hidden');
@@ -2980,6 +2988,29 @@ function renderAdminAnalytics() {
 }
 
 
+// Helper to record activity, increment generate stats, and sync to Cloudflare D1
+export function recordGenerationActivity(tool, detail, xpBonus = 10) {
+    try {
+        trackActivity(tool, detail, xpBonus);
+    } catch (e) {
+        console.warn('Track activity warning:', e);
+    }
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        currentUser.totalGenerates = (currentUser.totalGenerates || 0) + 1;
+        currentUser.xp = (currentUser.xp || 0) + xpBonus;
+        saveUserSession(currentUser);
+        syncSessionToD1(currentUser);
+    } else {
+        const guestGens = (parseInt(localStorage.getItem('kawandigi_guest_generates') || '0', 10) || 0) + 1;
+        localStorage.setItem('kawandigi_guest_generates', guestGens);
+    }
+
+    syncUserUI();
+    updateHistoryBadge();
+}
+
 // Helper to proactively sync user session to Cloudflare D1
 export async function syncSessionToD1(user) {
     if (!user || !user.email) return;
@@ -3105,8 +3136,18 @@ function updateHeaderAuthUI() {
     const statRingXp = document.getElementById('stat-ring-xp');
     const statRankStatus = document.getElementById('stat-rank-status');
 
+    const guestGens = parseInt(localStorage.getItem('kawandigi_guest_generates') || '0', 10) || 0;
     const xpVal = (user && typeof user.xp === 'number') ? user.xp : (user ? 100 : 0);
-    const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : 0;
+    const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : guestGens;
+
+    const summaryLabel = document.getElementById('home-hero-summary-label');
+    if (summaryLabel) {
+        if (user && user.name) {
+            summaryLabel.textContent = `RINGKASAN ${user.name.split(' ')[0].toUpperCase()}`;
+        } else {
+            summaryLabel.textContent = 'RINGKASAN AKTIVITAS';
+        }
+    }
     const levelInfo = calculateLevel(xpVal);
 
     // Toggle Admin Visibility: strictly only for active Superadmin
@@ -4368,6 +4409,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminConsole();
     renderCatalog();
     applyFeatureFlagVisibility();
+    updateHistoryBadge();
+    applyPricingToUI();
+    fetchPricingSettingsFromServer().then(applyPricingToUI);
+    fetchFeatureFlagsFromServer().then(applyFeatureFlagVisibility);
 
     // Check if API Key is configured on launch
     if (!getSavedApiKey() && getActiveProvider() !== 'custom') {

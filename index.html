@@ -56,7 +56,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-brand-500 selection:text-white">
 
     <!-- Mobile Drawer Backdrop -->
-    <div id="drawer-backdrop" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 lg:hidden"></div>
+    <div id="drawer-backdrop" class="fixed inset-0 z-40 hidden opacity-0 transition-opacity duration-300 lg:hidden"></div>
 
     <!-- ========================================================================= -->
     <!-- SIDEBAR NAVIGATION: Fixed on Desktop (lg:), Drawer on Mobile (< lg)        -->
@@ -232,7 +232,7 @@
                 <div class="flex items-center justify-between gap-2 relative z-10">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold border border-white/25 backdrop-blur-sm">
                         <i data-lucide="target" class="w-3.5 h-3.5 text-rose-300"></i>
-                        <span>RINGKASAN GLOBAL</span>
+                        <span id="home-hero-summary-label">RINGKASAN AKTIVITAS</span>
                     </span>
                     <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-900/50 border border-blue-400/30 text-xs font-bold text-blue-100">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-300"></i>

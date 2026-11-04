@@ -503,7 +503,13 @@ html:not(.dark) .bottom-fab-button {
     will-change: transform;
 }
 
-#drawer-backdrop {
+#drawer-backdrop,
+#drawer-history-backdrop,
+html:not(.dark) #drawer-backdrop,
+html:not(.dark) #drawer-history-backdrop {
+    background-color: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
     transition: opacity 0.3s ease;
 }
 

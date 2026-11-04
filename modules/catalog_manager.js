@@ -149,6 +149,7 @@ export function toggleToolStatus(toolId, isEnabled) {
     if (item) {
         item.enabled = !!isEnabled;
         saveFeatureFlags(flags);
+        saveFeatureFlagsToServer(flags).catch(() => {});
         return true;
     }
     return false;
@@ -158,6 +159,37 @@ export function isToolEnabled(toolId) {
     const flags = getFeatureFlags();
     const item = flags.find(f => f.id === toolId);
     return item ? !!item.enabled : true;
+}
+
+export async function fetchFeatureFlagsFromServer() {
+    try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 'success' && json.data && json.data.feature_flags) {
+                saveFeatureFlags(json.data.feature_flags);
+                return json.data.feature_flags;
+            }
+        }
+    } catch (e) {
+        console.warn('[KawanDigi] Gagal sinkron feature flags dari server:', e);
+    }
+    return getFeatureFlags();
+}
+
+export async function saveFeatureFlagsToServer(flags) {
+    saveFeatureFlags(flags);
+    try {
+        await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feature_flags: flags })
+        });
+        return true;
+    } catch (e) {
+        console.error('[KawanDigi] Gagal simpan feature flags ke server:', e);
+    }
+    return false;
 }
 
 /**
