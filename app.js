@@ -73,7 +73,9 @@ import {
     savePricingSettingsToServer,
     cleanWhatsAppNumber,
     fetchFeatureFlagsFromServer,
-    saveFeatureFlagsToServer
+    saveFeatureFlagsToServer,
+    fetchDigitalProductsFromServer,
+    fetchTutorialVideosFromServer
 } from './modules/catalog_manager.js';
 import {
     trackActivity,
@@ -306,6 +308,7 @@ function switchTab(tabId) {
     } else if (tabId === 'license') {
         applyPricingToUI();
         updateLicenseCards();
+        applyFeatureFlagVisibility();
     } else if (tabId === 'admin') {
         const currentUser = getCurrentUser();
         if (!isSuperAdmin(currentUser)) {
@@ -2725,7 +2728,8 @@ function renderProductsCatalog() {
 
     const products = getDigitalProducts();
     grid.innerHTML = products.map(prod => {
-        const waLink = generateProductWaLink(prod);
+        const currentWa = getPricingSettings().admin_whatsapp;
+        const waLink = generateProductWaLink(prod, currentWa);
         return `
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-amber-500/40 transition group shadow-md">
                 <div class="space-y-3">
@@ -4095,37 +4099,37 @@ export function applyPricingToUI() {
 
     // 1. UGC Affiliate Card
     const elUgc = document.getElementById('price-display-ugc');
-    if (elUgc) elUgc.textContent = `Rp ${formatRupiah(p.price_ugc)}`;
+    if (elUgc) elUgc.textContent = formatRupiah(p.price_ugc);
     const btnWaUgc = document.getElementById('btn-buy-wa-ugc');
     if (btnWaUgc) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi AI UGC Affiliate Creator (Rp ${formatRupiah(p.price_ugc)} Akses Selamanya)`);
+        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi AI UGC Affiliate Creator (${formatRupiah(p.price_ugc)} Akses Selamanya)`);
         btnWaUgc.href = `https://wa.me/${cleanWa}?text=${txt}`;
     }
 
     // 2. AI Drama Card
     const elDrama = document.getElementById('price-display-drama');
-    if (elDrama) elDrama.textContent = `Rp ${formatRupiah(p.price_drama)}`;
+    if (elDrama) elDrama.textContent = formatRupiah(p.price_drama);
     const btnWaDrama = document.getElementById('btn-buy-wa-drama');
     if (btnWaDrama) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi AI Drama Creator (Rp ${formatRupiah(p.price_drama)} Akses Selamanya)`);
+        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi AI Drama Creator (${formatRupiah(p.price_drama)} Akses Selamanya)`);
         btnWaDrama.href = `https://wa.me/${cleanWa}?text=${txt}`;
     }
 
     // 3. VIP Master 1 Device
     const elVip1 = document.getElementById('price-display-vip-1dev');
-    if (elVip1) elVip1.textContent = `Rp ${formatRupiah(p.price_vip_1dev)}`;
+    if (elVip1) elVip1.textContent = formatRupiah(p.price_vip_1dev);
     const btnWaVip1 = document.getElementById('btn-buy-wa-vip-1dev');
     if (btnWaVip1) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi VIP 1 Device (Rp ${formatRupiah(p.price_vip_1dev)} Akses Selamanya)`);
+        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi VIP 1 Device (${formatRupiah(p.price_vip_1dev)} Akses Selamanya)`);
         btnWaVip1.href = `https://wa.me/${cleanWa}?text=${txt}`;
     }
 
     // 4. VIP Master All Device
     const elVipAll = document.getElementById('price-display-vip-alldev');
-    if (elVipAll) elVipAll.textContent = `Rp ${formatRupiah(p.price_vip_alldev)}`;
+    if (elVipAll) elVipAll.textContent = formatRupiah(p.price_vip_alldev);
     const btnWaVipAll = document.getElementById('btn-buy-wa-vip-alldev');
     if (btnWaVipAll) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi VIP All Device (Rp ${formatRupiah(p.price_vip_alldev)} Akses Selamanya)`);
+        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi VIP All Device (${formatRupiah(p.price_vip_alldev)} Akses Selamanya)`);
         btnWaVipAll.href = `https://wa.me/${cleanWa}?text=${txt}`;
     }
 }
@@ -4413,6 +4417,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyPricingToUI();
     fetchPricingSettingsFromServer().then(applyPricingToUI);
     fetchFeatureFlagsFromServer().then(applyFeatureFlagVisibility);
+    fetchDigitalProductsFromServer().then(renderProductsCatalog);
+    fetchTutorialVideosFromServer().then(renderTutorials);
 
     // Check if API Key is configured on launch
     if (!getSavedApiKey() && getActiveProvider() !== 'custom') {

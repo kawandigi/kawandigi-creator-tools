@@ -71,7 +71,7 @@ export const DEFAULT_PRODUCTS = [
         originalPrice: 499000,
         thumbnail: 'assets/icons/logo.png',
         description: 'Akses tanpa batas ke seluruh tools AI KawanDigi tanpa langganan bulanan. Termasuk update tools baru seumur hidup & support VIP.',
-        contactWa: '6281234567890'
+        contactWa: '6282245565454'
     },
     {
         id: 'prod_2',
@@ -81,7 +81,7 @@ export const DEFAULT_PRODUCTS = [
         originalPrice: 99000,
         thumbnail: 'assets/icons/icon-192.png',
         description: 'Tinggal pakai tanpa perlu kartu kredit. Kuota besar untuk generate ratusan naskah iklan & storyboard siap pakai.',
-        contactWa: '6281234567890'
+        contactWa: '6282245565454'
     },
     {
         id: 'prod_3',
@@ -91,7 +91,7 @@ export const DEFAULT_PRODUCTS = [
         originalPrice: 750000,
         thumbnail: 'assets/icons/favicon.png',
         description: 'Bimbingan intensif langsung via Google Meet/Zoom dari nol sampai pecah telur komisi affiliate TikTok Shop & Shopee.',
-        contactWa: '6281234567890'
+        contactWa: '6282245565454'
     }
 ];
 
@@ -126,6 +126,21 @@ export const DEFAULT_TUTORIALS = [
 /**
  * Feature Flags Management
  */
+export function mergeFeatureFlags(flags) {
+    if (!Array.isArray(flags)) return DEFAULT_FEATURE_FLAGS;
+    return DEFAULT_FEATURE_FLAGS.map(def => {
+        const found = flags.find(f => f.id === def.id);
+        if (found) {
+            return {
+                ...def,
+                ...found,
+                enabled: found.enabled !== undefined ? !!found.enabled : def.enabled
+            };
+        }
+        return def;
+    });
+}
+
 export function getFeatureFlags() {
     try {
         const raw = localStorage.getItem(STORAGE_FLAGS_KEY);
@@ -133,14 +148,17 @@ export function getFeatureFlags() {
             localStorage.setItem(STORAGE_FLAGS_KEY, JSON.stringify(DEFAULT_FEATURE_FLAGS));
             return DEFAULT_FEATURE_FLAGS;
         }
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return mergeFeatureFlags(parsed);
     } catch {
         return DEFAULT_FEATURE_FLAGS;
     }
 }
 
 export function saveFeatureFlags(flags) {
-    localStorage.setItem(STORAGE_FLAGS_KEY, JSON.stringify(flags));
+    const merged = mergeFeatureFlags(flags);
+    localStorage.setItem(STORAGE_FLAGS_KEY, JSON.stringify(merged));
+    return merged;
 }
 
 export function toggleToolStatus(toolId, isEnabled) {
@@ -166,9 +184,10 @@ export async function fetchFeatureFlagsFromServer() {
         const res = await fetch('/api/settings');
         if (res.ok) {
             const json = await res.json();
-            if (json.status === 'success' && json.data && json.data.feature_flags) {
-                saveFeatureFlags(json.data.feature_flags);
-                return json.data.feature_flags;
+            if (json.status === 'success' && json.data && Array.isArray(json.data.feature_flags)) {
+                const merged = mergeFeatureFlags(json.data.feature_flags);
+                saveFeatureFlags(merged);
+                return merged;
             }
         }
     } catch (e) {
@@ -178,12 +197,12 @@ export async function fetchFeatureFlagsFromServer() {
 }
 
 export async function saveFeatureFlagsToServer(flags) {
-    saveFeatureFlags(flags);
+    const merged = saveFeatureFlags(flags);
     try {
         await fetch('/api/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ feature_flags: flags })
+            body: JSON.stringify({ feature_flags: merged })
         });
         return true;
     } catch (e) {
@@ -212,6 +231,37 @@ export function saveDigitalProducts(products) {
     localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(products));
 }
 
+export async function fetchDigitalProductsFromServer() {
+    try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 'success' && json.data && Array.isArray(json.data.digital_products) && json.data.digital_products.length > 0) {
+                saveDigitalProducts(json.data.digital_products);
+                return json.data.digital_products;
+            }
+        }
+    } catch (e) {
+        console.warn('[KawanDigi] Gagal sinkron produk digital dari server:', e);
+    }
+    return getDigitalProducts();
+}
+
+export async function saveDigitalProductsToServer(products) {
+    saveDigitalProducts(products);
+    try {
+        await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ digital_products: products })
+        });
+        return true;
+    } catch (e) {
+        console.error('[KawanDigi] Gagal simpan produk digital ke server:', e);
+    }
+    return false;
+}
+
 export function upsertDigitalProduct(product) {
     const products = getDigitalProducts();
     const existingIndex = products.findIndex(p => p.id === product.id);
@@ -222,12 +272,14 @@ export function upsertDigitalProduct(product) {
         products.unshift(product);
     }
     saveDigitalProducts(products);
+    saveDigitalProductsToServer(products).catch(() => {});
     return product;
 }
 
 export function deleteDigitalProduct(productId) {
     const products = getDigitalProducts().filter(p => p.id !== productId);
     saveDigitalProducts(products);
+    saveDigitalProductsToServer(products).catch(() => {});
 }
 
 export function formatRupiah(number) {
@@ -242,7 +294,7 @@ export function formatRupiah(number) {
  * Generate Direct WhatsApp Purchase Link for Product
  */
 export function generateProductWaLink(product, customPhone = null) {
-    const phone = (customPhone || product.contactWa || '6281234567890').replace(/\D/g, '');
+    const phone = (customPhone || product.contactWa || '6282245565454').replace(/\D/g, '');
     const cleanPhone = phone.startsWith('0') ? '62' + phone.slice(1) : (phone.startsWith('62') ? phone : '62' + phone);
     
     const message = `Halo Admin KawanDigi! Saya tertarik membeli produk digital berikut:\n\n*${product.title}*\nHarga: ${formatRupiah(product.price)}\n\nMohon info cara pembayaran dan langkah aktivasinya ya. Terima kasih! 🙏`;
@@ -270,6 +322,37 @@ export function saveTutorialVideos(tutorials) {
     localStorage.setItem(STORAGE_TUTORIALS_KEY, JSON.stringify(tutorials));
 }
 
+export async function fetchTutorialVideosFromServer() {
+    try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 'success' && json.data && Array.isArray(json.data.tutorial_videos) && json.data.tutorial_videos.length > 0) {
+                saveTutorialVideos(json.data.tutorial_videos);
+                return json.data.tutorial_videos;
+            }
+        }
+    } catch (e) {
+        console.warn('[KawanDigi] Gagal sinkron tutorial video dari server:', e);
+    }
+    return getTutorialVideos();
+}
+
+export async function saveTutorialVideosToServer(tutorials) {
+    saveTutorialVideos(tutorials);
+    try {
+        await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tutorial_videos: tutorials })
+        });
+        return true;
+    } catch (e) {
+        console.error('[KawanDigi] Gagal simpan tutorial ke server:', e);
+    }
+    return false;
+}
+
 export function upsertTutorialVideo(tutorial) {
     const tutorials = getTutorialVideos();
     const existingIndex = tutorials.findIndex(t => t.id === tutorial.id);
@@ -280,12 +363,14 @@ export function upsertTutorialVideo(tutorial) {
         tutorials.unshift(tutorial);
     }
     saveTutorialVideos(tutorials);
+    saveTutorialVideosToServer(tutorials).catch(() => {});
     return tutorial;
 }
 
 export function deleteTutorialVideo(tutorialId) {
     const tutorials = getTutorialVideos().filter(t => t.id !== tutorialId);
     saveTutorialVideos(tutorials);
+    saveTutorialVideosToServer(tutorials).catch(() => {});
 }
 
 /**
@@ -294,22 +379,22 @@ export function deleteTutorialVideo(tutorialId) {
 export const STORAGE_PRICING_KEY = 'kawandigi_pricing_settings';
 
 export const DEFAULT_PRICING_CONFIG = {
-    admin_whatsapp: '6281234567890',
-    price_ugc: 99000,
-    price_drama: 149000,
+    admin_whatsapp: '6282245565454',
+    price_ugc: 59000,
+    price_drama: 79000,
     price_vip_1dev: 199000,
     price_vip_alldev: 349000
 };
 
 export function cleanWhatsAppNumber(input) {
-    if (!input) return '6281234567890';
+    if (!input) return '6282245565454';
     let clean = String(input).replace(/[^0-9]/g, '');
     if (clean.startsWith('0')) {
         clean = '62' + clean.slice(1);
     } else if (clean.startsWith('8')) {
         clean = '62' + clean;
     }
-    return clean || '6281234567890';
+    return clean || '6282245565454';
 }
 
 export function getPricingSettings() {

@@ -348,6 +348,8 @@ export default {
           let priceUgc = Number(globalThis.__kd_settings.price_ugc) || 99000;
           let priceDrama = Number(globalThis.__kd_settings.price_drama) || 149000;
           let featureFlags = globalThis.__kd_settings.feature_flags || null;
+          let digitalProducts = globalThis.__kd_settings.digital_products || null;
+          let tutorialVideos = globalThis.__kd_settings.tutorial_videos || null;
 
           if (db) {
             try {
@@ -365,6 +367,12 @@ export default {
                   if (r.key === 'feature_flags' && r.value) {
                     try { featureFlags = JSON.parse(r.value); } catch (_) {}
                   }
+                  if (r.key === 'digital_products' && r.value) {
+                    try { digitalProducts = JSON.parse(r.value); } catch (_) {}
+                  }
+                  if (r.key === 'tutorial_videos' && r.value) {
+                    try { tutorialVideos = JSON.parse(r.value); } catch (_) {}
+                  }
                 }
               }
             } catch (e) {
@@ -381,7 +389,9 @@ export default {
               price_vip_alldev: priceVipAllDev,
               price_ugc: priceUgc,
               price_drama: priceDrama,
-              feature_flags: featureFlags
+              feature_flags: featureFlags,
+              digital_products: digitalProducts,
+              tutorial_videos: tutorialVideos
             }
           }), { headers: corsHeaders });
         }
@@ -397,6 +407,8 @@ export default {
             const newPriceUgc = body.price_ugc !== undefined ? Number(body.price_ugc) : null;
             const newPriceDrama = body.price_drama !== undefined ? Number(body.price_drama) : null;
             const newFeatureFlags = body.feature_flags !== undefined ? body.feature_flags : null;
+            const newDigitalProducts = body.digital_products !== undefined ? body.digital_products : null;
+            const newTutorialVideos = body.tutorial_videos !== undefined ? body.tutorial_videos : null;
 
             if (newClientId) globalThis.__kd_settings.google_client_id = newClientId;
             if (newAdminEmail) globalThis.__kd_settings.admin_email = newAdminEmail;
@@ -406,6 +418,8 @@ export default {
             if (newPriceUgc) globalThis.__kd_settings.price_ugc = newPriceUgc;
             if (newPriceDrama) globalThis.__kd_settings.price_drama = newPriceDrama;
             if (newFeatureFlags) globalThis.__kd_settings.feature_flags = newFeatureFlags;
+            if (newDigitalProducts !== null) globalThis.__kd_settings.digital_products = newDigitalProducts;
+            if (newTutorialVideos !== null) globalThis.__kd_settings.tutorial_videos = newTutorialVideos;
 
             if (db) {
               await ensureD1Tables();
@@ -425,6 +439,8 @@ export default {
               if (newPriceUgc !== null) await upsertSetting('price_ugc', newPriceUgc);
               if (newPriceDrama !== null) await upsertSetting('price_drama', newPriceDrama);
               if (newFeatureFlags !== null) await upsertSetting('feature_flags', JSON.stringify(newFeatureFlags));
+              if (newDigitalProducts !== null) await upsertSetting('digital_products', JSON.stringify(newDigitalProducts));
+              if (newTutorialVideos !== null) await upsertSetting('tutorial_videos', JSON.stringify(newTutorialVideos));
             }
             return new Response(JSON.stringify({
               status: 'success',
@@ -436,7 +452,9 @@ export default {
                 price_vip_1dev: newPriceVip1Dev || globalThis.__kd_settings.price_vip_1dev || 199000,
                 price_vip_alldev: newPriceVipAllDev || globalThis.__kd_settings.price_vip_alldev || 349000,
                 price_ugc: newPriceUgc || globalThis.__kd_settings.price_ugc || 99000,
-                price_drama: newPriceDrama || globalThis.__kd_settings.price_drama || 149000
+                price_drama: newPriceDrama || globalThis.__kd_settings.price_drama || 149000,
+                digital_products: newDigitalProducts || globalThis.__kd_settings.digital_products || null,
+                tutorial_videos: newTutorialVideos || globalThis.__kd_settings.tutorial_videos || null
               }
             }), { headers: corsHeaders });
           } catch (e) {

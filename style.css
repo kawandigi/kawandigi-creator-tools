@@ -785,3 +785,63 @@ html:not(.dark) .bg-brand-600,
 html:not(.dark) .bg-brand-600 * {
     color: #ffffff !important;
 }
+
+
+/* =========================================================================
+   LIGHT MODE CONTRAST & VISIBILITY ENHANCEMENTS (LICENSE & PRICING)
+   ========================================================================= */
+html:not(.dark) #section-license .bg-slate-900 {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) #section-license h4 {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #section-license ul li {
+    color: #334155 !important;
+}
+
+html:not(.dark) #card-pricing-vip {
+    background: linear-gradient(to bottom, #f8fafc, #ffffff) !important;
+    border-color: #4f46e5 !important;
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.12) !important;
+}
+
+html:not(.dark) #card-pricing-vip .bg-slate-950\/70 {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) #card-pricing-vip .text-white {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #card-pricing-vip .text-slate-300,
+html:not(.dark) #card-pricing-vip .text-slate-400 {
+    color: #334155 !important;
+}
+
+html:not(.dark) #card-pricing-vip .text-amber-300,
+html:not(.dark) #card-pricing-vip .text-amber-400 {
+    color: #b45309 !important; /* amber-700 for high contrast */
+    font-weight: 800 !important;
+}
+
+html:not(.dark) #card-pricing-vip .border-slate-800 {
+    border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) #card-pricing-vip #price-display-vip-alldev {
+    color: #b45309 !important;
+}
+
+html:not(.dark) #card-pricing-vip #price-display-vip-1dev {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #section-license .text-amber-300 {
+    color: #b45309 !important;
+}
