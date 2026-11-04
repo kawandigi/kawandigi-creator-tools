@@ -404,7 +404,7 @@ export default {
         if (list.length === 0 && globalThis.__kd_device_licenses) {
           list = Object.values(globalThis.__kd_device_licenses);
         }
-        return new Response(JSON.stringify({ status: 'success', data: list, d1Error: d1Error }), { headers: corsHeaders });
+        return new Response(JSON.stringify({ status: 'success', data: list }), { headers: corsHeaders });
       }
 
       // 7. Admin License Generator API (Create 1-Device or All-Device License Keys)
