@@ -2887,6 +2887,31 @@ function renderAdminAnalytics() {
 }
 
 
+// Helper to proactively sync user session to Cloudflare D1
+export async function syncSessionToD1(user) {
+    if (!user || !user.email) return;
+    try {
+        const payload = {
+            id: user.id || 'usr_' + Date.now(),
+            name: user.name || 'Member',
+            email: user.email,
+            picture: user.picture || 'assets/icons/favicon.png',
+            plan: user.subscription?.plan || 'Trial Pengunjung',
+            total_generates: user.totalGenerates || user.total_generates || 0,
+            xp: user.xp || 10,
+            level: user.level || 'Novice Creator'
+        };
+        await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        console.info('[KawanDigi] Session synced to Cloudflare D1:', user.email);
+    } catch (e) {
+        console.warn('Session D1 sync failed:', e);
+    }
+}
+
 // =========================================================================
 // USER AUTHENTICATION & GOOGLE OAUTH / GIS
 // =========================================================================
@@ -2895,6 +2920,21 @@ async function initAuthManager() {
     await fetchGoogleClientIdFromServer();
 
     updateHeaderAuthUI();
+
+    // 2. Proactively auto-sync existing active session to Cloudflare D1
+    const activeUser = getCurrentUser();
+    if (activeUser && activeUser.email) {
+        syncSessionToD1(activeUser);
+    }
+
+    document.getElementById('btn-sync-profile-now')?.addEventListener('click', async () => {
+        const u = getCurrentUser();
+        if (u && u.email) {
+            showToast('Menyinkronkan ke Database Cloudflare D1...', 'info');
+            await syncSessionToD1(u);
+            showToast('Akun berhasil terekam di Database Cloudflare!', 'success');
+        }
+    });
 
     document.getElementById('btn-header-auth')?.addEventListener('click', () => {
         openUserProfileModal();
@@ -3075,6 +3115,8 @@ function openUserProfileModal() {
         if (xpEl) xpEl.textContent = `${user.xp || 10} XP`;
         if (genEl) genEl.textContent = `${user.totalGenerates || 0} Video Dibuat`;
         if (logoutContainer) logoutContainer.classList.remove('hidden');
+        document.getElementById('profile-sync-box')?.classList.remove('hidden');
+        syncSessionToD1(user);
     } else {
         if (avatarEl) avatarEl.src = 'assets/icons/favicon.png';
         if (nameEl) nameEl.textContent = 'Tamu / Belum Masuk';
@@ -3085,6 +3127,7 @@ function openUserProfileModal() {
         if (xpEl) xpEl.textContent = '0 XP';
         if (genEl) genEl.textContent = '0 Video Dibuat';
         if (logoutContainer) logoutContainer.classList.add('hidden');
+        document.getElementById('profile-sync-box')?.classList.add('hidden');
     }
 
     modal.classList.remove('hidden');
@@ -3730,6 +3773,10 @@ window.kdOpenHistory = () => {
 };
 window.kdCloseHistory = () => {
     closeHistoryDrawer();
+};
+window.kdRefreshMembers = () => {
+    renderAdminMembers();
+    showToast('Data member berhasil disegarkan dari Cloudflare D1', 'info');
 };
 window.kdDeleteMember = (email) => {
     if (confirm(`Hapus member ${email}?`)) {

@@ -1347,6 +1347,9 @@
                             <p class="text-xs text-slate-400">Kelola member terdaftar dan hubungi langsung melalui Email dengan 1-klik</p>
                         </div>
                         <div class="flex items-center gap-2">
+                            <button type="button" id="btn-refresh-admin-members" onclick="window.kdRefreshMembers()" class="px-3 py-1.5 bg-brand-600/30 hover:bg-brand-600/50 text-brand-300 border border-brand-500/40 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Segarkan Data
+                            </button>
                             <button type="button" id="btn-export-members-csv" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
                                 <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV (Excel)
                             </button>
@@ -1850,7 +1853,16 @@
                     <!-- Official Google GIS Button Container -->
                     <div id="g_id_signin_button" class="w-full flex justify-center min-h-[44px]"></div>
 
-                    
+                    <!-- Sync Status Info when already logged in -->
+                    <div id="profile-sync-box" class="hidden flex items-center justify-between p-2.5 bg-brand-500/10 border border-brand-500/30 rounded-xl text-xs">
+                        <span class="text-brand-300 font-semibold flex items-center gap-1.5">
+                            <i data-lucide="cloud" class="w-4 h-4 text-emerald-400"></i>
+                            Sinkronisasi Cloudflare D1
+                        </span>
+                        <button type="button" id="btn-sync-profile-now" class="px-2.5 py-1 bg-brand-600 hover:bg-brand-500 text-white rounded text-[11px] font-bold transition">
+                            Sync Sekarang
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Logout Button -->
