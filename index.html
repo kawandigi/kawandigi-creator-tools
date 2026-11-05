@@ -55,6 +55,23 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-brand-500 selection:text-white">
 
+    <!-- PWA & App Animated Splash Screen (Bouncing KD Logo) -->
+    <div id="pwa-splash" class="kd-splash-overlay">
+        <div class="kd-splash-content">
+            <div class="kd-splash-logo-wrap">
+                <img src="assets/icons/logo.png" alt="kawandigi logo" class="kd-splash-logo">
+                <div class="kd-splash-glow"></div>
+            </div>
+            <div class="kd-splash-brand">
+                <span class="kd-splash-title"><span class="kd-title-white">kawan</span><span class="kd-title-brand">digi</span></span>
+                <span class="kd-splash-tag">CREATOR TOOLS</span>
+            </div>
+            <div class="kd-splash-loader">
+                <div class="kd-splash-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Drawer Backdrop -->
     <div id="drawer-backdrop" class="fixed inset-0 z-40 hidden opacity-0 transition-opacity duration-300 lg:hidden"></div>
 
@@ -2259,6 +2276,21 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        // Dismiss Animated PWA Splash Screen smoothly
+        function dismissKdSplash() {
+            const splash = document.getElementById('pwa-splash');
+            if (!splash || splash.classList.contains('kd-splash-hide')) return;
+            splash.classList.add('kd-splash-hide');
+            setTimeout(() => {
+                if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+            }, 500);
+        }
+        window.addEventListener('load', () => {
+            setTimeout(dismissKdSplash, 900);
+        });
+        setTimeout(dismissKdSplash, 2200); // Fail-safe
+    </script>
     <script type="module" src="app.js"></script>
     <script>
         lucide.createIcons();
