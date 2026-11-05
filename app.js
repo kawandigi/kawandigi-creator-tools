@@ -105,18 +105,20 @@ let uploadedScreenshots = []; // Array of reference images: [{ id, base64, mimeT
 // TOAST NOTIFICATION UTILITY
 // =========================================================================
 function showToast(message, type = 'info') {
+    // Suppress routine pop-up toasts (theme changes, welcome, copy, success alerts)
+    // Only show critical error notifications so user knows if an API call failed
+    if (type !== 'error') {
+        return;
+    }
+
     const existing = document.querySelectorAll('.kd-toast');
     existing.forEach(t => t.remove());
 
     const toast = document.createElement('div');
     toast.className = `kd-toast kd-toast-${type} fade-in`;
-    
-    let iconName = 'info';
-    if (type === 'success') iconName = 'check-circle';
-    if (type === 'error') iconName = 'alert-triangle';
 
     toast.innerHTML = `
-        <i data-lucide="${iconName}" class="w-4 h-4 flex-shrink-0"></i>
+        <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
         <span>${message}</span>
     `;
 
@@ -125,9 +127,9 @@ function showToast(message, type = 'info') {
 
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-10px)';
+        toast.style.transform = 'translate(-50%, 10px)';
         setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    }, 3500);
 }
 
 // Copy text to clipboard helper
@@ -2362,8 +2364,7 @@ function cycleTheme() {
     localStorage.setItem('kawandigi_theme', next);
     applyTheme(next);
     
-    const labelMap = { dark: 'Mode Gelap', light: 'Mode Terang', system: 'Sesuai Sistem Device' };
-    showToast(`Tema diubah: ${labelMap[next]}`, 'info');
+    // Theme applied silently without popup toast
 }
 
 function initThemeToggle() {
@@ -4458,10 +4459,5 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDigitalProductsFromServer().then(renderProductsCatalog);
     fetchTutorialVideosFromServer().then(renderTutorials);
 
-    // Check if API Key is configured on launch
-    if (!getSavedApiKey() && getActiveProvider() !== 'custom') {
-        setTimeout(() => {
-            showToast('Selamat datang! Atur Provider AI Anda (Gemini, DeepSeek, OpenRouter, dll) di pojok kanan atas.', 'info');
-        }, 800);
-    }
+    // Startup completed cleanly without intrusive toasts
 });
