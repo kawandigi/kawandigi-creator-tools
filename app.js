@@ -2125,7 +2125,7 @@ function updateLicenseCards() {
         }
     }
 
-    // 3. VIP Card Status
+    // 3. VIP Card Status (Legacy & New Dual Cards)
     const vipStatusEl = document.getElementById('status-card-vip');
     if (vipStatusEl) {
         if (isSuper) {
@@ -2134,6 +2134,35 @@ function updateLicenseCards() {
             vipStatusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> All-Access VIP Aktif</span>`;
         } else {
             vipStatusEl.innerHTML = `<span class="text-xs text-slate-400">Belum Berlangganan VIP</span>`;
+        }
+    }
+
+    // Card 1 Status: 1 Device
+    const status1DevEl = document.getElementById('status-card-1dev');
+    if (status1DevEl) {
+        if (isSuper) {
+            status1DevEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Akses Superadmin</span>`;
+        } else if (isVip) {
+            const isAllScope = licenses['all_access']?.deviceScope === 'all_devices';
+            if (isAllScope) {
+                status1DevEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Tercover VIP All-Device</span>`;
+            } else {
+                status1DevEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="check" class="w-3.5 h-3.5"></i> Lisensi 1 Device Aktif</span>`;
+            }
+        } else {
+            status1DevEl.innerHTML = `<span class="text-xs text-slate-400">Belum Aktif di Perangkat Ini</span>`;
+        }
+    }
+
+    // Card 2 Status: All Device
+    const statusAllDevEl = document.getElementById('status-card-alldev');
+    if (statusAllDevEl) {
+        if (isSuper) {
+            statusAllDevEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs"><i data-lucide="crown" class="w-3.5 h-3.5"></i> Superadmin Unlimited</span>`;
+        } else if (isVip && licenses['all_access']?.deviceScope === 'all_devices') {
+            statusAllDevEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold text-xs"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Lisensi All-Device Aktif</span>`;
+        } else {
+            statusAllDevEl.innerHTML = `<span class="text-xs text-slate-400">Belum Berlangganan All-Device</span>`;
         }
     }
 
@@ -3662,10 +3691,12 @@ function initAdminConsole() {
 
     document.getElementById('btn-save-pricing-settings')?.addEventListener('click', async () => {
         const waIn = document.getElementById('admin-setting-whatsapp')?.value.trim();
+        const orig1In = parseInt(document.getElementById('admin-setting-price-original-1dev')?.value, 10);
+        const vip1In = parseInt(document.getElementById('admin-setting-price-vip-1dev')?.value, 10);
+        const origAllIn = parseInt(document.getElementById('admin-setting-price-original-alldev')?.value, 10);
+        const vipAllIn = parseInt(document.getElementById('admin-setting-price-vip-alldev')?.value, 10);
         const ugcIn = parseInt(document.getElementById('admin-setting-price-ugc')?.value, 10);
         const dramaIn = parseInt(document.getElementById('admin-setting-price-drama')?.value, 10);
-        const vip1In = parseInt(document.getElementById('admin-setting-price-vip-1dev')?.value, 10);
-        const vipAllIn = parseInt(document.getElementById('admin-setting-price-vip-alldev')?.value, 10);
 
         if (!waIn) {
             showToast('Silakan masukkan nomor WhatsApp Admin.', 'warning');
@@ -3681,10 +3712,12 @@ function initAdminConsole() {
 
         const newSettings = {
             admin_whatsapp: cleanWhatsAppNumber(waIn),
-            price_ugc: ugcIn > 0 ? ugcIn : 99000,
-            price_drama: dramaIn > 0 ? dramaIn : 149000,
+            price_original_1dev: orig1In > 0 ? orig1In : 399000,
             price_vip_1dev: vip1In > 0 ? vip1In : 199000,
-            price_vip_alldev: vipAllIn > 0 ? vipAllIn : 349000
+            price_original_alldev: origAllIn > 0 ? origAllIn : 699000,
+            price_vip_alldev: vipAllIn > 0 ? vipAllIn : 349000,
+            price_ugc: ugcIn > 0 ? ugcIn : 59000,
+            price_drama: dramaIn > 0 ? dramaIn : 79000
         };
 
         const ok = await savePricingSettingsToServer(newSettings);
@@ -4089,57 +4122,57 @@ function renderAdminTutorials() {
 function populatePricingInputs(pricing) {
     const p = pricing || getPricingSettings();
     const waIn = document.getElementById('admin-setting-whatsapp');
+    const orig1In = document.getElementById('admin-setting-price-original-1dev');
+    const vip1In = document.getElementById('admin-setting-price-vip-1dev');
+    const origAllIn = document.getElementById('admin-setting-price-original-alldev');
+    const vipAllIn = document.getElementById('admin-setting-price-vip-alldev');
     const ugcIn = document.getElementById('admin-setting-price-ugc');
     const dramaIn = document.getElementById('admin-setting-price-drama');
-    const vip1In = document.getElementById('admin-setting-price-vip-1dev');
-    const vipAllIn = document.getElementById('admin-setting-price-vip-alldev');
 
-    if (waIn) waIn.value = p.admin_whatsapp || '6281234567890';
-    if (ugcIn) ugcIn.value = p.price_ugc || 99000;
-    if (dramaIn) dramaIn.value = p.price_drama || 149000;
+    if (waIn) waIn.value = p.admin_whatsapp || '6282245565454';
+    if (orig1In) orig1In.value = p.price_original_1dev || 399000;
     if (vip1In) vip1In.value = p.price_vip_1dev || 199000;
+    if (origAllIn) origAllIn.value = p.price_original_alldev || 699000;
     if (vipAllIn) vipAllIn.value = p.price_vip_alldev || 349000;
+    if (ugcIn) ugcIn.value = p.price_ugc || 59000;
+    if (dramaIn) dramaIn.value = p.price_drama || 79000;
 }
 
 export function applyPricingToUI() {
     const p = getPricingSettings();
     const cleanWa = cleanWhatsAppNumber(p.admin_whatsapp);
 
-    // 1. UGC Affiliate Card
-    const elUgc = document.getElementById('price-display-ugc');
-    if (elUgc) elUgc.textContent = formatRupiah(p.price_ugc);
-    const btnWaUgc = document.getElementById('btn-buy-wa-ugc');
-    if (btnWaUgc) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi AI UGC Affiliate Creator (${formatRupiah(p.price_ugc)} Akses Selamanya)`);
-        btnWaUgc.href = `https://wa.me/${cleanWa}?text=${txt}`;
-    }
-
-    // 2. AI Drama Card
-    const elDrama = document.getElementById('price-display-drama');
-    if (elDrama) elDrama.textContent = formatRupiah(p.price_drama);
-    const btnWaDrama = document.getElementById('btn-buy-wa-drama');
-    if (btnWaDrama) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi AI Drama Creator (${formatRupiah(p.price_drama)} Akses Selamanya)`);
-        btnWaDrama.href = `https://wa.me/${cleanWa}?text=${txt}`;
-    }
-
-    // 3. VIP Master 1 Device
+    // 1. Lisensi 1 Device (Harga Coret & Aktual)
     const elVip1 = document.getElementById('price-display-vip-1dev');
-    if (elVip1) elVip1.textContent = formatRupiah(p.price_vip_1dev);
+    if (elVip1) elVip1.textContent = formatRupiah(p.price_vip_1dev || 199000);
+
+    const elOriginal1 = document.getElementById('price-original-display-vip-1dev');
+    if (elOriginal1) elOriginal1.textContent = formatRupiah(p.price_original_1dev || 399000);
+
     const btnWaVip1 = document.getElementById('btn-buy-wa-vip-1dev');
     if (btnWaVip1) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi VIP 1 Device (${formatRupiah(p.price_vip_1dev)} Akses Selamanya)`);
+        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi Selamanya 1 Device (${formatRupiah(p.price_vip_1dev || 199000)} Akses Selamanya). Mohon info nomor rekening / pembayaran.`);
         btnWaVip1.href = `https://wa.me/${cleanWa}?text=${txt}`;
     }
 
-    // 4. VIP Master All Device
+    // 2. Lisensi All Device (Harga Coret & Aktual)
     const elVipAll = document.getElementById('price-display-vip-alldev');
-    if (elVipAll) elVipAll.textContent = formatRupiah(p.price_vip_alldev);
+    if (elVipAll) elVipAll.textContent = formatRupiah(p.price_vip_alldev || 349000);
+
+    const elOriginalAll = document.getElementById('price-original-display-vip-alldev');
+    if (elOriginalAll) elOriginalAll.textContent = formatRupiah(p.price_original_alldev || 699000);
+
     const btnWaVipAll = document.getElementById('btn-buy-wa-vip-alldev');
     if (btnWaVipAll) {
-        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi VIP All Device (${formatRupiah(p.price_vip_alldev)} Akses Selamanya)`);
+        const txt = encodeURIComponent(`Halo Admin KawanDigi, saya ingin membeli Lisensi Selamanya All Device (${formatRupiah(p.price_vip_alldev || 349000)} Akses Selamanya Bebas Device - Email Sama). Mohon info nomor rekening / pembayaran.`);
         btnWaVipAll.href = `https://wa.me/${cleanWa}?text=${txt}`;
     }
+
+    // 3. Fallbacks for UGC and Drama if present
+    const elUgc = document.getElementById('price-display-ugc');
+    if (elUgc) elUgc.textContent = formatRupiah(p.price_ugc || 59000);
+    const elDrama = document.getElementById('price-display-drama');
+    if (elDrama) elDrama.textContent = formatRupiah(p.price_drama || 79000);
 }
 window.kdApplyPricingToUI = applyPricingToUI;
 

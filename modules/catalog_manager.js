@@ -367,7 +367,9 @@ export const DEFAULT_PRICING_CONFIG = {
     price_ugc: 59000,
     price_drama: 79000,
     price_vip_1dev: 199000,
-    price_vip_alldev: 349000
+    price_original_1dev: 399000,
+    price_vip_alldev: 349000,
+    price_original_alldev: 699000
 };
 
 export function cleanWhatsAppNumber(input) {
@@ -391,7 +393,9 @@ export function getPricingSettings() {
                 price_ugc: Number(parsed.price_ugc) || DEFAULT_PRICING_CONFIG.price_ugc,
                 price_drama: Number(parsed.price_drama) || DEFAULT_PRICING_CONFIG.price_drama,
                 price_vip_1dev: Number(parsed.price_vip_1dev) || DEFAULT_PRICING_CONFIG.price_vip_1dev,
-                price_vip_alldev: Number(parsed.price_vip_alldev) || DEFAULT_PRICING_CONFIG.price_vip_alldev
+                price_original_1dev: Number(parsed.price_original_1dev) || DEFAULT_PRICING_CONFIG.price_original_1dev,
+                price_vip_alldev: Number(parsed.price_vip_alldev) || DEFAULT_PRICING_CONFIG.price_vip_alldev,
+                price_original_alldev: Number(parsed.price_original_alldev) || DEFAULT_PRICING_CONFIG.price_original_alldev
             };
         }
     } catch {}
@@ -405,7 +409,9 @@ export function savePricingSettings(settings) {
         price_ugc: Number(settings.price_ugc) || current.price_ugc,
         price_drama: Number(settings.price_drama) || current.price_drama,
         price_vip_1dev: Number(settings.price_vip_1dev) || current.price_vip_1dev,
-        price_vip_alldev: Number(settings.price_vip_alldev) || current.price_vip_alldev
+        price_original_1dev: Number(settings.price_original_1dev) || current.price_original_1dev,
+        price_vip_alldev: Number(settings.price_vip_alldev) || current.price_vip_alldev,
+        price_original_alldev: Number(settings.price_original_alldev) || current.price_original_alldev
     };
     localStorage.setItem(STORAGE_PRICING_KEY, JSON.stringify(updated));
     return updated;
@@ -423,7 +429,9 @@ export async function fetchPricingSettingsFromServer() {
                     price_ugc: d.price_ugc,
                     price_drama: d.price_drama,
                     price_vip_1dev: d.price_vip_1dev,
-                    price_vip_alldev: d.price_vip_alldev
+                    price_original_1dev: d.price_original_1dev,
+                    price_vip_alldev: d.price_vip_alldev,
+                    price_original_alldev: d.price_original_alldev
                 });
                 return updated;
             }
@@ -445,7 +453,9 @@ export async function savePricingSettingsToServer(settings) {
                 price_ugc: local.price_ugc,
                 price_drama: local.price_drama,
                 price_vip_1dev: local.price_vip_1dev,
-                price_vip_alldev: local.price_vip_alldev
+                price_original_1dev: local.price_original_1dev,
+                price_vip_alldev: local.price_vip_alldev,
+                price_original_alldev: local.price_original_alldev
             })
         });
         if (res.ok) {

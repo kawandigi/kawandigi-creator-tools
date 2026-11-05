@@ -344,9 +344,11 @@ export default {
           ).trim();
 
           let priceVip1Dev = Number(globalThis.__kd_settings.price_vip_1dev) || 199000;
+          let priceOriginal1Dev = Number(globalThis.__kd_settings.price_original_1dev) || 399000;
           let priceVipAllDev = Number(globalThis.__kd_settings.price_vip_alldev) || 349000;
-          let priceUgc = Number(globalThis.__kd_settings.price_ugc) || 99000;
-          let priceDrama = Number(globalThis.__kd_settings.price_drama) || 149000;
+          let priceOriginalAllDev = Number(globalThis.__kd_settings.price_original_alldev) || 699000;
+          let priceUgc = Number(globalThis.__kd_settings.price_ugc) || 59000;
+          let priceDrama = Number(globalThis.__kd_settings.price_drama) || 79000;
           let featureFlags = globalThis.__kd_settings.feature_flags || null;
           let digitalProducts = globalThis.__kd_settings.digital_products || null;
           let tutorialVideos = globalThis.__kd_settings.tutorial_videos || null;
@@ -361,7 +363,9 @@ export default {
                   if (r.key === 'admin_email' && r.value) adminEmail = r.value.trim().toLowerCase();
                   if (r.key === 'admin_whatsapp' && r.value) adminWhatsapp = r.value.trim();
                   if (r.key === 'price_vip_1dev' && r.value) priceVip1Dev = parseInt(r.value, 10) || priceVip1Dev;
+                  if (r.key === 'price_original_1dev' && r.value) priceOriginal1Dev = parseInt(r.value, 10) || priceOriginal1Dev;
                   if (r.key === 'price_vip_alldev' && r.value) priceVipAllDev = parseInt(r.value, 10) || priceVipAllDev;
+                  if (r.key === 'price_original_alldev' && r.value) priceOriginalAllDev = parseInt(r.value, 10) || priceOriginalAllDev;
                   if (r.key === 'price_ugc' && r.value) priceUgc = parseInt(r.value, 10) || priceUgc;
                   if (r.key === 'price_drama' && r.value) priceDrama = parseInt(r.value, 10) || priceDrama;
                   if (r.key === 'feature_flags' && r.value) {
@@ -386,7 +390,9 @@ export default {
               admin_email: adminEmail,
               admin_whatsapp: adminWhatsapp,
               price_vip_1dev: priceVip1Dev,
+              price_original_1dev: priceOriginal1Dev,
               price_vip_alldev: priceVipAllDev,
+              price_original_alldev: priceOriginalAllDev,
               price_ugc: priceUgc,
               price_drama: priceDrama,
               feature_flags: featureFlags,
@@ -403,7 +409,9 @@ export default {
             const newAdminEmail = (body.admin_email || '').trim();
             const newAdminWhatsapp = (body.admin_whatsapp || '').trim();
             const newPriceVip1Dev = body.price_vip_1dev !== undefined ? Number(body.price_vip_1dev) : null;
+            const newPriceOriginal1Dev = body.price_original_1dev !== undefined ? Number(body.price_original_1dev) : null;
             const newPriceVipAllDev = body.price_vip_alldev !== undefined ? Number(body.price_vip_alldev) : null;
+            const newPriceOriginalAllDev = body.price_original_alldev !== undefined ? Number(body.price_original_alldev) : null;
             const newPriceUgc = body.price_ugc !== undefined ? Number(body.price_ugc) : null;
             const newPriceDrama = body.price_drama !== undefined ? Number(body.price_drama) : null;
             const newFeatureFlags = body.feature_flags !== undefined ? body.feature_flags : null;
@@ -414,7 +422,9 @@ export default {
             if (newAdminEmail) globalThis.__kd_settings.admin_email = newAdminEmail;
             if (newAdminWhatsapp) globalThis.__kd_settings.admin_whatsapp = newAdminWhatsapp;
             if (newPriceVip1Dev) globalThis.__kd_settings.price_vip_1dev = newPriceVip1Dev;
+            if (newPriceOriginal1Dev) globalThis.__kd_settings.price_original_1dev = newPriceOriginal1Dev;
             if (newPriceVipAllDev) globalThis.__kd_settings.price_vip_alldev = newPriceVipAllDev;
+            if (newPriceOriginalAllDev) globalThis.__kd_settings.price_original_alldev = newPriceOriginalAllDev;
             if (newPriceUgc) globalThis.__kd_settings.price_ugc = newPriceUgc;
             if (newPriceDrama) globalThis.__kd_settings.price_drama = newPriceDrama;
             if (newFeatureFlags) globalThis.__kd_settings.feature_flags = newFeatureFlags;
@@ -435,7 +445,9 @@ export default {
               if (newAdminEmail) await upsertSetting('admin_email', newAdminEmail);
               if (newAdminWhatsapp) await upsertSetting('admin_whatsapp', newAdminWhatsapp);
               if (newPriceVip1Dev !== null) await upsertSetting('price_vip_1dev', newPriceVip1Dev);
+              if (newPriceOriginal1Dev !== null) await upsertSetting('price_original_1dev', newPriceOriginal1Dev);
               if (newPriceVipAllDev !== null) await upsertSetting('price_vip_alldev', newPriceVipAllDev);
+              if (newPriceOriginalAllDev !== null) await upsertSetting('price_original_alldev', newPriceOriginalAllDev);
               if (newPriceUgc !== null) await upsertSetting('price_ugc', newPriceUgc);
               if (newPriceDrama !== null) await upsertSetting('price_drama', newPriceDrama);
               if (newFeatureFlags !== null) await upsertSetting('feature_flags', JSON.stringify(newFeatureFlags));
@@ -450,7 +462,9 @@ export default {
                 admin_email: newAdminEmail || globalThis.__kd_settings.admin_email || 'admin.kawandigi@gmail.com',
                 admin_whatsapp: newAdminWhatsapp || globalThis.__kd_settings.admin_whatsapp || '6281234567890',
                 price_vip_1dev: newPriceVip1Dev || globalThis.__kd_settings.price_vip_1dev || 199000,
+                price_original_1dev: newPriceOriginal1Dev || globalThis.__kd_settings.price_original_1dev || 399000,
                 price_vip_alldev: newPriceVipAllDev || globalThis.__kd_settings.price_vip_alldev || 349000,
+                price_original_alldev: newPriceOriginalAllDev || globalThis.__kd_settings.price_original_alldev || 699000,
                 price_ugc: newPriceUgc || globalThis.__kd_settings.price_ugc || 99000,
                 price_drama: newPriceDrama || globalThis.__kd_settings.price_drama || 149000,
                 digital_products: Array.isArray(newDigitalProducts) ? newDigitalProducts : (Array.isArray(globalThis.__kd_settings.digital_products) ? globalThis.__kd_settings.digital_products : []),

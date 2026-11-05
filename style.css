@@ -804,42 +804,77 @@ html:not(.dark) #section-license ul li {
     color: #334155 !important;
 }
 
-html:not(.dark) #card-pricing-vip {
-    background: linear-gradient(to bottom, #f8fafc, #ffffff) !important;
-    border-color: #4f46e5 !important;
-    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.12) !important;
-}
-
-html:not(.dark) #card-pricing-vip .bg-slate-950\/70 {
-    background-color: #f1f5f9 !important;
+html:not(.dark) #card-pricing-vip,
+html:not(.dark) #card-pricing-1dev,
+html:not(.dark) #card-pricing-alldev {
+    background: #ffffff !important;
     border-color: #cbd5e1 !important;
+    box-shadow: 0 4px 20px -3px rgba(0, 0, 0, 0.08) !important;
 }
 
+html:not(.dark) #card-pricing-alldev {
+    border-color: #f59e0b !important;
+    box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15) !important;
+}
+
+html:not(.dark) #card-pricing-1dev .bg-slate-950\/70,
+html:not(.dark) #card-pricing-1dev .bg-slate-950\/40,
+html:not(.dark) #card-pricing-alldev .bg-slate-950\/80,
+html:not(.dark) #card-pricing-alldev .bg-slate-950\/50,
+html:not(.dark) #card-pricing-vip .bg-slate-950\/70 {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) #card-pricing-1dev h4,
+html:not(.dark) #card-pricing-alldev h4,
+html:not(.dark) #card-pricing-1dev .text-white,
+html:not(.dark) #card-pricing-alldev .text-white,
 html:not(.dark) #card-pricing-vip .text-white {
     color: #0f172a !important;
 }
 
+html:not(.dark) #card-pricing-1dev .text-slate-300,
+html:not(.dark) #card-pricing-1dev .text-slate-400,
+html:not(.dark) #card-pricing-alldev .text-slate-300,
+html:not(.dark) #card-pricing-alldev .text-slate-400,
 html:not(.dark) #card-pricing-vip .text-slate-300,
 html:not(.dark) #card-pricing-vip .text-slate-400 {
     color: #334155 !important;
 }
 
+html:not(.dark) #card-pricing-1dev .line-through,
+html:not(.dark) #card-pricing-alldev .line-through {
+    color: #94a3b8 !important;
+}
+
+html:not(.dark) #card-pricing-alldev .text-amber-400,
+html:not(.dark) #card-pricing-alldev .text-amber-300,
 html:not(.dark) #card-pricing-vip .text-amber-300,
 html:not(.dark) #card-pricing-vip .text-amber-400 {
     color: #b45309 !important; /* amber-700 for high contrast */
     font-weight: 800 !important;
 }
 
-html:not(.dark) #card-pricing-vip .border-slate-800 {
-    border-color: #cbd5e1 !important;
+html:not(.dark) #card-pricing-1dev .text-brand-400 {
+    color: #4338ca !important;
+    font-weight: 800 !important;
 }
 
+html:not(.dark) #card-pricing-1dev .border-slate-800,
+html:not(.dark) #card-pricing-alldev .border-slate-800,
+html:not(.dark) #card-pricing-vip .border-slate-800 {
+    border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) #card-pricing-alldev #price-display-vip-alldev,
 html:not(.dark) #card-pricing-vip #price-display-vip-alldev {
     color: #b45309 !important;
 }
 
+html:not(.dark) #card-pricing-1dev #price-display-vip-1dev,
 html:not(.dark) #card-pricing-vip #price-display-vip-1dev {
-    color: #0f172a !important;
+    color: #4338ca !important;
 }
 
 html:not(.dark) #section-license .text-amber-300 {
