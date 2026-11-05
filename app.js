@@ -1541,88 +1541,25 @@ function renderUgcResults(campaign) {
         const textToDisplay = formatFullPromptVideoText(campaign);
         fullPromptCode.textContent = textToDisplay;
 
-        btnCopyFullPrompt?.addEventListener('click', () => {
-            copyToClipboard(textToDisplay, 'Prompt Video 10 Detik Lengkap disalin!');
-        });
+        const dur = campaign.duration_seconds || selectedUgcDuration || 10;
+        const cardTitle = document.getElementById('ugc-prompt-card-title');
+        if (cardTitle) {
+            cardTitle.innerHTML = `<i data-lucide="terminal" class="w-4 h-4 text-brand-400"></i> Prompt Video ${dur} Detik Siap Pakai (Google Flow / Veo / Kling)`;
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        if (btnCopyFullPrompt) {
+            btnCopyFullPrompt.onclick = () => {
+                copyToClipboard(textToDisplay, `Prompt Video ${dur} Detik Lengkap disalin!`);
+            };
+        }
     }
 
-    // 3. Render Scene Cards
-    sceneList.innerHTML = '';
-    const scenes = campaign.scenes || [];
-
-    scenes.forEach((scene, index) => {
-        const sceneCard = document.createElement('div');
-        sceneCard.className = 'bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3 fade-in hover:border-brand-500/40 transition';
-
-        const sceneId = `ugc-scene-${index}`;
-
-        sceneCard.innerHTML = `
-            <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
-                <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-lg bg-brand-600/30 text-brand-400 font-bold text-xs flex items-center justify-center border border-brand-500/30">
-                        ${scene.scene_number || (index + 1)}
-                    </span>
-                    <h4 class="text-xs font-bold text-white tracking-wide uppercase">${scene.scene_title || `Scene ${index + 1}`}</h4>
-                </div>
-                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-semibold border border-slate-700">
-                    ⏱️ ${scene.time_range || `${scene.duration_seconds || 1.5} Detik`}
-                </span>
-            </div>
-
-            <!-- Visual Description & Camera -->
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Visual Adegan (9:16 Vertikal):</label>
-                <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
-                    ${scene.visual_description || '-'}
-                </p>
-                ${scene.camera_movement ? `
-                <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                    <i data-lucide="video" class="w-3 h-3 text-brand-400"></i> Kamera: <span class="text-slate-300">${scene.camera_movement}</span>
-                </p>
-                ` : ''}
-            </div>
-
-            <!-- Voiceover Script -->
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Naskah Suara (Voiceover):</label>
-                    <div class="flex items-center gap-2">
-                        <button class="btn-play-vo text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold">
-                            <i data-lucide="volume-2" class="w-3 h-3"></i> Putar Suara
-                        </button>
-                        <button class="btn-copy-vo text-[10px] text-brand-400 hover:text-brand-300 flex items-center gap-1 font-semibold">
-                            <i data-lucide="copy" class="w-3 h-3"></i> Salin Naskah
-                        </button>
-                    </div>
-                </div>
-                <p class="text-xs text-amber-200 italic bg-amber-950/20 border border-amber-500/20 p-2.5 rounded-lg leading-relaxed">
-                    "${scene.voiceover_script || '-'}"
-                </p>
-            </div>
-
-            <!-- Caption / Overlay Text -->
-            ${scene.caption_overlay && scene.caption_overlay !== '-' ? `
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Teks di Layar (Subtitle Safe Zone):</label>
-                <div class="inline-block px-2.5 py-1 bg-brand-500/20 text-brand-300 border border-brand-500/40 rounded-lg text-xs font-black">
-                    ${scene.caption_overlay}
-                </div>
-            </div>
-            ` : ''}
-        `;
-
-        // Wire Copy Vo
-        sceneCard.querySelector('.btn-copy-vo')?.addEventListener('click', () => {
-            copyToClipboard(scene.voiceover_script, `Naskah Scene ${scene.scene_number || (index + 1)} disalin!`);
-        });
-
-        // Wire Play Vo (Web Speech Audio)
-        sceneCard.querySelector('.btn-play-vo')?.addEventListener('click', () => {
-            speakVoiceover(scene.voiceover_script);
-        });
-
-        sceneList.appendChild(sceneCard);
-    });
+    // 3. Clear detailed scene cards (rincian adegan dihilangkan, prompt utuh sudah lengkap)
+    if (sceneList) {
+        sceneList.innerHTML = '';
+        sceneList.classList.add('hidden');
+    }
 
     if (window.lucide) window.lucide.createIcons();
 }
