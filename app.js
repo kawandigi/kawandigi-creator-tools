@@ -15,6 +15,7 @@ import {
     saveCustomBaseUrl, 
     getCustomModel, 
     saveCustomModel, 
+    generateVisualImage,
     generateImagen3, 
     generateOmniVideo 
 } from './modules/gemini_api.js';
@@ -1609,6 +1610,32 @@ function renderUgcResults(campaign) {
                 </div>
             </div>
             ` : ''}
+
+            <!-- Visual Image Preview Section (FLUX.1 Free Rp 0) -->
+            <div class="pt-3 border-t border-slate-800/80 space-y-2">
+                <div class="flex items-center justify-between">
+                    <button type="button" class="btn-preview-ugc-image text-xs px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 font-semibold flex items-center gap-1.5 transition active:scale-[0.98]">
+                        <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-400"></i>
+                        <span>Preview Gambar (FLUX.1)</span>
+                    </button>
+                    <span class="text-[10px] text-slate-400 font-medium">9:16 Vertikal • Gratis Rp 0</span>
+                </div>
+
+                <div class="preview-ugc-image-container hidden pt-2 space-y-2">
+                    <div class="relative rounded-xl overflow-hidden border border-indigo-500/30 bg-slate-900/90 flex justify-center shadow-lg">
+                        <img class="preview-ugc-img max-h-80 w-auto rounded-lg object-cover" alt="Preview Gambar Adegan" />
+                        <span class="badge-source absolute top-2 right-2 px-2 py-0.5 rounded-md bg-slate-950/85 backdrop-blur-md text-[10px] font-bold text-indigo-300 border border-indigo-500/30">⚡ FLUX.1 Free</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 px-0.5">
+                        <button type="button" class="btn-refresh-ugc-image text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Buat Ulang Gambar
+                        </button>
+                        <a class="btn-download-ugc-image text-xs px-3 py-1 rounded-lg bg-emerald-600/25 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 font-bold flex items-center gap-1 transition" target="_blank" download="adegan-ugc-${scene.scene_number || (index + 1)}.jpg">
+                            <i data-lucide="download" class="w-3 h-3"></i> Unduh Gambar
+                        </a>
+                    </div>
+                </div>
+            </div>
         `;
 
         // Wire Copy Vo
@@ -1620,6 +1647,46 @@ function renderUgcResults(campaign) {
         sceneCard.querySelector('.btn-play-vo')?.addEventListener('click', () => {
             speakVoiceover(scene.voiceover_script);
         });
+
+        // Wire UGC FLUX.1 Image Preview
+        const btnUgcImg = sceneCard.querySelector('.btn-preview-ugc-image');
+        const ugcImgContainer = sceneCard.querySelector('.preview-ugc-image-container');
+        const ugcImg = sceneCard.querySelector('.preview-ugc-img');
+        const btnRefreshUgcImg = sceneCard.querySelector('.btn-refresh-ugc-image');
+        const btnDownloadUgcImg = sceneCard.querySelector('.btn-download-ugc-image');
+        const badgeSource = sceneCard.querySelector('.badge-source');
+
+        const doGenerateUgcImage = async () => {
+            btnUgcImg.disabled = true;
+            btnUgcImg.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Merender Gambar...`;
+            try {
+                const promptToUse = scene.google_flow_prompt || scene.visual_description || 'Indonesian product commercial';
+                const imgUrl = await generateVisualImage(promptToUse, '9:16');
+                ugcImg.src = imgUrl;
+                ugcImg.onload = () => {
+                    ugcImgContainer.classList.remove('hidden');
+                    if (btnDownloadUgcImg) btnDownloadUgcImg.href = imgUrl;
+                    if (badgeSource) {
+                        badgeSource.textContent = imgUrl.includes('pollinations.ai') ? '⚡ FLUX.1 Free' : '✨ Google Imagen 3';
+                    }
+                    btnUgcImg.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-400"></i> Buat Ulang Gambar`;
+                    btnUgcImg.disabled = false;
+                    if (window.lucide) window.lucide.createIcons();
+                };
+                ugcImg.onerror = () => {
+                    btnUgcImg.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-indigo-400"></i> Coba Lagi`;
+                    btnUgcImg.disabled = false;
+                    if (window.lucide) window.lucide.createIcons();
+                };
+            } catch (err) {
+                btnUgcImg.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-indigo-400"></i> Coba Lagi`;
+                btnUgcImg.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
+            }
+        };
+
+        btnUgcImg?.addEventListener('click', doGenerateUgcImage);
+        btnRefreshUgcImg?.addEventListener('click', doGenerateUgcImage);
 
         sceneList.appendChild(sceneCard);
     });
@@ -1919,7 +1986,7 @@ function renderDramaResults(drama) {
                     </button>
                     <button class="btn-preview-imagen w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1.5 transition">
                         <i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i>
-                        <span>Preview Gambar Tokoh</span>
+                        <span>Preview Gambar Tokoh (FLUX.1)</span>
                     </button>
                 </div>
 
@@ -1939,8 +2006,16 @@ function renderDramaResults(drama) {
                 </div>
 
                 <!-- Image Preview Container -->
-                <div class="preview-image-container hidden text-center pt-1">
-                    <img class="preview-img mx-auto rounded-xl border border-slate-700 max-h-80 object-cover shadow-lg" alt="AI Preview" />
+                <div class="preview-image-container hidden text-center pt-2 space-y-2">
+                    <div class="relative rounded-xl overflow-hidden border border-accent-500/30 bg-slate-900/90 flex justify-center shadow-lg">
+                        <img class="preview-img max-h-80 w-auto rounded-lg object-cover" alt="AI Preview" />
+                        <span class="badge-source-drama absolute top-2 right-2 px-2 py-0.5 rounded-md bg-slate-950/85 backdrop-blur-md text-[10px] font-bold text-accent-300 border border-accent-500/30">⚡ FLUX.1 Free</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-2">
+                        <a class="btn-download-drama-img text-xs px-3 py-1 rounded-lg bg-emerald-600/25 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 font-bold flex items-center gap-1 transition" target="_blank" download="drama-scene.jpg">
+                            <i data-lucide="download" class="w-3 h-3"></i> Unduh Gambar
+                        </a>
+                    </div>
                 </div>
             </div>
         `;
@@ -2037,24 +2112,36 @@ function renderDramaResults(drama) {
             }
         });
 
-        // Wire Imagen Preview
+        // Wire Imagen Preview (FLUX.1 Free)
         const btnImagen = sceneCard.querySelector('.btn-preview-imagen');
         const imgContainer = sceneCard.querySelector('.preview-image-container');
         const previewImg = sceneCard.querySelector('.preview-img');
+        const btnDlDrama = sceneCard.querySelector('.btn-download-drama-img');
+        const badgeDrama = sceneCard.querySelector('.badge-source-drama');
 
         btnImagen?.addEventListener('click', async () => {
             btnImagen.disabled = true;
-            btnImagen.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-accent-400 border-t-transparent rounded-full animate-spin"></div> Merender Karakter...`;
+            btnImagen.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-accent-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Merender Tokoh (FLUX.1)...`;
             try {
                 const imgData = await generateImagen3(scene.google_flow_prompt, '9:16');
                 previewImg.src = imgData;
-                imgContainer.classList.remove('hidden');
-                btnImagen.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-accent-400"></i> Render Ulang Gambar`;
-                showToast(`Visual Preview Scene ${scene.scene_number} siap!`, 'success');
+                previewImg.onload = () => {
+                    imgContainer.classList.remove('hidden');
+                    if (btnDlDrama) btnDlDrama.href = imgData;
+                    if (badgeDrama) {
+                        badgeDrama.textContent = imgData.includes('pollinations.ai') ? '⚡ FLUX.1 Free' : '✨ Google Imagen 3';
+                    }
+                    btnImagen.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-accent-400"></i> Buat Ulang Gambar`;
+                    btnImagen.disabled = false;
+                    if (window.lucide) window.lucide.createIcons();
+                };
+                previewImg.onerror = () => {
+                    btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Coba Lagi`;
+                    btnImagen.disabled = false;
+                    if (window.lucide) window.lucide.createIcons();
+                };
             } catch (err) {
-                showToast(err.message, 'error');
-                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Preview Gambar`;
-            } finally {
+                btnImagen.innerHTML = `<i data-lucide="image" class="w-3.5 h-3.5 text-accent-400"></i> Preview Gambar (FLUX.1)`;
                 btnImagen.disabled = false;
                 if (window.lucide) window.lucide.createIcons();
             }

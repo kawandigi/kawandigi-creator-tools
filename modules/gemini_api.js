@@ -647,21 +647,21 @@ export async function generateOmniVideo(prompt, aspectRatio = '9:16') {
 }
 
 /**
- * Generate Visual Preview Image (Nano Banana 2.1 with Free Tier Pollinations Fallback)
+ * Generate Visual Preview Image (FLUX.1 via Pollinations AI [100% Free Rp 0] with Google Imagen 3 fallback)
  */
 export async function generateVisualImage(prompt, aspectRatio = '9:16') {
     const apiKey = getSavedApiKey('gemini');
 
-    // 1. Try Gemini Nano Banana 2.1 via Interactions API if user has a paid Google key
+    // 1. If user configured a Google Gemini API Key, try Google Imagen 3 (Pay-As-You-Go / Cloud credits)
     if (apiKey) {
         try {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`;
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
             const payload = {
-                model: 'gemini-nano-banana-2.1',
-                input: prompt,
-                response_format: {
-                    type: 'image',
-                    aspect_ratio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16')
+                instances: [{ prompt: prompt.slice(0, 500) }],
+                parameters: {
+                    sampleCount: 1,
+                    aspectRatio: aspectRatio === '16:9' ? '16:9' : (aspectRatio === '1:1' ? '1:1' : '9:16'),
+                    personGeneration: 'ALLOW_ADULT'
                 }
             };
 
@@ -673,28 +673,35 @@ export async function generateVisualImage(prompt, aspectRatio = '9:16') {
 
             if (resp.ok) {
                 const data = await resp.json();
-                if (data.steps && Array.isArray(data.steps)) {
-                    for (const step of data.steps) {
-                        if (step.content && Array.isArray(step.content)) {
-                            for (const part of step.content) {
-                                if (part.type === 'image' && part.data) {
-                                    return `data:${part.mime_type || 'image/png'};base64,${part.data}`;
-                                }
-                            }
-                        }
-                    }
+                if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
+                    return `data:${data.predictions[0].mimeType || 'image/jpeg'};base64,${data.predictions[0].bytesBase64Encoded}`;
                 }
             }
         } catch {
-            // Proceed to free visual generator fallback
+            // Silently proceed to 100% Free FLUX.1 generator
         }
     }
 
-    // 2. 100% Free Tier Fallback: Instant visual generation (No key required)
-    const width = aspectRatio === '16:9' ? 1280 : 720;
-    const height = aspectRatio === '16:9' ? 720 : 1280;
-    const cleanPrompt = encodeURIComponent(prompt.slice(0, 300));
-    const freeImageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
+    // 2. 100% Free Engine: FLUX.1 via Pollinations AI (Rp 0, No API Key, Clean 9:16 Vertikal)
+    const width = aspectRatio === '16:9' ? 1280 : (aspectRatio === '1:1' ? 1024 : 720);
+    const height = aspectRatio === '16:9' ? 720 : (aspectRatio === '1:1' ? 1024 : 1280);
+
+    // Optimize prompt for photorealistic output
+    let promptClean = (prompt || '')
+        .replace(/Clean footage.*?$/gi, '')
+        .replace(/Wajib percakapan.*?$/gi, '')
+        .replace(/Video UGC vertikal 9:16 kualitas FHD\./gi, 'photorealistic 9:16 commercial video still, high resolution, cinematic soft lighting')
+        .replace(/\bTalent:\s*/gi, 'Featuring: ')
+        .replace(/\bVisual adegan:\s*/gi, 'Scene: ')
+        .trim();
+
+    if (!promptClean) {
+        promptClean = 'Indonesian commercial product advertising photography, 8k resolution, cinematic lighting, sharp focus';
+    }
+
+    const cleanPrompt = encodeURIComponent(promptClean.slice(0, 450));
+    const randomSeed = Math.floor(Math.random() * 9999999);
+    const freeImageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=${width}&height=${height}&model=flux&nologo=true&seed=${randomSeed}`;
 
     return freeImageUrl;
 }
