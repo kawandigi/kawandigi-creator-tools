@@ -3528,9 +3528,6 @@ function initGoogleIdentityServices() {
 
                         if (isAdminUser) {
                             sessionStorage.setItem('kd_admin_unlocked', '1');
-                            showToast(`Selamat datang Superadmin, ${user.name}!`, 'success');
-                        } else {
-                            showToast(`Selamat datang, ${user.name}!`, 'success');
                         }
                     }
                 }
