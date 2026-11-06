@@ -2740,7 +2740,10 @@ function renderTutorials() {
 // =========================================================================
 // LEADERBOARD & GAMIFICATION RENDERING
 // =========================================================================
-function renderLeaderboard() {
+function renderLeaderboard(skipSync = false) {
+    if (!skipSync) {
+        syncMembersFromServer().then(() => renderLeaderboard(true));
+    }
     const podiumGrid = document.getElementById('podium-top3-grid');
     const tableBody = document.getElementById('leaderboard-table-body');
     const myRankPos = document.getElementById('my-rank-position');
@@ -2945,9 +2948,8 @@ export function recordGenerationActivity(tool, detail, xpBonus = 10) {
 
     const currentUser = getCurrentUser();
     if (currentUser) {
-        currentUser.totalGenerates = (currentUser.totalGenerates || 0) + 1;
-        currentUser.xp = (currentUser.xp || 0) + xpBonus;
-        saveCurrentUser(currentUser);
+        // Note: trackActivity already incremented currentUser's xp and totalGenerates,
+        // and saved to localStorage + member records.
         syncSessionToD1(currentUser);
     } else {
         const guestGens = (parseInt(localStorage.getItem('kawandigi_guest_generates') || '0', 10) || 0) + 1;
@@ -2972,14 +2974,109 @@ export async function syncSessionToD1(user) {
             xp: user.xp || 10,
             level: user.level || 'Novice Creator'
         };
-        await fetch('/api/auth/google', {
+        const res = await fetch('/api/auth/google', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+        if (res.ok) {
+            const result = await res.json();
+            if (result && result.status === 'success' && result.data) {
+                const dbData = result.data;
+                const cur = getCurrentUser();
+                if (cur && cur.email.toLowerCase() === dbData.email.toLowerCase()) {
+                    let changed = false;
+                    const dbGens = dbData.totalGenerates || dbData.total_generates || 0;
+                    const dbXp = dbData.xp || 0;
+                    if ((cur.totalGenerates || 0) < dbGens) {
+                        cur.totalGenerates = dbGens;
+                        changed = true;
+                    }
+                    if ((cur.xp || 0) < dbXp) {
+                        cur.xp = dbXp;
+                        changed = true;
+                    }
+                    if (dbData.level && cur.level !== dbData.level) {
+                        cur.level = dbData.level;
+                        changed = true;
+                    }
+                    if (changed) {
+                        saveCurrentUser(cur);
+                        updateHeaderAuthUI(false);
+                    }
+                }
+            }
+        }
         console.info('[KawanDigi] Session synced to Cloudflare D1:', user.email);
     } catch (e) {
         console.warn('Session D1 sync failed:', e);
+    }
+}
+
+// Helper to proactively sync member list & leaderboard from Cloudflare D1
+export async function syncMembersFromServer() {
+    try {
+        const res = await fetch('/api/members');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json && json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
+            const currentLocal = getMemberList();
+            const map = new Map();
+            currentLocal.forEach(m => {
+                if (m && m.email) map.set(m.email.toLowerCase(), m);
+            });
+            json.data.forEach(m => {
+                if (m && m.email) {
+                    const existing = map.get(m.email.toLowerCase());
+                    if (existing) {
+                        map.set(m.email.toLowerCase(), {
+                            ...existing,
+                            ...m,
+                            totalGenerates: Math.max(existing.totalGenerates || 0, m.totalGenerates || m.total_generates || 0),
+                            xp: Math.max(existing.xp || 0, m.xp || 0),
+                            lastActive: m.lastActive || existing.lastActive
+                        });
+                    } else {
+                        map.set(m.email.toLowerCase(), {
+                            ...m,
+                            totalGenerates: m.totalGenerates || m.total_generates || 0,
+                            xp: m.xp || 10
+                        });
+                    }
+                }
+            });
+            const mergedList = Array.from(map.values());
+            saveMemberList(mergedList);
+
+            // Sync active user if present in the list
+            const user = getCurrentUser();
+            if (user && user.email) {
+                const myRecord = map.get(user.email.toLowerCase());
+                if (myRecord) {
+                    let changed = false;
+                    const rXp = myRecord.xp || 0;
+                    const rGens = myRecord.totalGenerates || 0;
+                    if ((user.xp || 0) < rXp) {
+                        user.xp = rXp;
+                        changed = true;
+                    }
+                    if ((user.totalGenerates || 0) < rGens) {
+                        user.totalGenerates = rGens;
+                        changed = true;
+                    }
+                    if (myRecord.level && user.level !== myRecord.level) {
+                        user.level = myRecord.level;
+                        changed = true;
+                    }
+                    if (changed) {
+                        saveCurrentUser(user);
+                        updateHeaderAuthUI(false);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('syncMembersFromServer error:', e);
     }
 }
 
@@ -3059,7 +3156,7 @@ async function initAuthManager() {
     initGoogleIdentityServices();
 }
 
-function updateHeaderAuthUI() {
+function updateHeaderAuthUI(shouldSync = true) {
     const user = getCurrentUser();
     const btn = document.getElementById('btn-header-auth');
     const avatar = document.getElementById('auth-user-avatar');
@@ -3084,8 +3181,26 @@ function updateHeaderAuthUI() {
     const statRankStatus = document.getElementById('stat-rank-status');
 
     const guestGens = parseInt(localStorage.getItem('kawandigi_guest_generates') || '0', 10) || 0;
-    const xpVal = (user && typeof user.xp === 'number') ? user.xp : (user ? 100 : 0);
-    const vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : guestGens;
+    let xpVal = (user && typeof user.xp === 'number') ? user.xp : (user ? 100 : 0);
+    let vidsVal = (user && typeof user.totalGenerates === 'number') ? user.totalGenerates : guestGens;
+
+    // Cross-check with local member list (which is also the Leaderboard source of truth)
+    if (user && user.email) {
+        const members = getMemberList();
+        const m = members.find(item => item.email && item.email.toLowerCase() === user.email.toLowerCase());
+        if (m) {
+            const memberXp = typeof m.xp === 'number' ? m.xp : 0;
+            const memberGens = typeof m.totalGenerates === 'number' ? m.totalGenerates : (m.total_generates || 0);
+            if (memberXp > xpVal) xpVal = memberXp;
+            if (memberGens > vidsVal) vidsVal = memberGens;
+
+            if (user.xp !== xpVal || user.totalGenerates !== vidsVal) {
+                user.xp = xpVal;
+                user.totalGenerates = vidsVal;
+                saveCurrentUser(user);
+            }
+        }
+    }
 
     const summaryLabel = document.getElementById('home-hero-summary-label');
     if (summaryLabel) {
@@ -3163,7 +3278,9 @@ function updateHeaderAuthUI() {
         }
 
         // Silently sync session to Cloudflare D1 database in background
-        syncSessionToD1(user);
+        if (shouldSync) {
+            syncSessionToD1(user);
+        }
     } else {
         if (avatar) avatar.classList.add('hidden');
         if (defaultIcon) defaultIcon.classList.remove('hidden');
@@ -3399,17 +3516,26 @@ function initGoogleIdentityServices() {
                             isPlanActive = true;
                         }
 
+                        // Look up member record from member list (leaderboard source of truth)
+                        const members = getMemberList();
+                        const existingMember = members.find(m => m.email && m.email.toLowerCase() === payload.email.toLowerCase());
+
+                        const initialGenerates = existingMember ? (existingMember.totalGenerates || existingMember.total_generates || 0) : (currentUser.totalGenerates || 0);
+                        const initialXp = existingMember ? (existingMember.xp || (isAdminUser ? 1500 : 100)) : (isAdminUser ? 1500 : (currentUser.xp || 100));
+                        const initialLevel = existingMember ? (existingMember.level || (isAdminUser ? 'Mythic Legend' : 'Novice Creator')) : (isAdminUser ? 'Mythic Legend' : (currentUser.level || 'Novice Creator'));
+
                         const user = {
                             id: payload.sub,
-                            name: payload.name || (isAdminUser ? 'Admin KawanDigi' : 'Member Google'),
+                            name: payload.name || existingMember?.name || (isAdminUser ? 'Admin KawanDigi' : 'Member Google'),
                             email: payload.email,
-                            picture: payload.picture || 'assets/icons/favicon.png',
+                            picture: payload.picture || existingMember?.picture || 'assets/icons/favicon.png',
                             whatsapp: currentUser.whatsapp || '',
-                            joinedAt: currentUser.joinedAt || new Date().toISOString(),
+                            joinedAt: existingMember?.joinedAt || currentUser.joinedAt || new Date().toISOString(),
                             role: isAdminUser ? 'superadmin' : 'member',
                             subscription: { plan: assignedPlan, active: isPlanActive },
-                            level: isAdminUser ? 'Mythic Legend' : (currentUser.level || 'Diamond Creator'),
-                            xp: isAdminUser ? Math.max(currentUser.xp || 0, 1500) : (currentUser.xp || 100)
+                            totalGenerates: initialGenerates,
+                            xp: initialXp,
+                            level: initialLevel
                         };
 
                         saveCurrentUser(user);
@@ -3430,7 +3556,36 @@ function initGoogleIdentityServices() {
                                 xp: user.xp || 10,
                                 level: user.level || 'Novice Creator'
                             })
-                        }).catch(e => console.error('Cloudflare auth sync:', e));
+                        })
+                        .then(res => res.json())
+                        .then(resData => {
+                            if (resData && resData.status === 'success' && resData.data) {
+                                const dbData = resData.data;
+                                const cur = getCurrentUser();
+                                if (cur && cur.email.toLowerCase() === dbData.email.toLowerCase()) {
+                                    let changed = false;
+                                    const dbGens = dbData.totalGenerates || dbData.total_generates || 0;
+                                    const dbXp = dbData.xp || 0;
+                                    if ((cur.totalGenerates || 0) < dbGens) {
+                                        cur.totalGenerates = dbGens;
+                                        changed = true;
+                                    }
+                                    if ((cur.xp || 0) < dbXp) {
+                                        cur.xp = dbXp;
+                                        changed = true;
+                                    }
+                                    if (dbData.level && cur.level !== dbData.level) {
+                                        cur.level = dbData.level;
+                                        changed = true;
+                                    }
+                                    if (changed) {
+                                        saveCurrentUser(cur);
+                                        updateHeaderAuthUI(false);
+                                    }
+                                }
+                            }
+                        })
+                        .catch(e => console.error('Cloudflare auth sync:', e));
 
                         if (isAdminUser) {
                             sessionStorage.setItem('kd_admin_unlocked', '1');
@@ -4363,6 +4518,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchFeatureFlagsFromServer().then(applyFeatureFlagVisibility);
     fetchDigitalProductsFromServer().then(renderProductsCatalog);
     fetchTutorialVideosFromServer().then(renderTutorials);
+    syncMembersFromServer();
 
     // Startup completed cleanly without intrusive toasts
 });

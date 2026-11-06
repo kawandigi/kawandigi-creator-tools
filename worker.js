@@ -229,6 +229,10 @@ export default {
               total_generates: Math.max(globalThis.__kd_members[memberIdx].total_generates || 0, totalGenerates),
               xp: Math.max(globalThis.__kd_members[memberIdx].xp || 0, xp)
             };
+            memberRecord.totalGenerates = globalThis.__kd_members[memberIdx].totalGenerates;
+            memberRecord.total_generates = globalThis.__kd_members[memberIdx].total_generates;
+            memberRecord.xp = globalThis.__kd_members[memberIdx].xp;
+            memberRecord.level = globalThis.__kd_members[memberIdx].level || memberRecord.level;
           } else {
             globalThis.__kd_members.push(memberRecord);
           }
@@ -257,6 +261,16 @@ export default {
               memberRecord.xp,
               memberRecord.level
             ).run();
+
+            // Fetch the updated member record from D1 to return the true database values
+            const d1User = await db.prepare('SELECT id, name, email, picture, plan, total_generates, xp, level, created_at, last_active FROM members WHERE email = ?').bind(memberRecord.email).first();
+            if (d1User) {
+              memberRecord.totalGenerates = d1User.total_generates || 0;
+              memberRecord.total_generates = d1User.total_generates || 0;
+              memberRecord.xp = d1User.xp || 10;
+              memberRecord.level = d1User.level || memberRecord.level;
+              memberRecord.plan = d1User.plan || memberRecord.plan;
+            }
           }
 
           return new Response(JSON.stringify({ status: 'success', data: memberRecord }), { headers: corsHeaders });

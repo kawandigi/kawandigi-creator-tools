@@ -888,19 +888,55 @@ html:not(.dark) #section-license .text-amber-300 {
    ========================================================================= */
 
 /* 1. Universal non-button text-white fix */
-html:not(.dark) p.text-white,
-html:not(.dark) strong.text-white,
-html:not(.dark) b.text-white,
-html:not(.dark) li.text-white,
-html:not(.dark) h1.text-white,
-html:not(.dark) h2.text-white,
-html:not(.dark) h3.text-white,
-html:not(.dark) h4.text-white,
-html:not(.dark) h5.text-white,
-html:not(.dark) h6.text-white,
-html:not(.dark) span.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not(.rounded-full.bg-brand-500 *):not(.rounded-full.bg-emerald-500 *):not(.rounded-full.bg-amber-500 *):not(.btn-duration.active *):not(.btn-drama-duration.active *),
-html:not(.dark) div.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not([class*="from-brand-600"]) {
+html:not(.dark) p.text-white:not(.home-hero-card *),
+html:not(.dark) strong.text-white:not(.home-hero-card *),
+html:not(.dark) b.text-white:not(.home-hero-card *),
+html:not(.dark) li.text-white:not(.home-hero-card *),
+html:not(.dark) h1.text-white:not(.home-hero-card *),
+html:not(.dark) h2.text-white:not(.home-hero-card *),
+html:not(.dark) h3.text-white:not(.home-hero-card *),
+html:not(.dark) h4.text-white:not(.home-hero-card *),
+html:not(.dark) h5.text-white:not(.home-hero-card *),
+html:not(.dark) h6.text-white:not(.home-hero-card *),
+html:not(.dark) span.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not(.rounded-full.bg-brand-500 *):not(.rounded-full.bg-emerald-500 *):not(.rounded-full.bg-amber-500 *):not(.btn-duration.active *):not(.btn-drama-duration.active *):not(.home-hero-card *),
+html:not(.dark) div.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not([class*="from-brand-600"]):not(.home-hero-card *):not(.home-hero-card) {
     color: #0f172a !important;
+}
+
+/* Home Hero Dashboard Card (Blue Gradient) Text Color Safeguards */
+.home-hero-card,
+.home-hero-card *,
+#home-hero-xp,
+#home-hero-vids,
+#home-hero-summary-label {
+    color: #ffffff !important;
+}
+.home-hero-card .text-blue-100 {
+    color: #dbeafe !important;
+}
+.home-hero-card .text-blue-200 {
+    color: #bfdbfe !important;
+}
+.home-hero-card .text-cyan-200,
+#home-hero-quota {
+    color: #a5f3fc !important;
+}
+html:not(.dark) .home-hero-card,
+html:not(.dark) .home-hero-card *,
+html:not(.dark) #home-hero-xp,
+html:not(.dark) #home-hero-vids,
+html:not(.dark) #home-hero-summary-label {
+    color: #ffffff !important;
+}
+html:not(.dark) .home-hero-card .text-blue-100 {
+    color: #dbeafe !important;
+}
+html:not(.dark) .home-hero-card .text-blue-200 {
+    color: #bfdbfe !important;
+}
+html:not(.dark) .home-hero-card .text-cyan-200,
+html:not(.dark) #home-hero-quota {
+    color: #a5f3fc !important;
 }
 
 /* 2. UGC & Drama Summary Cards */
