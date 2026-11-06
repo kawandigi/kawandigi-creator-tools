@@ -95,6 +95,58 @@ function generateHeuristicSellingPoints(name, category) {
 /**
  * Intelligent AI Product Extraction from any Affiliate URL (Shopee, TikTok Shop, Tokopedia, etc.)
  */
+/**
+ * Build a concise Shopee Video caption with hashtags that strictly fits within 150 characters
+ */
+export function buildShopeeCaption(productName = '', sellingPoints = '') {
+    const pName = (productName || 'Produk pilihan ini').trim();
+    const tags = '#RacunShopee #ShopeeHaul';
+    const cta = 'Cek keranjang oranye ya!';
+    
+    // Attempt 1: Full name + benefit + cta + tags
+    let benefitSnippet = (sellingPoints || '').split('.')[0].trim();
+    if (benefitSnippet.length > 50) benefitSnippet = benefitSnippet.slice(0, 47) + '...';
+    
+    let candidate = `${pName}! ${benefitSnippet ? benefitSnippet + '. ' : ''}${cta} ${tags}`.trim();
+    if (candidate.length <= 150) {
+        return candidate;
+    }
+
+    // Attempt 2: Shortened name + cta + tags
+    const spaceForName = 150 - cta.length - tags.length - 5;
+    const shortName = pName.length > spaceForName ? pName.slice(0, Math.max(10, spaceForName)).trim() + '...' : pName;
+    candidate = `${shortName} racun banget! ${cta} ${tags}`.trim();
+    return candidate.slice(0, 150);
+}
+
+/**
+ * Ensure caption string is strictly <= 150 characters including spaces and hashtags
+ */
+export function ensureShopeeLength(text, fallbackTags = '#RacunShopee #ShopeeHaul') {
+    if (!text) return fallbackTags;
+    let cleaned = text.replace(/\s+/g, ' ').trim();
+    if (cleaned.length <= 150 && cleaned.includes('#')) {
+        return cleaned;
+    }
+    if (cleaned.length > 150) {
+        // Find existing hashtags
+        const tagMatch = cleaned.match(/(#[a-zA-Z0-9_]+\s*)+$/);
+        const tags = tagMatch ? tagMatch[0].trim() : fallbackTags;
+        const maxTextLen = 150 - tags.length - 2;
+        let mainPart = cleaned.replace(/(#[a-zA-Z0-9_]+\s*)+$/, '').trim();
+        if (mainPart.length > maxTextLen) {
+            mainPart = mainPart.slice(0, Math.max(10, maxTextLen - 3)).trim() + '...';
+        }
+        cleaned = `${mainPart} ${tags}`.trim();
+    } else if (!cleaned.includes('#')) {
+        const spaceLeft = 150 - cleaned.length - 1;
+        if (spaceLeft >= fallbackTags.length) {
+            cleaned = `${cleaned} ${fallbackTags}`.trim();
+        }
+    }
+    return cleaned.slice(0, 150);
+}
+
 export async function extractProductDetails(url) {
     if (!url || !url.startsWith('http')) {
         throw new Error('Masukkan URL produk yang valid (contoh: link Shopee atau TikTok Shop).');
@@ -248,6 +300,129 @@ export async function extractDetailsFromImage(base64Data, mimeType = 'image/jpeg
     return extractDetailsFromMultipleImages([{ base64: base64Data, mimeType }]);
 }
 
+/**
+ * Intelligent Unified & Simultaneous Product Extractor
+ * Accommodates:
+ * 1. Images only -> Multimodal image analysis
+ * 2. URL only -> Web scraping & text analysis
+ * 3. BOTH Images AND URL -> Simultaneous multimodal analysis combining visual evidence & URL specs
+ */
+export async function extractProductSimultaneous({ images = [], url = '' }) {
+    const hasImages = Array.isArray(images) && images.length > 0;
+    const cleanUrl = (url || '').trim();
+    const hasUrl = cleanUrl.startsWith('http');
+
+    if (!hasImages && !hasUrl) {
+        throw new Error('Silakan unggah minimal satu foto produk atau masukkan link produk (Shopee/TikTok).');
+    }
+
+    // Case 1: Only Images
+    if (hasImages && !hasUrl) {
+        return await extractDetailsFromMultipleImages(images);
+    }
+
+    // Case 2: Only URL
+    if (!hasImages && hasUrl) {
+        return await extractProductDetails(cleanUrl);
+    }
+
+    // Case 3: BOTH Images AND URL (Simultaneous & Complementary Analysis!)
+    const slug = extractSlugFromUrl(cleanUrl);
+    let pageText = '';
+    if (!slug || slug.length < 8) {
+        pageText = await fetchPageContent(cleanUrl, 2000);
+    }
+
+    const detectedCat = detectCategory(slug || cleanUrl || pageText);
+    const cleanName = slug 
+        ? slug.replace(/\b\w/g, l => l.toUpperCase()).replace(/\s+/g, ' ').trim()
+        : 'Produk Rekomendasi Pilihan';
+
+    const fallbackData = {
+        product_name: cleanName,
+        category: detectedCat,
+        selling_points: generateHeuristicSellingPoints(cleanName, detectedCat),
+        target_audience: 'Target calon pembeli potensial di marketplace',
+        suggested_tone: 'Casual & Ceria (Gen Z)'
+    };
+
+    const apiKey = getSavedApiKey();
+    if (!apiKey) {
+        return fallbackData;
+    }
+
+    const systemPrompt = `Kamu adalah Kawan Digital, asisten AI multimodal tingkat lanjut untuk analisis produk e-commerce & affiliate marketplace (Shopee, TikTok Shop, Tokopedia).
+Pengguna memberikan KEDUA sumber data: LINK URL PRODUK dan GAMBAR REFERENSI (foto etalase, varian, kemasan fisik, ulasan).
+Tugasmu adalah menganalisis KEDUANYA secara simultan dan saling melengkapi:
+- Gunakan data teks dari link URL untuk mendapatkan nama resmi produk, spesifikasi, dan harga.
+- Gunakan data visual dari gambar untuk mengidentifikasi wujud fisik asli produk, warna, kemasan, tekstur, varian yang tampak, dan ulasan foto pembeli.
+- Gabungkan keduanya menjadi profil produk yang kaya, akurat, dan sangat menjual untuk konten video UGC Affiliate.
+
+WAJIB KLASIFIKASIKAN KATEGORI NICHE KE SALAH SATU PILIHAN:
+- "👗 Fashion & OOTD"
+- "💄 Skincare & Kecantikan"
+- "📱 Gadget & Elektronik"
+- "🍔 Kuliner & Makanan"
+- "🏠 Kebutuhan Rumah Tangga"
+- "✨ Kesehatan & Kebugaran"
+- "🍼 Ibu & Anak"
+- "🚗 Otomotif & Aksesoris"
+
+PILIHAN GAYA BAHASA (TONE):
+- Casual & Ceria (Gen Z)
+- Review Jujur & Edukatif
+- FOMO & Urgensi Diskon
+- Elegan & Mewah
+
+Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
+{
+  "product_name": "Nama produk lengkap yang bersih dan resmi",
+  "category": "Salah satu dari 8 kategori di atas",
+  "variant": "Varian dan warna yang terlihat di gambar / tercatat di URL",
+  "visual_details": "Deskripsi wujud fisik produk dari gambar (warna, kemasan, tekstur, ukuran)",
+  "selling_points": "Keunggulan utama produk gabungan dari klaim resmi URL dan bukti visual gambar (2-3 kalimat padat persuasif)",
+  "suggested_tone": "Casual & Ceria (Gen Z)",
+  "target_audience": "Target calon pembeli ideal produk ini"
+}`;
+
+    let userPrompt = `Analisis produk ini secara simultan dari link URL dan ${images.length} gambar yang disertakan:\n`;
+    userPrompt += `- Link URL: ${cleanUrl}\n`;
+    if (slug) userPrompt += `- Judul dari URL: ${slug}\n`;
+    if (pageText) userPrompt += `- Konten Halaman: ${pageText.slice(0, 1500)}\n`;
+    userPrompt += `Gabungkan informasi URL dengan bukti visual dari gambar referensi terlampir.`;
+
+    const inlineDataPayload = images.map(img => ({
+        mimeType: img.mimeType || 'image/jpeg',
+        data: img.base64
+    }));
+
+    try {
+        const rawResponse = await callGemini(userPrompt, systemPrompt, null, null, inlineDataPayload, { jsonMode: true, disableThinking: true });
+        if (rawResponse) {
+            const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed.product_name) {
+                    return {
+                        product_name: parsed.product_name || fallbackData.product_name,
+                        category: parsed.category || fallbackData.category,
+                        variant: parsed.variant || 'Standar',
+                        visual_details: parsed.visual_details || '',
+                        selling_points: parsed.selling_points || fallbackData.selling_points,
+                        suggested_tone: parsed.suggested_tone || fallbackData.suggested_tone,
+                        target_audience: parsed.target_audience || fallbackData.target_audience
+                    };
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('[KawanDigi] Simultaneous extraction fallback to images:', err.message);
+        return await extractDetailsFromMultipleImages(images);
+    }
+
+    return fallbackData;
+}
+
 // Backwards compatibility alias
 export const scrapeProductFromUrl = fetchPageContent;
 
@@ -260,6 +435,24 @@ function sanitizeIndonesianUgc(campaign, targetDuration = 10, includeTextOverlay
     const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
     campaign.duration_seconds = dur;
     campaign.part_count = partCount;
+
+    // Enforce Shopee Video Caption (Maks. 150 Karakter)
+    if (campaign.captions) {
+        if (!campaign.captions.shopee_video || !campaign.captions.shopee_video.full_text) {
+            campaign.captions.shopee_video = {
+                hook: 'Rekomendasi produk viral!',
+                benefit: '',
+                cta: 'Cek keranjang oranye ya!',
+                hashtags: ['#RacunShopee', '#ShopeeHaul'],
+                full_text: buildShopeeCaption(campaign.product_analysis?.product_name, campaign.product_analysis?.core_benefit)
+            };
+        } else {
+            campaign.captions.shopee_video.full_text = ensureShopeeLength(
+                campaign.captions.shopee_video.full_text,
+                '#RacunShopee #ShopeeHaul'
+            );
+        }
+    }
 
     const enToIdCamera = [
         [/handheld snap zoom (in|up)?/gi, 'Zoom cepat ke arah produk'],
@@ -878,6 +1071,13 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
         scenes: scenes,
         total_narasi_kata: totalNarasiKata,
         captions: {
+            shopee_video: {
+                hook: `Mau ${pName} original promo hari ini?`,
+                benefit: `${sPoints.slice(0, 50)}`,
+                cta: "Cek keranjang oranye ya!",
+                hashtags: ["#RacunShopee", "#ShopeeHaul"],
+                full_text: buildShopeeCaption(pName, sPoints)
+            },
             hard_selling: {
                 hook: `Mau ${pName} original dengan promo terbaik hari ini?`,
                 benefit: `${sPoints}`,
@@ -1114,6 +1314,13 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
   ],
   "total_narasi_kata": ${dur === 30 ? 70 : (dur === 20 ? 48 : 25)},
   "captions": {
+    "shopee_video": {
+      "hook": "Teks hook singkat",
+      "benefit": "Benefit singkat",
+      "cta": "Cek keranjang oranye ya!",
+      "hashtags": ["#RacunShopee", "#ShopeeHaul"],
+      "full_text": "Teks caption khusus Shopee Video DENGAN hashtag, WAJIB MAKSIMAL 150 KARAKTER TERMASUK SPASI"
+    },
     "hard_selling": {
       "hook": "Teks hook bahasa Indonesia",
       "benefit": "Teks benefit bahasa Indonesia",

@@ -547,53 +547,67 @@
                         </button>
                     </div>
 
-                    <!-- Multi-Screenshot Upload / Paste (Ctrl+V) Zone -->
-                    <div class="space-y-2">
+                    <!-- UNIFIED PRODUCT SOURCE: IMAGE UPLOAD & URL IN ONE CLEAN SECTION -->
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-3.5 sm:p-4 space-y-3">
                         <div class="flex items-center justify-between">
-                            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                                <i data-lucide="images" class="w-3.5 h-3.5 text-brand-400"></i>
-                                Unggah / Tempel Referensi Gambar:
+                            <label class="text-xs font-bold text-white flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                                Sumber Referensi Produk (Gambar / URL):
                             </label>
-                            <span class="text-[10px] bg-brand-500/20 text-brand-300 border border-brand-500/30 px-1.5 py-0.5 rounded font-bold">Bisa Banyak Foto</span>
+                            <span class="text-[10px] text-brand-300 bg-brand-500/15 border border-brand-500/30 px-2 py-0.5 rounded-full font-semibold">
+                                Gambar, URL, atau Keduanya
+                            </span>
                         </div>
-                        <div id="screenshot-dropzone" class="border-2 border-dashed border-slate-700/80 hover:border-brand-500 rounded-xl p-3 text-center cursor-pointer transition bg-slate-950/70 relative group">
+
+                        <!-- Dropzone for Images -->
+                        <div id="screenshot-dropzone" class="border-2 border-dashed border-slate-700/80 hover:border-brand-500 rounded-xl p-3 text-center cursor-pointer transition bg-slate-900/60 relative group">
                             <input type="file" id="ugc-screenshot-input" accept="image/*" multiple class="hidden">
                             <div id="dropzone-empty" class="flex flex-col items-center justify-center py-1">
                                 <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center mb-1 group-hover:scale-110 transition">
                                     <i data-lucide="image-plus" class="w-4 h-4"></i>
                                 </div>
-                                <p class="text-xs font-bold text-slate-200">Klik Unggah atau Tekan <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-brand-300 font-mono">Ctrl + V</kbd></p>
-                                <p class="text-[10px] text-slate-400 mt-0.5">Bisa masukkan banyak foto: etalase, varian, ulasan pembeli, detail bahan</p>
+                                <p class="text-xs font-bold text-slate-200">Klik Unggah Foto atau Tekan <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-brand-300 font-mono">Ctrl + V</kbd></p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">Bisa banyak foto etalase, varian, atau ulasan pembeli</p>
                             </div>
                         </div>
 
                         <!-- Uploaded Thumbnails Gallery (Hidden if empty) -->
                         <div id="screenshots-gallery-container" class="hidden space-y-2">
                             <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
-                                <span>Daftar Referensi (<strong id="screenshots-count" class="text-white">0</strong> gambar):</span>
+                                <span>Foto Terunggah (<strong id="screenshots-count" class="text-white">0</strong>):</span>
                                 <button type="button" id="btn-clear-all-screenshots" class="text-rose-400 hover:text-rose-300 text-[10px] font-semibold underline">
-                                    Hapus Semua
+                                    Hapus Semua Foto
                                 </button>
                             </div>
-                            <div id="screenshots-thumbnail-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-36 overflow-y-auto p-1 bg-slate-950/60 rounded-xl border border-slate-800"></div>
-
-                            <!-- Manual Analyze Button -->
-                            <button type="button" id="btn-analyze-screenshots" class="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition">
-                                <i data-lucide="scan-text" class="w-3.5 h-3.5"></i>
-                                <span id="btn-analyze-text">Mulai Analisis Semua Gambar</span>
-                            </button>
+                            <div id="screenshots-thumbnail-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-36 overflow-y-auto p-1 bg-slate-950/80 rounded-xl border border-slate-800"></div>
                         </div>
-                    </div>
 
-                    <!-- Product URL with Scraper Button (Alternative Option) -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Atau Masukkan URL Produk / Teks Manual:</label>
-                        <div class="flex gap-2">
-                            <input type="url" id="ugc-url" placeholder="https://shopee.co.id/... atau TikTok Shop" class="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500">
-                            <button id="btn-scrape-url" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 flex items-center gap-1.5 transition whitespace-nowrap">
-                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                                Ekstrak
-                            </button>
+                        <!-- Product URL Input -->
+                        <div>
+                            <label for="ugc-url" class="block text-[11px] font-semibold text-slate-300 mb-1">
+                                Link Produk Marketplace (Opsional jika pakai foto):
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                                    <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                                </div>
+                                <input type="url" id="ugc-url" placeholder="https://shopee.co.id/... atau TikTok Shop" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <!-- SATU TOMBOL ANALISA CERDAS TERPADU -->
+                        <button type="button" id="btn-analyze-unified" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                            <span id="btn-analyze-unified-text">Analisa Info Produk dengan AI</span>
+                        </button>
+
+                        <!-- BANNER ANIMASI PROSES ANALISA (Tampil saat AI bekerja) -->
+                        <div id="ugc-analyze-progress-banner" class="hidden p-3 rounded-xl bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/40 text-emerald-200 text-xs flex items-center gap-3">
+                            <div class="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <p id="ugc-analyze-progress-text" class="font-bold text-white text-xs">AI sedang menganalisis produk...</p>
+                                <p id="ugc-analyze-progress-subtext" class="text-[10px] text-emerald-300 truncate">Mengekstrak visual, nama, varian & keunggulan viral.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -742,19 +756,7 @@
                             <!-- Product Summary Card -->
                             <div id="ugc-summary-card" class="bg-brand-950/30 border border-brand-500/30 rounded-xl p-3.5 text-xs space-y-1"></div>
 
-                            <!-- 3 Template Captions Section (Hard-selling, Storytelling, Soft-selling) -->
-                            <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
-                                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-                                    <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                                        <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
-                                        3 Template Caption Siap Pakai (TikTok & Shopee Video)
-                                    </span>
-                                    <span class="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold">CTA Netral Multi-Platform</span>
-                                </div>
-                                <div id="ugc-captions-container" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
-                            </div>
-
-                            <!-- Formatted Full Video Prompt Code Block -->
+                            <!-- Formatted Full Video Prompt Code Block (Positioned at Top) -->
                             <div id="ugc-full-prompt-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2">
                                 <div class="flex items-center justify-between">
                                     <span id="ugc-prompt-card-title" class="text-xs font-bold text-white flex items-center gap-1.5">
@@ -766,6 +768,35 @@
                                     </button>
                                 </div>
                                 <pre id="ugc-full-prompt-code" class="text-[11px] font-mono text-slate-300 bg-slate-900/90 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap leading-relaxed select-all"></pre>
+                            </div>
+
+                            <!-- Template Captions Section (Positioned UNDER the Video Prompt) -->
+                            <div id="ugc-captions-section" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-3">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                                    <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                                        <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
+                                        Template Caption Siap Pakai (Shopee Video, TikTok & Reels)
+                                    </span>
+                                    <span class="text-[10px] text-brand-300 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full font-bold">Lengkap dengan Hashtag</span>
+                                </div>
+
+                                <!-- Featured Shopee Caption Card (Max 150 chars) -->
+                                <div id="ugc-shopee-caption-card" class="bg-gradient-to-r from-orange-950/40 via-amber-950/30 to-slate-900 border border-orange-500/40 rounded-xl p-3.5 space-y-2 shopee-caption-card">
+                                    <div class="flex items-center justify-between">
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[11px] font-black">
+                                            <i data-lucide="shopping-bag" class="w-3 h-3 text-orange-400"></i>
+                                            Khusus Shopee Video / Feed (Maks. 150 Karakter)
+                                        </span>
+                                        <span id="shopee-char-count-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-orange-500/30 text-orange-300">0 / 150 Karakter</span>
+                                    </div>
+                                    <p id="ugc-shopee-caption-text" class="text-xs text-slate-200 font-medium leading-relaxed whitespace-pre-wrap select-all"></p>
+                                    <button type="button" id="btn-copy-shopee-caption" class="w-full py-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow transition">
+                                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Caption Shopee (150 Char)
+                                    </button>
+                                </div>
+
+                                <!-- Multi-Platform Versatile Captions (Hard, Story, Soft) -->
+                                <div id="ugc-captions-container" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
                             </div>
 
                             <!-- Scene Cards List (Hidden - prompt utuh sudah lengkap) -->
@@ -1823,6 +1854,17 @@
         </section>
     </main>
     </div>
+
+    <!-- FLOATING ACTION BUTTON: SALIN PROMPT & KE GOOGLE FLOW (BERPENDAR) -->
+    <button type="button" id="btn-floating-flow" class="hidden fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-xs sm:text-sm shadow-2xl shadow-indigo-500/40 flex items-center gap-2.5 transition-all transform hover:scale-105 active:scale-95 border border-white/25 btn-floating-glow backdrop-blur-sm cursor-pointer" title="Salin seluruh prompt dan buka studio Google Flow">
+        <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-300"></span>
+        </span>
+        <i data-lucide="video" class="w-4 h-4 text-cyan-200"></i>
+        <span class="tracking-wide">Salin & Buka Google Flow</span>
+        <i data-lucide="arrow-right" class="w-4 h-4 text-cyan-200"></i>
+    </button>
 
     <!-- Mobile Bottom Navigation Bar -->
     <!-- App Bottom Navigation Dock with Center Elevated FAB (Matches Image 1) -->

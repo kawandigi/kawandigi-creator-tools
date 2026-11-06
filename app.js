@@ -19,7 +19,7 @@ import {
     generateOmniVideo 
 } from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT, getDeviceId, getDeviceName, fetchUserLicenseStatus } from './modules/license_manager.js';
-import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, generateUgcCampaign } from './modules/ugc_creator.js';
+import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, extractProductSimultaneous, generateUgcCampaign } from './modules/ugc_creator.js';
 import { generateDramaEpisode } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
 import { 
@@ -326,6 +326,16 @@ function switchTab(tabId) {
         loadAdminSettings();
     }
 
+    // Manage visibility of Floating Google Flow Button
+    const btnFloatingFlow = document.getElementById('btn-floating-flow');
+    if (btnFloatingFlow) {
+        if (tabId === 'ugc' && currentUgcCampaign) {
+            btnFloatingFlow.classList.remove('hidden');
+        } else {
+            btnFloatingFlow.classList.add('hidden');
+        }
+    }
+
     // Smooth scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -400,6 +410,17 @@ function initNavigation() {
     // Studio Google Flow side-by-side popup buttons
     document.getElementById('btn-open-flow-popup')?.addEventListener('click', openGoogleFlowPopup);
     document.getElementById('btn-flow-hero-popup')?.addEventListener('click', openGoogleFlowPopup);
+
+    // Floating Google Flow Action Button Listener
+    document.getElementById('btn-floating-flow')?.addEventListener('click', () => {
+        if (!currentUgcCampaign) return;
+        const allPrompts = formatFullPromptVideoText(currentUgcCampaign);
+        copyToClipboard(allPrompts, 'Prompt video berhasil disalin! Mengalihkan ke Google Flow...');
+        setTimeout(() => {
+            switchTab('flow');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 350);
+    });
 
     // Brand logo returns to Catalog view
     document.getElementById('btn-brand-home')?.addEventListener('click', () => switchTab('catalog'));
@@ -1249,32 +1270,59 @@ function initUgcCreator() {
         showToast('Semua referensi foto telah dihapus.', 'info');
     });
 
-    // Manual Analyze Button for Multi-Screenshots
-    btnAnalyzeScreenshots?.addEventListener('click', async () => {
-        if (uploadedScreenshots.length === 0) {
-            showToast('Silakan unggah atau paste minimal satu gambar referensi etalase produk.', 'error');
+    // UNIFIED PRODUCT ANALYSIS (Images Only, URL Only, or Simultaneous Both)
+    const btnAnalyzeUnified = document.getElementById('btn-analyze-unified');
+    const btnAnalyzeUnifiedText = document.getElementById('btn-analyze-unified-text');
+    const progressBanner = document.getElementById('ugc-analyze-progress-banner');
+    const progressText = document.getElementById('ugc-analyze-progress-text');
+    const progressSubtext = document.getElementById('ugc-analyze-progress-subtext');
+    const urlInput = document.getElementById('ugc-url');
+    const nameInput = document.getElementById('ugc-name');
+    const sellingInput = document.getElementById('ugc-selling');
+    const toneSelect = document.getElementById('ugc-tone');
+
+    btnAnalyzeUnified?.addEventListener('click', async () => {
+        const url = (urlInput?.value || '').trim();
+        const hasImages = uploadedScreenshots.length > 0;
+        const hasUrl = Boolean(url);
+
+        if (!hasImages && !hasUrl) {
+            showToast('Silakan unggah minimal 1 foto produk atau masukkan link produk (Shopee/TikTok).', 'warning');
             return;
         }
 
-        btnAnalyzeScreenshots.disabled = true;
-        if (btnAnalyzeText) btnAnalyzeText.textContent = `Menganalisis ${uploadedScreenshots.length} Foto...`;
+        btnAnalyzeUnified.disabled = true;
+        btnAnalyzeUnified.classList.add('opacity-75', 'cursor-not-allowed');
+        if (progressBanner) progressBanner.classList.remove('hidden');
+
+        if (hasImages && hasUrl) {
+            if (btnAnalyzeUnifiedText) btnAnalyzeUnifiedText.textContent = `Menganalisis ${uploadedScreenshots.length} Foto & Link URL...`;
+            if (progressText) progressText.textContent = `AI sedang menganalisis ${uploadedScreenshots.length} foto & link produk secara simultan...`;
+            if (progressSubtext) progressSubtext.textContent = 'Menggabungkan visual kemasan & ulasan dengan data resmi produk.';
+        } else if (hasImages) {
+            if (btnAnalyzeUnifiedText) btnAnalyzeUnifiedText.textContent = `Menganalisis ${uploadedScreenshots.length} Foto Referensi...`;
+            if (progressText) progressText.textContent = `AI sedang memindai ${uploadedScreenshots.length} foto etalase & varian...`;
+            if (progressSubtext) progressSubtext.textContent = 'Mengekstrak judul, varian fisik, ulasan & keunggulan visual.';
+        } else {
+            if (btnAnalyzeUnifiedText) btnAnalyzeUnifiedText.textContent = 'Mengekstrak Informasi Link URL...';
+            if (progressText) progressText.textContent = 'AI sedang membedah informasi dari tautan produk...';
+            if (progressSubtext) progressSubtext.textContent = 'Mengekstrak nama resmi, spesifikasi & benefit penjualan.';
+        }
 
         try {
-            const details = await extractDetailsFromMultipleImages(uploadedScreenshots);
-            const nameInput = document.getElementById('ugc-name');
-            const catSelect = document.getElementById('ugc-category');
-            const toneSelect = document.getElementById('ugc-tone');
-            const sellingInput = document.getElementById('ugc-selling');
+            const details = await extractProductSimultaneous({
+                images: uploadedScreenshots,
+                url: url
+            });
 
             if (details.product_name && nameInput) nameInput.value = details.product_name;
             if (details.selling_points && sellingInput) {
                 let sText = details.selling_points;
-                if (details.variant && details.variant !== 'Standar') {
+                if (details.variant && details.variant !== 'Standar' && !sText.includes(details.variant)) {
                     sText += ` (Varian: ${details.variant})`;
                 }
                 sellingInput.value = sText;
             }
-            // Otomatis tentukan niche kategori secara cerdas
             autoSelectNicheCategory(details.category, details.product_name);
             if (details.suggested_tone && toneSelect) {
                 for (const opt of toneSelect.options) {
@@ -1284,12 +1332,18 @@ function initUgcCreator() {
                     }
                 }
             }
-            showToast(`Analisis ${uploadedScreenshots.length} gambar sukses! Kolom form otomatis terisi.`, 'success');
+
+            const sourceMsg = (hasImages && hasUrl) 
+                ? `Analisis ${uploadedScreenshots.length} foto & link produk sukses!` 
+                : (hasImages ? `Analisis ${uploadedScreenshots.length} foto produk sukses!` : 'Ekstraksi link produk sukses!');
+            showToast(`${sourceMsg} Form terisi otomatis.`, 'success');
         } catch (err) {
             showToast(err.message, 'error');
         } finally {
-            btnAnalyzeScreenshots.disabled = false;
-            if (btnAnalyzeText) btnAnalyzeText.textContent = 'Mulai Analisis Semua Gambar';
+            btnAnalyzeUnified.disabled = false;
+            btnAnalyzeUnified.classList.remove('opacity-75', 'cursor-not-allowed');
+            if (btnAnalyzeUnifiedText) btnAnalyzeUnifiedText.textContent = 'Analisa Info Produk dengan AI';
+            if (progressBanner) progressBanner.classList.add('hidden');
             if (window.lucide) window.lucide.createIcons();
         }
     });
@@ -1301,52 +1355,6 @@ function initUgcCreator() {
             const dur = parseInt(btn.dataset.duration, 10);
             setUgcDuration(dur);
         });
-    });
-
-    // Scrape URL button
-    const btnScrape = document.getElementById('btn-scrape-url');
-    const urlInput = document.getElementById('ugc-url');
-    const nameInput = document.getElementById('ugc-name');
-    const sellingInput = document.getElementById('ugc-selling');
-
-    btnScrape?.addEventListener('click', async () => {
-        const url = urlInput.value.trim();
-        if (!url) {
-            showToast('Silakan tempelkan link produk Shopee atau TikTok Shop terlebih dahulu.', 'error');
-            return;
-        }
-
-        btnScrape.disabled = true;
-        btnScrape.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Menganalisis...`;
-
-        try {
-            const product = await extractProductDetails(url);
-            showToast('Informasi produk berhasil dianalisis!', 'success');
-
-            if (product.product_name) nameInput.value = product.product_name;
-            if (product.selling_points) sellingInput.value = product.selling_points;
-
-            // Otomatis tentukan niche kategori secara cerdas
-            autoSelectNicheCategory(product.category, product.product_name);
-
-            if (product.suggested_tone) {
-                const toneSelect = document.getElementById('ugc-tone');
-                if (toneSelect) {
-                    for (const opt of toneSelect.options) {
-                        if (opt.value === product.suggested_tone || opt.text.includes(product.suggested_tone)) {
-                            toneSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                }
-            }
-        } catch (err) {
-            showToast(err.message, 'error');
-        } finally {
-            btnScrape.disabled = false;
-            btnScrape.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Ekstrak`;
-            if (window.lucide) window.lucide.createIcons();
-        }
     });
 
     // Generate Campaign Storyboard
@@ -1503,7 +1511,32 @@ function renderUgcResults(campaign) {
         </div>
     `;
 
-    // 1. Render 3 Template Captions
+    // 1. Render Shopee Specific Caption (Max 150 Characters)
+    const shopeeTextEl = document.getElementById('ugc-shopee-caption-text');
+    const shopeeBadgeEl = document.getElementById('shopee-char-count-badge');
+    const btnCopyShopee = document.getElementById('btn-copy-shopee-caption');
+
+    const rawShopee = campaign.captions?.shopee_video?.full_text
+        || `${campaign.product_analysis?.product_name || 'Produk pilihan ini'} recommended banget! Cek keranjang oranye ya! #RacunShopee #ShopeeHaul`;
+    const shopeeCap = rawShopee.slice(0, 150);
+    const shopeeLen = shopeeCap.length;
+
+    if (shopeeTextEl) shopeeTextEl.textContent = shopeeCap;
+    if (shopeeBadgeEl) {
+        shopeeBadgeEl.textContent = `${shopeeLen} / 150 Karakter`;
+        if (shopeeLen <= 150) {
+            shopeeBadgeEl.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
+        } else {
+            shopeeBadgeEl.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300';
+        }
+    }
+    if (btnCopyShopee) {
+        btnCopyShopee.onclick = () => {
+            copyToClipboard(shopeeCap, 'Caption Shopee (Maks. 150 Karakter) berhasil disalin!');
+        };
+    }
+
+    // 2. Render 3 Multi-Platform Captions (TikTok & Reels)
     if (captionsContainer && campaign.captions) {
         captionsContainer.innerHTML = '';
         const capList = [
@@ -1534,6 +1567,12 @@ function renderUgcResults(campaign) {
             });
             captionsContainer.appendChild(card);
         });
+    }
+
+    // 3. Reveal Glowing Floating Action Button to copy & jump to Google Flow
+    const btnFloatingFlow = document.getElementById('btn-floating-flow');
+    if (btnFloatingFlow) {
+        btnFloatingFlow.classList.remove('hidden');
     }
 
     // 2. Render Full Formatted Prompt Video Code Block

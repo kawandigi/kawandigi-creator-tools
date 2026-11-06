@@ -1260,3 +1260,39 @@ html:not(.dark) .app-circle-btn span {
         width: 35%;
     }
 }
+
+/* Floating Google Flow Glow Animation */
+@keyframes flow-glow-pulse {
+    0%, 100% {
+        box-shadow: 0 0 16px rgba(99, 102, 241, 0.6), 0 0 32px rgba(168, 85, 247, 0.35);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 26px rgba(99, 102, 241, 0.95), 0 0 50px rgba(168, 85, 247, 0.65);
+        transform: scale(1.02);
+    }
+}
+.btn-floating-glow {
+    animation: flow-glow-pulse 2.2s infinite ease-in-out;
+}
+
+/* Light Theme Overrides for New UGC Elements */
+html:not(.dark) #ugc-analyze-progress-banner {
+    background-color: #ecfdf5 !important;
+    border-color: #6ee7b7 !important;
+}
+html:not(.dark) #ugc-analyze-progress-banner p {
+    color: #064e3b !important;
+}
+html:not(.dark) .shopee-caption-card {
+    background: linear-gradient(to right, #fff7ed, #ffedd5) !important;
+    border-color: #fed7aa !important;
+}
+html:not(.dark) .shopee-caption-card p {
+    color: #9a3412 !important;
+}
+html:not(.dark) #shopee-char-count-badge {
+    background-color: #ffffff !important;
+    border-color: #fed7aa !important;
+    color: #c2410c !important;
+}
