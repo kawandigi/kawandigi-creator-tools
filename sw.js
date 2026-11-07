@@ -1,5 +1,5 @@
 // Service Worker for kawandigi CREATOR TOOLS
-const CACHE_NAME = 'kawandigi-cache-v47';
+const CACHE_NAME = 'kawandigi-cache-v48';
 const ASSETS = [
     './',
     './index.html',
@@ -19,7 +19,15 @@ const ASSETS = [
     './assets/icons/logo.png',
     './assets/icons/favicon.png',
     './assets/icons/icon-192.png',
-    './assets/icons/icon-512.png'
+    './assets/icons/icon-512.png',
+    './assets/products/the_originote_gluta_bright.jpg',
+    './assets/products/glad2glow_blueberry.jpg',
+    './assets/products/tnw_k9_mic.jpg',
+    './assets/products/tnw_l16_tripod.jpg',
+    './assets/products/samono_sw_c150.jpg',
+    './assets/products/advance_c18_pot.jpg',
+    './assets/products/baso_aci_bapper.jpg',
+    './assets/products/evernext_orion_bag.jpg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -4938,7 +4938,7 @@ function renderTrendProductsList(products) {
             ${p.image_url ? `
                 <div class="w-full sm:w-24 sm:h-24 h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex-shrink-0 relative group">
                     <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
-                    <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-mono text-emerald-400 font-bold">HD Foto</span>
+                    <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-mono text-emerald-400 font-bold">Packshot Resmi</span>
                 </div>
             ` : ''}
             <div class="flex-1 min-w-0 space-y-2.5">
@@ -4948,6 +4948,11 @@ function renderTrendProductsList(products) {
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">
                                 ${p.tag || `#${idx + 1} Trending`}
                             </span>
+                            ${p.brand ? `
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                    Merk: ${p.brand}
+                                </span>
+                            ` : ''}
                             <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                                 ${p.trend_velocity || 'High Demand'}
                             </span>
