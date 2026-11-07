@@ -1,3 +1,10 @@
+import { 
+    getTrendingProducts, 
+    autoPickWinningProduct, 
+    scoutLiveNicheWithGemini, 
+    applyProductToUgcForm, 
+    DEFAULT_TRENDING_PRODUCTS 
+} from './modules/trend_scout.js';
 /**
  * KawanDigi Creator Tools - Main Application Controller
  * Handles Navigation, State, Event Listeners, and Dynamic UI Rendering
@@ -4640,3 +4647,186 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Startup completed cleanly without intrusive toasts
 });
+
+
+// =========================================================================
+// TIKTOK SHOP & GEMINI AI TREND SCOUT CONTROLLER
+// =========================================================================
+
+let currentTrendProducts = [...DEFAULT_TRENDING_PRODUCTS];
+let currentTrendCategory = 'all';
+
+function initTrendScout() {
+    const btnOpen = document.getElementById('btn-open-trend-scout');
+    const btnClose = document.getElementById('btn-close-trend-scout');
+    const modal = document.getElementById('modal-trend-scout');
+    const btnAutoPick = document.getElementById('btn-auto-pick-product');
+    const btnScoutGemini = document.getElementById('btn-scout-custom-gemini');
+    const searchInput = document.getElementById('trend-scout-search');
+    const filterPills = document.querySelectorAll('.trend-filter-pill');
+
+    btnOpen?.addEventListener('click', async () => {
+        modal?.classList.remove('hidden');
+        renderTrendProductsList(currentTrendProducts);
+        // Refresh from backend asynchronously
+        try {
+            const fresh = await getTrendingProducts(currentTrendCategory);
+            if (fresh && fresh.length > 0) {
+                currentTrendProducts = fresh;
+                renderTrendProductsList(fresh);
+            }
+        } catch (_) {}
+    });
+
+    btnClose?.addEventListener('click', () => {
+        modal?.classList.add('hidden');
+    });
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.add('hidden');
+    });
+
+    // 1-Click Auto-Pick Winning Product
+    btnAutoPick?.addEventListener('click', () => {
+        const topProduct = autoPickWinningProduct(currentTrendCategory);
+        if (topProduct) {
+            applyProductToUgcForm(topProduct);
+            modal?.classList.add('hidden');
+            showToast(`⚡ AI Memilihkan: "${topProduct.name}"! Form terisi otomatis.`, 'success');
+        }
+    });
+
+    // Category Filter Pills
+    filterPills.forEach(pill => {
+        pill.addEventListener('click', async () => {
+            filterPills.forEach(p => {
+                p.classList.remove('active', 'bg-rose-600', 'text-white', 'font-bold');
+                p.classList.add('bg-slate-800/80', 'text-slate-300', 'font-semibold');
+            });
+            pill.classList.remove('bg-slate-800/80', 'text-slate-300', 'font-semibold');
+            pill.classList.add('active', 'bg-rose-600', 'text-white', 'font-bold');
+
+            const cat = pill.getAttribute('data-trend-category') || 'all';
+            currentTrendCategory = cat;
+            const filtered = await getTrendingProducts(cat);
+            renderTrendProductsList(filtered);
+        });
+    });
+
+    // Custom Live Niche Scout with Gemini
+    const handleGeminiScout = async () => {
+        const query = searchInput?.value.trim();
+        if (!query) {
+            showToast('Ketik niche atau produk yang ingin diriset (contoh: pembersih sepatu, mukena mini)', 'info');
+            return;
+        }
+
+        const listContainer = document.getElementById('trend-products-list');
+        if (listContainer) {
+            listContainer.innerHTML = `
+                <div class="py-12 flex flex-col items-center justify-center text-center">
+                    <div class="w-10 h-10 border-3 border-rose-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <h5 class="text-xs font-bold text-white">AI Gemini Sedang Menganalisis Tren "${query}"...</h5>
+                    <p class="text-[11px] text-slate-400 mt-1">Meriset winning hook & conversion rate di TikTok Shop ID...</p>
+                </div>
+            `;
+        }
+
+        try {
+            const results = await scoutLiveNicheWithGemini(query);
+            if (results && results.length > 0) {
+                renderTrendProductsList(results);
+                showToast(`AI berhasil menemukan ${results.length} ide winning untuk "${query}"!`, 'success');
+            } else {
+                renderTrendProductsList(DEFAULT_TRENDING_PRODUCTS);
+            }
+        } catch (e) {
+            showToast('Gagal riset live: ' + (e.message || 'Cek AI API Key Anda'), 'error');
+            renderTrendProductsList(DEFAULT_TRENDING_PRODUCTS);
+        }
+    };
+
+    btnScoutGemini?.addEventListener('click', handleGeminiScout);
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleGeminiScout();
+    });
+}
+
+function renderTrendProductsList(products) {
+    const listContainer = document.getElementById('trend-products-list');
+    if (!listContainer) return;
+
+    if (!products || products.length === 0) {
+        listContainer.innerHTML = `
+            <div class="py-8 text-center text-slate-400 text-xs">
+                Tidak ada produk tren pada kategori ini. Coba pilih kategori lain atau gunakan pencarian AI.
+            </div>
+        `;
+        return;
+    }
+
+    listContainer.innerHTML = products.map((p, idx) => `
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                            ${p.tag || `#${idx + 1} Trending`}
+                        </span>
+                        <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                            ${p.trend_velocity || 'High Demand'}
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-semibold hidden sm:inline">
+                            ${p.category || 'Affiliate'}
+                        </span>
+                    </div>
+                    <h4 class="text-xs sm:text-sm font-bold text-white leading-snug">${p.name}</h4>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <span class="text-xs font-bold text-white block">${p.price_range || '-'}</span>
+                    <span class="text-[10px] text-amber-400 font-bold block">Komisi: ${p.est_commission || '15%'}</span>
+                </div>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300">
+                <strong class="text-amber-400 flex items-center gap-1 mb-0.5">
+                    <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i>
+                    Alasan Viral & Hook Angle:
+                </strong>
+                <p class="leading-relaxed">${p.hook_angle || p.selling_points || '-'}</p>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+                <span class="text-[10px] text-slate-400 truncate max-w-[50%]">
+                    Gaya: <strong class="text-slate-300">${p.recommended_tone || 'Ceria & Akrab'}</strong>
+                </span>
+                <button type="button" class="btn-pick-product px-3 py-1.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 active:scale-95" data-index="${idx}">
+                    <span>⚡ Pilih & Buat Storyboard</span>
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    // Attach click listeners to "Pilih & Buat Storyboard"
+    listContainer.querySelectorAll('.btn-pick-product').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.getAttribute('data-index'), 10);
+            const chosen = products[index];
+            if (chosen) {
+                applyProductToUgcForm(chosen);
+                document.getElementById('modal-trend-scout')?.classList.add('hidden');
+                showToast(`Produk "${chosen.name}" berhasil dipilih!`, 'success');
+            }
+        });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+// Call initTrendScout in DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTrendScout);
+} else {
+    initTrendScout();
+}

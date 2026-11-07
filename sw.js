@@ -1,5 +1,5 @@
 // Service Worker for kawandigi CREATOR TOOLS
-const CACHE_NAME = 'kawandigi-cache-v45';
+const CACHE_NAME = 'kawandigi-cache-v46';
 const ASSETS = [
     './',
     './index.html',
@@ -8,6 +8,7 @@ const ASSETS = [
     './manifest.json',
     './modules/gemini_api.js',
     './modules/ugc_creator.js',
+    './modules/trend_scout.js',
     './modules/drama_creator.js',
     './modules/history_manager.js',
     './modules/license_manager.js',

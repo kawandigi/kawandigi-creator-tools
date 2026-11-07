@@ -91,6 +91,149 @@ export default {
         }
       };
 
+      // TikTok Shop & Shopee Indonesia Viral Trends API
+      if (url.pathname === '/api/trends/tiktok' && request.method === 'GET') {
+        const categoryFilter = url.searchParams.get('category') || 'all';
+        const catalog = [
+          {
+            id: 'tt-skin-01',
+            rank: 1,
+            name: 'Serum Pencerah 10x Niacinamide + Alpha Arbutin',
+            category: 'Skincare & Kecantikan',
+            category_id: 'skincare',
+            price_range: 'Rp 49.000 - Rp 59.000',
+            est_commission: '15% (Rp 8.850 / pcs)',
+            trend_velocity: '+380% Terjual Minggu Ini',
+            viral_score: 99,
+            tag: '🔥 #1 Viral TikTok Shop',
+            hook_angle: 'Problem-solving flek hitam & bekas jerawat membandel pudar dalam 7 hari. Visual tekstur cair cepat meresap sangat disukai algoritma FYP.',
+            selling_points: 'Beli 1 Gratis 1 promo gajian, memudarkan bekas jerawat & flek hitam dalam 7 hari, bersertifikat BPOM & Halal, tekstur watery cepat meresap tanpa lengket.',
+            recommended_tone: 'Casual & Ceria (Gen Z)',
+            recommended_talent: 'faceless'
+          },
+          {
+            id: 'tt-gadget-01',
+            rank: 2,
+            name: 'Wireless Lavalier Mic Clip-On Type-C & Lightning',
+            category: 'Gadget & Elektronik',
+            category_id: 'gadget',
+            price_range: 'Rp 52.000 - Rp 65.000',
+            est_commission: '16% (Rp 9.600 / pcs)',
+            trend_velocity: '+420% Permintaan Kreator',
+            viral_score: 97,
+            tag: '⚡ Wajib Kreator Pemula',
+            hook_angle: 'Uji suara di tempat bising vs pakai mic clip-on (perbandingan audio sebelum/sesudah). Solusi audio jernih tanpa kabel ribet.',
+            selling_points: 'Plug and play langsung colok tanpa aplikasi, jangkauan sinyal hingga 20 meter, baterai tahan 8 jam non-stop, fitur smart noise cancelling suara angin & bising hilang total.',
+            recommended_tone: 'Review Jujur & Edukatif',
+            recommended_talent: 'auto'
+          },
+          {
+            id: 'tt-home-01',
+            rank: 3,
+            name: 'Mini Chopper Listrik Portable 3 Pisau Tajam',
+            category: 'Kebutuhan Rumah Tangga',
+            category_id: 'home',
+            price_range: 'Rp 45.000 - Rp 55.000',
+            est_commission: '18% (Rp 9.900 / pcs)',
+            trend_velocity: '+310% Terjual di TikTok Live',
+            viral_score: 96,
+            tag: '🔥 Paling Laris di Live',
+            hook_angle: 'Cincang bawang & cabai cuma 5 detik tanpa pedih di mata. Demo visual cincang daging & bumbu cepat tanpa colokan listrik terus menerus (bisa dicas).',
+            selling_points: 'Bisa dicas USB tanpa kabel saat dipakai, 3 mata pisau stainless steel super tajam, cincang cabai bawang daging cuma hitungan detik, wadah food grade mudah dicuci.',
+            recommended_tone: 'FOMO & Urgensi Diskon',
+            recommended_talent: 'faceless'
+          },
+          {
+            id: 'tt-skin-02',
+            rank: 4,
+            name: 'Sunscreen Serum SPF 50 PA++++ Watery Sunscreen',
+            category: 'Skincare & Kecantikan',
+            category_id: 'skincare',
+            price_range: 'Rp 42.000 - Rp 49.000',
+            est_commission: '12% (Rp 5.800 / pcs)',
+            trend_velocity: '+290% Pencarian Harian',
+            viral_score: 95,
+            tag: '⭐ Rekomendasi Dokter Kulit',
+            hook_angle: 'Buktikan sunscreen tanpa whitecast, tidak pedih di mata, dan hasil kulit glowing sehat di bawah terik matahari.',
+            selling_points: 'Proteksi maksimal SPF 50 PA++++ anti sinar UVA & UVB, nol persen whitecast, sensasi dingin menyegarkan di kulit berminyak, cocok untuk semua jenis kulit pria & wanita.',
+            recommended_tone: 'Review Jujur & Edukatif',
+            recommended_talent: 'female'
+          },
+          {
+            id: 'tt-home-02',
+            rank: 5,
+            name: 'Panci Listrik Serbaguna Keramik Anti Lengket 1.8L',
+            category: 'Kebutuhan Rumah Tangga',
+            category_id: 'home',
+            price_range: 'Rp 65.000 - Rp 79.000',
+            est_commission: '14% (Rp 10.500 / pcs)',
+            trend_velocity: '+240% Favorit Anak Kost',
+            viral_score: 94,
+            tag: '⚡ Favorit Anak Kos',
+            hook_angle: 'Masak mie, rebus telur, hingga goreng sosis cuma pakai 1 alat colok listrik tanpa kompor gas.',
+            selling_points: 'Lapisan keramik anti lengket premium mudah dibersihkan, daya hemat cuma 450 watt tidak bikin jeglek, dilengkapi kukusan stainless steel, multifungsi rebus goreng kukus praktis.',
+            recommended_tone: 'Casual & Ceria (Gen Z)',
+            recommended_talent: 'faceless'
+          },
+          {
+            id: 'tt-food-01',
+            rank: 6,
+            name: 'Baso Aci Tulang Rangu Kuah Mercon Pedas Gurih',
+            category: 'Kuliner & Makanan',
+            category_id: 'food',
+            price_range: 'Rp 15.000 - Rp 22.000',
+            est_commission: '22% (Rp 4.400 / pcs)',
+            trend_velocity: '+370% FYP Mukbang',
+            viral_score: 93,
+            tag: '🔥 Sensasi Mukbang Viral',
+            hook_angle: 'Mukbang ASMR seruput kuah merah mercon dengan kriuk tulang rangu yang menggoda selera makan penonton.',
+            selling_points: 'Sensasi kuah merah cabai asli pedas gurih nagih, tekstur baso kenyal renyah tulang rangu asli, porsi kenyang lengkap dengan siomay kering dan pilus cikur, halal & higienis.',
+            recommended_tone: 'Casual & Ceria (Gen Z)',
+            recommended_talent: 'auto'
+          },
+          {
+            id: 'tt-fashion-01',
+            rank: 7,
+            name: 'Tas Selempang Kanvas Casual Aesthetic Waterproof',
+            category: 'Fashion & OOTD',
+            category_id: 'fashion',
+            price_range: 'Rp 48.000 - Rp 58.000',
+            est_commission: '17% (Rp 9.100 / pcs)',
+            trend_velocity: '+210% OOTD Kuliah',
+            viral_score: 91,
+            tag: '⭐ OOTD Mahasiswa Viral',
+            hook_angle: 'Uji siram air ke tas (anti air gerimis) + spill muatan barang: muat dompet, HP, payung lipat, dan botol minum.',
+            selling_points: 'Bahan kanvas cordura tebal anti cipratan air (water-resistant), tali strap empuk bisa diatur panjang pendek, banyak kompartemen resleting rapi, model unisex cocok cowok & cewek.',
+            recommended_tone: 'Casual & Ceria (Gen Z)',
+            recommended_talent: 'female'
+          },
+          {
+            id: 'tt-gadget-02',
+            rank: 8,
+            name: 'Tripod Tongsis Bluetooth 4-in-1 dengan Remote & Ringlight',
+            category: 'Gadget & Elektronik',
+            category_id: 'gadget',
+            price_range: 'Rp 58.000 - Rp 72.000',
+            est_commission: '15% (Rp 9.800 / pcs)',
+            trend_velocity: '+190% Alat Wajib Ngonten',
+            viral_score: 90,
+            tag: '⚡ Ngonten Mandiri',
+            hook_angle: 'Bikin video TikTok & foto OOTD sendiri di jalan tanpa minta tolong orang lain dengan tombol remote wireless.',
+            selling_points: 'Kaki tripod kokoh anti goyang saat ditiup angin, remote bluetooth shutter connect instan hingga 10 meter, bisa diputar 360 derajat vertikal horizontal, lampu LED bawaan untuk selfie malam.',
+            recommended_tone: 'Review Jujur & Edukatif',
+            recommended_talent: 'auto'
+          }
+        ];
+        const filtered = categoryFilter === 'all' ? catalog : catalog.filter(it => it.category_id === categoryFilter);
+        return new Response(JSON.stringify({
+          success: true,
+          updated_at: new Date().toISOString(),
+          region: 'ID',
+          total: filtered.length,
+          data: filtered
+        }), { headers: corsHeaders });
+      }
+
       // 1. Leaderboard Ranking API (Email is completely omitted for privacy)
       if (url.pathname === '/api/leaderboard' && request.method === 'GET') {
         let results = [];
