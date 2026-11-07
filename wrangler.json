@@ -12,5 +12,10 @@
       "database_name": "kawandigi-db",
       "database_id": "924fe26f-7dcf-4438-abe0-1a0309b7b074"
     }
-  ]
+  ],
+  "triggers": {
+    "crons": [
+      "0 17 * * *"
+    ]
+  }
 }

@@ -1,100 +1,5 @@
-/**
- * KawanDigi Creator Tools - Cloudflare Worker & D1 API Backend
- * Serves Static Assets and Ultra-Scalable REST API for Centralized Member Hub, Gamification & 24h Peak Usage Analytics
- */
-
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-
-    // API Routes for Centralized Database & Analytics
-    if (url.pathname.startsWith('/api/')) {
-      const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Content-Type': 'application/json'
-      };
-
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { headers: corsHeaders });
-      }
-
-      const db = env.DB;
-      globalThis.__kd_members = globalThis.__kd_members || [];
-
-      // Helper to ensure D1 tables exist
-      const ensureD1Tables = async () => {
-        if (!db) return;
-        try {
-          await db.prepare(`
-            CREATE TABLE IF NOT EXISTS members (
-              id TEXT PRIMARY KEY,
-              name TEXT,
-              email TEXT UNIQUE,
-              picture TEXT,
-              plan TEXT,
-              total_generates INTEGER DEFAULT 0,
-              xp INTEGER DEFAULT 10,
-              level TEXT DEFAULT 'Novice Creator',
-              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-              last_active DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-          `).run();
-
-          await db.prepare(`
-            CREATE TABLE IF NOT EXISTS activity_logs (
-              id TEXT PRIMARY KEY,
-              email TEXT,
-              name TEXT,
-              tool TEXT,
-              detail TEXT,
-              timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-              hour_wib INTEGER,
-              day_wib TEXT,
-              xp_earned INTEGER DEFAULT 10
-            )
-          `).run();
-
-          await db.prepare(`
-            CREATE TABLE IF NOT EXISTS app_settings (
-              key TEXT PRIMARY KEY,
-              value TEXT NOT NULL,
-              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-          `).run();
-
-          await db.prepare(`
-            CREATE TABLE IF NOT EXISTS device_licenses (
-              license_key TEXT PRIMARY KEY,
-              tier TEXT NOT NULL,
-              tier_name TEXT NOT NULL,
-              device_id TEXT NOT NULL,
-              device_name TEXT,
-              email TEXT,
-              device_scope TEXT DEFAULT 'single_device',
-              status TEXT DEFAULT 'active',
-              notes TEXT DEFAULT '',
-              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-              activated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-              last_verified DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-          `).run();
-
-          // Safely add any new columns for migrations (SQLite forbids CURRENT_TIMESTAMP in ALTER TABLE ADD COLUMN)
-          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN device_scope TEXT DEFAULT 'single_device'").run(); } catch (_) {}
-          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN status TEXT DEFAULT 'active'").run(); } catch (_) {}
-          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN notes TEXT DEFAULT ''").run(); } catch (_) {}
-          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN created_at DATETIME").run(); } catch (_) {}
-        } catch (e) {
-          console.warn('D1 table creation check:', e.message);
-        }
-      };
-
-      // TikTok Shop & Shopee Indonesia Viral Trends API
-      if (url.pathname === '/api/trends/tiktok' && request.method === 'GET') {
-        const categoryFilter = url.searchParams.get('category') || 'all';
-        const catalog = [
+// Master Authentic Indonesian E-Commerce Viral Products Catalog
+const MASTER_TRENDING_PRODUCTS = [
     {
         "id": "tt-skin-01",
         "rank": 1,
@@ -206,8 +111,96 @@ export default {
         "duration": 10
     },
     {
-        "id": "tt-food-01",
+        "id": "tt-skin-03",
         "rank": 6,
+        "name": "Skintific 5X Ceramide Soothing Toner 80ml",
+        "brand": "Skintific",
+        "category": "Skincare & Kecantikan",
+        "category_id": "skincare",
+        "price_range": "Rp 89.000 - Rp 99.000",
+        "est_commission": "12% (Rp 11.500 / pcs)",
+        "trend_velocity": "+360% Penjualan Live TikTok",
+        "viral_score": 95,
+        "tag": "⭐ Toner Viral Skintific",
+        "image_url": "assets/products/skintific_5x_toner.jpg",
+        "shopee_url": "https://shopee.co.id/search?keyword=Skintific%205X%20Ceramide%20Toner",
+        "tiktok_url": "https://www.tiktok.com/tag/skintifictoner",
+        "marketplace_url": "https://shopee.co.id/search?keyword=Skintific%205X%20Ceramide%20Toner",
+        "hook_angle": "Kulit dehidrasi dan perih langsung tenang dalam 10 detik. Buktikan toner 5X Ceramide yang memperbaiki skin barrier dalam 7 hari.",
+        "selling_points": "Kandungan 5X Ceramide + Probiotik Complex + Centella Asiatica, menenangkan kulit berjerawat dan kemerahan secara instan, tekstur watery cepat menyerap.",
+        "recommended_tone": "Review Jujur & Edukatif",
+        "recommended_talent": "female",
+        "duration": 10
+    },
+    {
+        "id": "tt-gadget-02",
+        "rank": 7,
+        "name": "Baseus Bowie WM02 TWS Earphone Bluetooth 5.3 Mini",
+        "brand": "Baseus",
+        "category": "Gadget & Elektronik",
+        "category_id": "gadget",
+        "price_range": "Rp 129.000 - Rp 149.000",
+        "est_commission": "15% (Rp 20.000 / pcs)",
+        "trend_velocity": "+440% TWS Terlaris Pelajar",
+        "viral_score": 94,
+        "tag": "🔥 TWS #1 Terlaris TikTok",
+        "image_url": "assets/products/baseus_wm02_tws.jpg",
+        "shopee_url": "https://shopee.co.id/search?keyword=Baseus%20Bowie%20WM02",
+        "tiktok_url": "https://www.tiktok.com/tag/baseuswm02",
+        "marketplace_url": "https://shopee.co.id/search?keyword=Baseus%20Bowie%20WM02",
+        "hook_angle": "TWS kapsul mini desain estetik transparan suara bass jedag-jedug tanpa delay buat nonton film dan main game.",
+        "selling_points": "Bluetooth 5.3 koneksi stabil latency rendah 0.06s, baterai super awet hingga 25 jam pemakaian, desain kapsul mungil elegan transparan, touch control responsif.",
+        "recommended_tone": "Casual & Ceria (Gen Z)",
+        "recommended_talent": "auto",
+        "duration": 10
+    },
+    {
+        "id": "tt-home-03",
+        "rank": 8,
+        "name": "Deerma DX700 Vacuum Cleaner Handheld 2-in-1 Ultra-Quiet",
+        "brand": "Deerma",
+        "category": "Kebutuhan Rumah Tangga",
+        "category_id": "home",
+        "price_range": "Rp 249.000 - Rp 279.000",
+        "est_commission": "10% (Rp 26.000 / pcs)",
+        "trend_velocity": "+290% Favorit Rumah Tangga",
+        "viral_score": 93,
+        "tag": "⚡ Sedot Debu Super Kuat",
+        "image_url": "assets/products/deerma_dx700_vacuum.jpg",
+        "shopee_url": "https://shopee.co.id/search?keyword=Deerma%20DX700",
+        "tiktok_url": "https://www.tiktok.com/tag/deermadx700",
+        "marketplace_url": "https://shopee.co.id/search?keyword=Deerma%20DX700",
+        "hook_angle": "Sekali sedot karpet dan sela sofa kotor langsung kinclong bebas tungau debu halus tanpa sisa.",
+        "selling_points": "Daya hisap tornado 15.000 Pa kuat sedot partikel mikro, filter HEPA 3 lapis udara keluar tetap bersih, bisa mode gagang panjang atau handheld meja, bobot ringan tidak bikin pegal.",
+        "recommended_tone": "Review Jujur & Edukatif",
+        "recommended_talent": "faceless",
+        "duration": 10
+    },
+    {
+        "id": "tt-skin-04",
+        "rank": 9,
+        "name": "Somethinc 5% Niacinamide + Moisture Sabi Beet Serum",
+        "brand": "Somethinc",
+        "category": "Skincare & Kecantikan",
+        "category_id": "skincare",
+        "price_range": "Rp 79.000 - Rp 89.000",
+        "est_commission": "13% (Rp 11.000 / pcs)",
+        "trend_velocity": "+320% Review Dokter Kulit",
+        "viral_score": 92,
+        "tag": "⭐ Mencerahkan Aman Sensitif",
+        "image_url": "assets/products/somethinc_serum.jpg",
+        "shopee_url": "https://shopee.co.id/search?keyword=Somethinc%205%20Niacinamide%20Serum",
+        "tiktok_url": "https://www.tiktok.com/tag/somethincserum",
+        "marketplace_url": "https://shopee.co.id/search?keyword=Somethinc%205%20Niacinamide%20Serum",
+        "hook_angle": "Mencerahkan bekas jerawat kehitaman tanpa bikin iritasi kulit sensitif dengan kandungan Sabi Beet alami.",
+        "selling_points": "Formula 5% Niacinamide grade farmasi + Sabiwhite 8x lebih efektif dari hydroquinone, memperkuat skin barrier dan memudarkan hiperpigmentasi, bersertifikat BPOM & Non-Comedogenic.",
+        "recommended_tone": "Review Jujur & Edukatif",
+        "recommended_talent": "female",
+        "duration": 10
+    },
+    {
+        "id": "tt-food-01",
+        "rank": 10,
         "name": "Baso Aci Bapper Tulang Rangu Komplit Kuah Sambal Mercon",
         "brand": "Bapper Food ID",
         "category": "Kuliner & Makanan",
@@ -229,7 +222,7 @@ export default {
     },
     {
         "id": "tt-fashion-01",
-        "rank": 7,
+        "rank": 11,
         "name": "Evernext Tas Selempang Pria Slingbag Orion Waterproof Anti Air",
         "brand": "Evernext",
         "category": "Fashion & OOTD",
@@ -250,8 +243,8 @@ export default {
         "duration": 10
     },
     {
-        "id": "tt-gadget-02",
-        "rank": 8,
+        "id": "tt-gadget-03",
+        "rank": 12,
         "name": "TNW L16 Bluetooth Selfie Stick Tripod 160cm dengan Remote Shutter",
         "brand": "TNW Official",
         "category": "Gadget & Elektronik",
@@ -272,10 +265,246 @@ export default {
         "duration": 10
     }
 ];
+
+/**
+ * Server-Side Daily Dynamic Trend Generator
+ * Produces fresh daily rankings, velocities, and spotlight tags based on date seed
+ */
+function generateDailyTrendsCatalog(dateKey, dayOfWeek) {
+  // Simple deterministic hash from date string
+  let hash = 0;
+  for (let i = 0; i < dateKey.length; i++) {
+    hash = (hash << 5) - hash + dateKey.charCodeAt(i);
+    hash |= 0;
+  }
+  const seed = Math.abs(hash);
+
+  // Rotate catalog rotation index based on day of week & seed
+  const total = MASTER_TRENDING_PRODUCTS.length;
+  const offset = (dayOfWeek + (seed % 3)) % total;
+
+  // Reorder list starting from today's spotlight offset
+  const reordered = [
+    ...MASTER_TRENDING_PRODUCTS.slice(offset),
+    ...MASTER_TRENDING_PRODUCTS.slice(0, offset)
+  ];
+
+  const dailyTags = [
+    '🔥 #1 Paling Laris Hari Ini',
+    '⚡ Viral di FYP Pagi & Sore',
+    '⭐ Rekomendasi Kreator Teratas',
+    '🔥 Permintaan Tinggi Live TikTok',
+    '⚡ Tren Konversi Tertinggi',
+    '⭐ Paling Banyak Dicari Pembeli',
+    '🔥 Lonjakan Penjualan 24 Jam',
+    '⚡ Hot Pick Shopee Video',
+    '⭐ Produk Pilihan Editor',
+    '🔥 Diskon Kilat Ramai Peminat',
+    '⚡ Favorit Pembeli Baru',
+    '⭐ Tren FYP Sepanjang Hari'
+  ];
+
+  return reordered.map((item, idx) => {
+    const rank = idx + 1;
+    const velocityFactor = 250 + ((seed * (idx + 1)) % 280);
+    const score = Math.max(88, 99 - idx);
+    const tag = dailyTags[idx % dailyTags.length];
+
+    return {
+      ...item,
+      rank: rank,
+      viral_score: score,
+      tag: tag,
+      trend_velocity: `+${velocityFactor}% Terjual Hari Ini (${dateKey})`
+    };
+  });
+}
+
+/**
+ * KawanDigi Creator Tools - Cloudflare Worker & D1 API Backend
+ * Serves Static Assets and Ultra-Scalable REST API for Centralized Member Hub, Gamification & 24h Peak Usage Analytics
+ */
+
+export default {
+    async scheduled(event, env, ctx) {
+    const db = env.DB;
+    if (!db) return;
+    try {
+      const nowWib = new Date(Date.now() + 7 * 3600 * 1000);
+      const dateKey = nowWib.toISOString().slice(0, 10);
+      const dayOfWeek = nowWib.getUTCDay();
+      const catalog = generateDailyTrendsCatalog(dateKey, dayOfWeek);
+
+      await db.prepare(`
+        CREATE TABLE IF NOT EXISTS daily_trends_cache (
+          date_key TEXT PRIMARY KEY,
+          data_json TEXT NOT NULL,
+          total INTEGER DEFAULT 0,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run();
+
+      await db.prepare(`
+        INSERT INTO daily_trends_cache (date_key, data_json, total, updated_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(date_key) DO UPDATE SET data_json = excluded.data_json, total = excluded.total, updated_at = CURRENT_TIMESTAMP
+      `).bind(dateKey, JSON.stringify(catalog), catalog.length).run();
+      console.log('Daily trends updated automatically by server cron for:', dateKey);
+    } catch (e) {
+      console.error('Scheduled cron error:', e);
+    }
+  },
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    // API Routes for Centralized Database & Analytics
+    if (url.pathname.startsWith('/api/')) {
+      const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Content-Type': 'application/json'
+      };
+
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders });
+      }
+
+      const db = env.DB;
+      globalThis.__kd_members = globalThis.__kd_members || [];
+
+      // Helper to ensure D1 tables exist
+      const ensureD1Tables = async () => {
+        if (!db) return;
+        try {
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS members (
+              id TEXT PRIMARY KEY,
+              name TEXT,
+              email TEXT UNIQUE,
+              picture TEXT,
+              plan TEXT,
+              total_generates INTEGER DEFAULT 0,
+              xp INTEGER DEFAULT 10,
+              level TEXT DEFAULT 'Novice Creator',
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              last_active DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+              id TEXT PRIMARY KEY,
+              email TEXT,
+              name TEXT,
+              tool TEXT,
+              detail TEXT,
+              timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+              hour_wib INTEGER,
+              day_wib TEXT,
+              xp_earned INTEGER DEFAULT 10
+            )
+          `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS app_settings (
+              key TEXT PRIMARY KEY,
+              value TEXT NOT NULL,
+              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS daily_trends_cache (
+              date_key TEXT PRIMARY KEY,
+              data_json TEXT NOT NULL,
+              total INTEGER DEFAULT 0,
+              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
+
+          await db.prepare(`
+            CREATE TABLE IF NOT EXISTS device_licenses (
+              license_key TEXT PRIMARY KEY,
+              tier TEXT NOT NULL,
+              tier_name TEXT NOT NULL,
+              device_id TEXT NOT NULL,
+              device_name TEXT,
+              email TEXT,
+              device_scope TEXT DEFAULT 'single_device',
+              status TEXT DEFAULT 'active',
+              notes TEXT DEFAULT '',
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              activated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              last_verified DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `).run();
+
+          // Safely add any new columns for migrations (SQLite forbids CURRENT_TIMESTAMP in ALTER TABLE ADD COLUMN)
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN device_scope TEXT DEFAULT 'single_device'").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN status TEXT DEFAULT 'active'").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN notes TEXT DEFAULT ''").run(); } catch (_) {}
+          try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN created_at DATETIME").run(); } catch (_) {}
+        } catch (e) {
+          console.warn('D1 table creation check:', e.message);
+        }
+      };
+
+      // TikTok Shop & Shopee Indonesia Viral Trends API
+      if (url.pathname === '/api/trends/tiktok' && request.method === 'GET') {
+        const categoryFilter = url.searchParams.get('category') || 'all';
+
+        // Calculate current date in Asia/Jakarta (WIB: UTC+7)
+        const nowWib = new Date(Date.now() + 7 * 3600 * 1000);
+        const dateKey = nowWib.toISOString().slice(0, 10); // "YYYY-MM-DD"
+        const dayOfWeek = nowWib.getUTCDay();
+
+        // 1. Check in-memory hot cache (0ms, zero D1 reads)
+        let catalog = null;
+        if (globalThis.__cachedDailyTrends && globalThis.__cachedDailyTrendsDate === dateKey) {
+          catalog = globalThis.__cachedDailyTrends;
+        }
+
+        // 2. If not in memory, query D1 daily_trends_cache (only 1 fast read)
+        if (!catalog && db) {
+          try {
+            await ensureD1Tables();
+            const row = await db.prepare("SELECT data_json FROM daily_trends_cache WHERE date_key = ?").bind(dateKey).first();
+            if (row && row.data_json) {
+              catalog = JSON.parse(row.data_json);
+              globalThis.__cachedDailyTrends = catalog;
+              globalThis.__cachedDailyTrendsDate = dateKey;
+            }
+          } catch (e) {
+            console.warn('D1 cache read error:', e.message);
+          }
+        }
+
+        // 3. If cache missing for today (first request of the day across all members):
+        // Server generates daily deterministic trends for today & saves to D1 ONCE (huge D1 quota savings)
+        if (!catalog) {
+          catalog = generateDailyTrendsCatalog(dateKey, dayOfWeek);
+          globalThis.__cachedDailyTrends = catalog;
+          globalThis.__cachedDailyTrendsDate = dateKey;
+
+          if (db) {
+            try {
+              await db.prepare(`
+                INSERT INTO daily_trends_cache (date_key, data_json, total, updated_at)
+                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(date_key) DO UPDATE SET data_json = excluded.data_json, total = excluded.total, updated_at = CURRENT_TIMESTAMP
+              `).bind(dateKey, JSON.stringify(catalog), catalog.length).run();
+            } catch (err) {
+              console.warn('D1 cache write error:', err.message);
+            }
+          }
+        }
+
         const filtered = categoryFilter === 'all' ? catalog : catalog.filter(it => it.category_id === categoryFilter);
         return new Response(JSON.stringify({
           success: true,
-          updated_at: new Date().toISOString(),
+          date_key: dateKey,
+          updated_at: nowWib.toISOString(),
           region: 'ID',
           total: filtered.length,
           data: filtered
