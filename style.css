@@ -905,7 +905,7 @@ html:not(.dark) #sticky-user-rank-bar {
     color: #0f172a !important;
 }
 
-html:not(.dark) #sticky-user-rank-bar .text-white {
+html:not(.dark) #sticky-user-rank-bar .text-white:not(button):not(button *) {
     color: #0f172a !important;
 }
 
@@ -1197,7 +1197,7 @@ html:not(.dark) #section-flow .bg-slate-950 {
     border-color: #e2e8f0 !important;
 }
 
-html:not(.dark) #section-flow .text-white {
+html:not(.dark) #section-flow .text-white:not(button):not(button *):not(a):not(a *):not([class*="bg-gradient"]):not([class*="bg-gradient"] *) {
     color: #0f172a !important;
 }
 
@@ -1703,4 +1703,52 @@ html:not(.dark) #section-tutorial .bg-slate-900 h4 {
 
 html:not(.dark) #section-tutorial .bg-slate-900 p {
     color: #475569 !important;
+}
+
+/* =========================================================================
+   LIGHT THEME: PURE WHITE ICONS & TEXT SAFEGUARDS FOR GRADIENT SQUIRCLES & ACTION BUTTONS
+   ========================================================================= */
+
+/* 1. Button + Buat Video Baru in Sticky User Rank Bar */
+html:not(.dark) #sticky-user-rank-bar button,
+html:not(.dark) #sticky-user-rank-bar button *,
+html:not(.dark) #sticky-user-rank-bar button.text-white {
+    color: #ffffff !important;
+}
+
+/* 2. Gradient Header Squircles (Leaderboard Trophy, Google Flow Sparkles, Tutorial Play) */
+html:not(.dark) .bg-gradient-to-tr.from-emerald-600,
+html:not(.dark) .bg-gradient-to-tr.from-emerald-600 *,
+html:not(.dark) .bg-gradient-to-tr.from-amber-500,
+html:not(.dark) .bg-gradient-to-tr.from-amber-500 *,
+html:not(.dark) .bg-gradient-to-tr.from-indigo-600,
+html:not(.dark) .bg-gradient-to-tr.from-indigo-600 *,
+html:not(.dark) div[class*="bg-gradient-to-tr"][class*="rounded-xl"],
+html:not(.dark) div[class*="bg-gradient-to-tr"][class*="rounded-xl"] *,
+html:not(.dark) div[class*="bg-gradient-to-tr"][class*="rounded-xl"] i,
+html:not(.dark) div[class*="bg-gradient-to-tr"][class*="rounded-xl"] svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* 3. Universal Gradient Buttons & Icon Badges in Light Mode */
+html:not(.dark) button[class*="bg-gradient"],
+html:not(.dark) button[class*="bg-gradient"] *,
+html:not(.dark) button.bg-brand-600,
+html:not(.dark) button.bg-brand-600 *,
+html:not(.dark) button.bg-emerald-600,
+html:not(.dark) button.bg-emerald-600 *,
+html:not(.dark) a[class*="bg-gradient-to-r"][class*="from-emerald"],
+html:not(.dark) a[class*="bg-gradient-to-r"][class*="from-emerald"] *,
+html:not(.dark) a[class*="bg-gradient-to-r"][class*="from-brand"],
+html:not(.dark) a[class*="bg-gradient-to-r"][class*="from-brand"] * {
+    color: #ffffff !important;
+}
+
+html:not(.dark) div[class*="bg-gradient"] i,
+html:not(.dark) div[class*="bg-gradient"] svg,
+html:not(.dark) button[class*="bg-gradient"] i,
+html:not(.dark) button[class*="bg-gradient"] svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
 }
