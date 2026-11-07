@@ -1427,7 +1427,35 @@ async function handleGenerateUgc() {
     resultsContainer?.classList.add('hidden');
     actionsHeader?.classList.add('hidden');
     loadingState?.classList.remove('hidden');
-    btnGenerate.disabled = true;
+
+    const originalBtnContent = btnGenerate ? btnGenerate.innerHTML : '';
+    let progressInterval = null;
+
+    if (btnGenerate) {
+        btnGenerate.disabled = true;
+        btnGenerate.classList.add('btn-generating-active');
+        btnGenerate.innerHTML = `
+            <svg class="animate-spin w-4 h-4 text-white flex-shrink-0 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="btn-generate-ugc-text" class="text-xs sm:text-sm font-bold tracking-wide">AI Menganalisis Formula Hook Viral...</span>
+        `;
+
+        const progressSteps = [
+            'AI Menganalisis Formula Hook Viral...',
+            'AI Merancang Prompt Google Flow 10s...',
+            'AI Menyiapkan Naskah & Audio Natural...',
+            'AI Menyusun Template Caption Shopee...',
+            'AI Menyelesaikan Storyboard Produksi...'
+        ];
+        let stepIdx = 0;
+        progressInterval = setInterval(() => {
+            stepIdx = (stepIdx + 1) % progressSteps.length;
+            const textEl = document.getElementById('btn-generate-ugc-text');
+            if (textEl) textEl.textContent = progressSteps[stepIdx];
+        }, 2000);
+    }
 
     try {
         const campaign = await generateUgcCampaign({
@@ -1474,8 +1502,16 @@ async function handleGenerateUgc() {
         showToast(err.message, 'error');
         emptyState?.classList.remove('hidden');
     } finally {
+        if (progressInterval) clearInterval(progressInterval);
         loadingState?.classList.add('hidden');
-        btnGenerate.disabled = false;
+        if (btnGenerate) {
+            btnGenerate.disabled = false;
+            btnGenerate.classList.remove('btn-generating-active');
+            btnGenerate.innerHTML = originalBtnContent;
+        }
+        if (window.innerWidth < 1024 && resultsContainer && !resultsContainer.classList.contains('hidden')) {
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         if (window.lucide) window.lucide.createIcons();
     }
 }
@@ -1706,7 +1742,35 @@ async function handleGenerateDrama() {
     resultsContainer?.classList.add('hidden');
     actionsHeader?.classList.add('hidden');
     loadingState?.classList.remove('hidden');
-    btnGenerate.disabled = true;
+
+    const originalBtnContent = btnGenerate ? btnGenerate.innerHTML : '';
+    let progressInterval = null;
+
+    if (btnGenerate) {
+        btnGenerate.disabled = true;
+        btnGenerate.classList.add('btn-generating-active');
+        btnGenerate.innerHTML = `
+            <svg class="animate-spin w-4 h-4 text-white flex-shrink-0 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="btn-generate-ugc-text" class="text-xs sm:text-sm font-bold tracking-wide">AI Menganalisis Formula Hook Viral...</span>
+        `;
+
+        const progressSteps = [
+            'AI Menganalisis Formula Hook Viral...',
+            'AI Merancang Prompt Google Flow 10s...',
+            'AI Menyiapkan Naskah & Audio Natural...',
+            'AI Menyusun Template Caption Shopee...',
+            'AI Menyelesaikan Storyboard Produksi...'
+        ];
+        let stepIdx = 0;
+        progressInterval = setInterval(() => {
+            stepIdx = (stepIdx + 1) % progressSteps.length;
+            const textEl = document.getElementById('btn-generate-ugc-text');
+            if (textEl) textEl.textContent = progressSteps[stepIdx];
+        }, 2000);
+    }
 
     try {
         const drama = await generateDramaEpisode({
@@ -1760,8 +1824,16 @@ async function handleGenerateDrama() {
         showToast(err.message, 'error');
         emptyState?.classList.remove('hidden');
     } finally {
+        if (progressInterval) clearInterval(progressInterval);
         loadingState?.classList.add('hidden');
-        btnGenerate.disabled = false;
+        if (btnGenerate) {
+            btnGenerate.disabled = false;
+            btnGenerate.classList.remove('btn-generating-active');
+            btnGenerate.innerHTML = originalBtnContent;
+        }
+        if (window.innerWidth < 1024 && resultsContainer && !resultsContainer.classList.contains('hidden')) {
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         if (window.lucide) window.lucide.createIcons();
     }
 }
