@@ -508,10 +508,10 @@ html:not(.dark) .bottom-fab-button {
 #drawer-history-backdrop,
 html:not(.dark) #drawer-backdrop,
 html:not(.dark) #drawer-history-backdrop {
-    background-color: rgba(15, 23, 42, 0.5) !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
-    transition: opacity 0.3s ease;
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Circular App Launcher Icon Grid */
@@ -1063,24 +1063,32 @@ html:not(.dark) #section-flow .text-slate-400 {
     color: #334155 !important;
 }
 
-/* 7. Riwayat Project Drawer */
+/* 7. Riwayat Project Drawer & Frosted Glass Backdrop */
+#drawer-history {
+    background-color: transparent !important;
+}
+
 html:not(.dark) #drawer-history {
+    background-color: transparent !important;
+}
+
+html:not(.dark) #drawer-history-panel {
     background-color: #ffffff !important;
     border-color: #e2e8f0 !important;
     color: #0f172a !important;
 }
 
-html:not(.dark) #drawer-history .bg-slate-900 {
+html:not(.dark) #drawer-history-panel .bg-slate-900 {
     background-color: #f8fafc !important;
     border-color: #e2e8f0 !important;
 }
 
-html:not(.dark) #drawer-history .text-white {
+html:not(.dark) #drawer-history-panel .text-white {
     color: #0f172a !important;
 }
 
-html:not(.dark) #drawer-history .text-slate-300,
-html:not(.dark) #drawer-history .text-slate-400 {
+html:not(.dark) #drawer-history-panel .text-slate-300,
+html:not(.dark) #drawer-history-panel .text-slate-400 {
     color: #475569 !important;
 }
 
@@ -1295,4 +1303,232 @@ html:not(.dark) #shopee-char-count-badge {
     background-color: #ffffff !important;
     border-color: #fed7aa !important;
     color: #c2410c !important;
+}
+
+
+/* =========================================================================
+   LIGHT THEME WCAG AA HIGH-CONTRAST & READABILITY OVERHAUL
+   ========================================================================= */
+
+/* 1. Modal Profil Akun: Kartu Langganan Gelap Tetap Elegan & Teks Putih Terbaca */
+.profile-subscription-card,
+html:not(.dark) .profile-subscription-card {
+    background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%) !important;
+    border: 1px solid rgba(99, 102, 241, 0.45) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+}
+
+.profile-subscription-card,
+.profile-subscription-card *,
+html:not(.dark) .profile-subscription-card,
+html:not(.dark) .profile-subscription-card * {
+    color: #ffffff !important;
+}
+
+.profile-subscription-card .text-slate-400,
+html:not(.dark) .profile-subscription-card .text-slate-400 {
+    color: #cbd5e1 !important;
+}
+
+.profile-subscription-card #profile-plan-badge,
+html:not(.dark) .profile-subscription-card #profile-plan-badge {
+    background-color: rgba(245, 158, 11, 0.25) !important;
+    border: 1px solid rgba(245, 158, 11, 0.6) !important;
+    color: #fde047 !important;
+    font-weight: 800 !important;
+}
+
+/* User Profile Modal Container & Logout Button High-Contrast */
+html:not(.dark) #modal-user-profile > div {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) #btn-logout-user {
+    background-color: #fee2e2 !important;
+    border: 1.5px solid #fca5a5 !important;
+    color: #b91c1c !important;
+    font-weight: 800 !important;
+}
+
+html:not(.dark) #btn-logout-user:hover {
+    background-color: #fecaca !important;
+    border-color: #f87171 !important;
+    color: #991b1b !important;
+}
+
+html:not(.dark) #btn-logout-user * {
+    color: #b91c1c !important;
+}
+
+/* 2. Google Flow Studio: Mode Berdampingan & Generator Video AI Alternatif */
+html:not(.dark) #section-flow .bg-emerald-500\/20 {
+    background-color: #d1fae5 !important;
+    border-color: #6ee7b7 !important;
+    color: #065f46 !important;
+}
+
+html:not(.dark) #section-flow .bg-emerald-500\/20 * {
+    color: #065f46 !important;
+}
+
+html:not(.dark) #btn-open-flow-popup {
+    background-color: #f1f5f9 !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) #btn-open-flow-popup:hover {
+    background-color: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+    color: #047857 !important;
+}
+
+html:not(.dark) #btn-open-flow-popup * {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #btn-open-flow-popup i {
+    color: #059669 !important;
+}
+
+/* Alternative AI Video Engines Cards & Links */
+html:not(.dark) #section-flow .group {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) #section-flow .group a {
+    background-color: #f8fafc !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) #section-flow .group a:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #2563eb !important;
+}
+
+html:not(.dark) #section-flow .group a * {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #section-flow .group a:hover * {
+    color: #2563eb !important;
+}
+
+html:not(.dark) #section-flow .group .bg-slate-800 {
+    background-color: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) #section-flow .group .text-emerald-400 {
+    color: #047857 !important;
+    font-weight: 700 !important;
+}
+
+html:not(.dark) #section-flow .group .text-brand-300 {
+    color: #4338ca !important;
+    font-weight: 700 !important;
+}
+
+html:not(.dark) #section-flow .group .text-amber-300 {
+    color: #b45309 !important;
+    font-weight: 700 !important;
+}
+
+html:not(.dark) #section-flow .group .text-purple-300 {
+    color: #7e22ce !important;
+    font-weight: 700 !important;
+}
+
+html:not(.dark) #section-flow .group .text-sky-300 {
+    color: #0369a1 !important;
+    font-weight: 700 !important;
+}
+
+html:not(.dark) #section-flow .group .text-rose-300 {
+    color: #be123c !important;
+    font-weight: 700 !important;
+}
+
+/* 3. Leaderboard Tab Light Mode High-Contrast */
+html:not(.dark) #section-leaderboard .bg-gradient-to-r.from-slate-900 {
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 50%, #fef3c7 100%) !important;
+    border-color: #fde68a !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) #section-leaderboard .bg-gradient-to-r.from-slate-900 h2 {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #section-leaderboard .bg-gradient-to-r.from-slate-900 p {
+    color: #334155 !important;
+}
+
+html:not(.dark) #section-leaderboard .bg-gradient-to-r.from-slate-900 strong {
+    color: #92400e !important;
+}
+
+html:not(.dark) #section-leaderboard .bg-amber-500\/20 {
+    background-color: #fef3c7 !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+}
+
+html:not(.dark) #section-leaderboard .bg-amber-500\/20 * {
+    color: #92400e !important;
+}
+
+html:not(.dark) #section-leaderboard .bg-amber-500\/10 {
+    background-color: #fef3c7 !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+    font-weight: 700 !important;
+}
+
+/* 4. Tutorial Tab Light Mode High-Contrast */
+html:not(.dark) #section-tutorial .bg-gradient-to-r.from-slate-900 {
+    background: linear-gradient(135deg, #ffffff 0%, #eef2ff 50%, #e0e7ff 100%) !important;
+    border-color: #c7d2fe !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) #section-tutorial .bg-gradient-to-r.from-slate-900 h2 {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #section-tutorial .bg-gradient-to-r.from-slate-900 p {
+    color: #334155 !important;
+}
+
+html:not(.dark) #section-tutorial .bg-indigo-500\/20 {
+    background-color: #e0e7ff !important;
+    border-color: #c7d2fe !important;
+    color: #4338ca !important;
+}
+
+html:not(.dark) #section-tutorial .bg-indigo-500\/20 * {
+    color: #4338ca !important;
+}
+
+html:not(.dark) #section-tutorial .bg-slate-900 {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+html:not(.dark) #section-tutorial .bg-slate-900 h4 {
+    color: #0f172a !important;
+}
+
+html:not(.dark) #section-tutorial .bg-slate-900 p {
+    color: #475569 !important;
 }
