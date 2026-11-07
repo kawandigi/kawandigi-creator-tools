@@ -888,18 +888,18 @@ html:not(.dark) #section-license .text-amber-300 {
    ========================================================================= */
 
 /* 1. Universal non-button text-white fix */
-html:not(.dark) p.text-white:not(.home-hero-card *),
-html:not(.dark) strong.text-white:not(.home-hero-card *),
-html:not(.dark) b.text-white:not(.home-hero-card *),
-html:not(.dark) li.text-white:not(.home-hero-card *),
-html:not(.dark) h1.text-white:not(.home-hero-card *),
-html:not(.dark) h2.text-white:not(.home-hero-card *),
-html:not(.dark) h3.text-white:not(.home-hero-card *),
-html:not(.dark) h4.text-white:not(.home-hero-card *),
-html:not(.dark) h5.text-white:not(.home-hero-card *),
-html:not(.dark) h6.text-white:not(.home-hero-card *),
-html:not(.dark) span.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not(.rounded-full.bg-brand-500 *):not(.rounded-full.bg-emerald-500 *):not(.rounded-full.bg-amber-500 *):not(.btn-duration.active *):not(.btn-drama-duration.active *):not(.home-hero-card *),
-html:not(.dark) div.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not([class*="from-brand-600"]):not(.home-hero-card *):not(.home-hero-card) {
+html:not(.dark) p.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) strong.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) b.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) li.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) h1.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) h2.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) h3.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) h4.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) h5.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) h6.text-white:not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) span.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not(.rounded-full.bg-brand-500 *):not(.rounded-full.bg-emerald-500 *):not(.rounded-full.bg-amber-500 *):not(.btn-duration.active *):not(.btn-drama-duration.active *):not(.home-hero-card *):not(#profile-subscription-card *):not(.profile-subscription-card *),
+html:not(.dark) div.text-white:not(button *):not(a.bg-gradient-to-r *):not(a[class*="bg-brand"] *):not(a[class*="bg-emerald"] *):not(.bg-brand-600 *):not(.bg-emerald-600 *):not(.badge):not([class*="from-brand-600"]):not(.home-hero-card *):not(.home-hero-card):not(#profile-subscription-card *):not(.profile-subscription-card *) {
     color: #0f172a !important;
 }
 
@@ -1311,31 +1311,60 @@ html:not(.dark) #shopee-char-count-badge {
    ========================================================================= */
 
 /* 1. Modal Profil Akun: Kartu Langganan Gelap Tetap Elegan & Teks Putih Terbaca */
+#profile-subscription-card,
 .profile-subscription-card,
+html:not(.dark) #profile-subscription-card,
 html:not(.dark) .profile-subscription-card {
     background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%) !important;
-    border: 1px solid rgba(99, 102, 241, 0.45) !important;
+    border: 1.5px solid rgba(99, 102, 241, 0.5) !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
 }
 
+#profile-subscription-card,
+#profile-subscription-card *,
 .profile-subscription-card,
 .profile-subscription-card *,
+html:not(.dark) #profile-subscription-card,
+html:not(.dark) #profile-subscription-card *,
 html:not(.dark) .profile-subscription-card,
 html:not(.dark) .profile-subscription-card * {
     color: #ffffff !important;
 }
 
-.profile-subscription-card .text-slate-400,
-html:not(.dark) .profile-subscription-card .text-slate-400 {
+#profile-subscription-card span,
+#profile-subscription-card p,
+.profile-subscription-card span,
+.profile-subscription-card p,
+html:not(.dark) #profile-subscription-card span,
+html:not(.dark) #profile-subscription-card p,
+html:not(.dark) .profile-subscription-card span,
+html:not(.dark) .profile-subscription-card p {
     color: #cbd5e1 !important;
 }
 
+#profile-subscription-card #profile-plan-badge,
 .profile-subscription-card #profile-plan-badge,
+html:not(.dark) #profile-subscription-card #profile-plan-badge,
 html:not(.dark) .profile-subscription-card #profile-plan-badge {
     background-color: rgba(245, 158, 11, 0.25) !important;
-    border: 1px solid rgba(245, 158, 11, 0.6) !important;
-    color: #fde047 !important;
+    border: 1.5px solid rgba(245, 158, 11, 0.7) !important;
+    color: #fef08a !important;
     font-weight: 800 !important;
+}
+
+#profile-subscription-card #profile-plan-name,
+.profile-subscription-card #profile-plan-name,
+html:not(.dark) #profile-subscription-card #profile-plan-name,
+html:not(.dark) .profile-subscription-card #profile-plan-name {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+#profile-subscription-card i,
+.profile-subscription-card i,
+html:not(.dark) #profile-subscription-card i,
+html:not(.dark) .profile-subscription-card i {
+    color: #fbbf24 !important;
 }
 
 /* User Profile Modal Container & Logout Button High-Contrast */
