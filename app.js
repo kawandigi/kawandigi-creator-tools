@@ -411,15 +411,12 @@ function initNavigation() {
     document.getElementById('btn-open-flow-popup')?.addEventListener('click', openGoogleFlowPopup);
     document.getElementById('btn-flow-hero-popup')?.addEventListener('click', openGoogleFlowPopup);
 
-    // Floating Google Flow Action Button Listener
+    // Floating Google Flow Action Button Listener (Opens external Google Flow website)
     document.getElementById('btn-floating-flow')?.addEventListener('click', () => {
         if (!currentUgcCampaign) return;
         const allPrompts = formatFullPromptVideoText(currentUgcCampaign);
-        copyToClipboard(allPrompts, 'Prompt video berhasil disalin! Mengalihkan ke Google Flow...');
-        setTimeout(() => {
-            switchTab('flow');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 350);
+        copyToClipboard(allPrompts, 'Prompt video berhasil disalin! Membuka Google Flow...');
+        window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank', 'noopener,noreferrer');
     });
 
     // Brand logo returns to Catalog view
@@ -983,8 +980,6 @@ function formatFullPromptVideoText(campaign) {
             || (campaign.scenes && campaign.scenes[0]?.google_flow_prompt)
             || `Video UGC vertikal 9:16 kualitas FHD. Talent: orang muda Indonesia berpenampilan natural ramah, pencahayaan alami kamar estetik. Visual adegan: Gadis muda Indonesia tersenyum ceria menunjukkan ${title} ke arah kamera, ekspresi antusias mencoba produk, detail fitur unggulan, dan gestur ramah mengajak klik keranjang. Voiceover bahasa Indonesia: "${(campaign.scenes || []).map(s => s.voiceover_script).filter(Boolean).join(' ')}". Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks. Wajib Bahasa Indonesia, tanpa kata bahasa Inggris.`;
 
-        text += `🎬 PROMPT UTUH SIAP PAKAI GOOGLE FLOW (10 DETIK):\n`;
-        text += `(Salin prompt di bawah ini lalu tempel / Ctrl+V di Google Flow / Veo)\n\n`;
         text += `${singlePrompt}\n\n`;
     }
 
