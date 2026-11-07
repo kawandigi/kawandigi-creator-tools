@@ -1306,27 +1306,7 @@ function autoSelectNicheCategory(detectedCategory, productName) {
 }
 
 function initUgcCreator() {
-    // Preset Demo Button
-    const btnUgcPreset = document.getElementById('btn-ugc-preset-demo');
-    btnUgcPreset?.addEventListener('click', () => {
-        const preset = UGC_PRESETS[currentUgcPresetIndex % UGC_PRESETS.length];
-        currentUgcPresetIndex++;
 
-        const nameInput = document.getElementById('ugc-name');
-        const urlInput = document.getElementById('ugc-url');
-        const catSelect = document.getElementById('ugc-category');
-        const toneSelect = document.getElementById('ugc-tone');
-        const sellingInput = document.getElementById('ugc-selling');
-
-        if (nameInput) nameInput.value = preset.name;
-        if (urlInput) urlInput.value = preset.url;
-        if (catSelect) catSelect.value = preset.category;
-        if (toneSelect) toneSelect.value = preset.tone;
-        if (sellingInput) sellingInput.value = preset.selling;
-        setUgcDuration(preset.duration);
-
-        showToast(`Contoh dimuat: ${preset.name}`, 'info');
-    });
 
     // Multi-Screenshot Dropzone & Paste (Ctrl+V) handler
     const dropzone = document.getElementById('screenshot-dropzone');
