@@ -1018,6 +1018,114 @@ function formatFullPromptVideoText(campaign) {
 window.formatFullPromptVideoText = formatFullPromptVideoText;
 
 /**
+ * Download a reference image to local PC/Device
+ */
+async function downloadImageItem(item) {
+    if (!item) return;
+    try {
+        let downloadUrl = item.previewUrl;
+        if (item.base64 && item.mimeType) {
+            downloadUrl = `data:${item.mimeType};base64,${item.base64}`;
+        } else if (item.previewUrl && item.previewUrl.startsWith('http')) {
+            try {
+                const resp = await fetch(item.previewUrl);
+                const blob = await resp.blob();
+                downloadUrl = URL.createObjectURL(blob);
+            } catch (_) {
+                // If direct fetch blocked, keep previewUrl
+            }
+        }
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        const cleanName = (item.name || 'foto_produk').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+        a.download = cleanName.endsWith('.jpg') || cleanName.endsWith('.png') ? cleanName : `${cleanName}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Foto referensi HD berhasil diunduh!', 'success');
+    } catch (e) {
+        if (item.previewUrl) {
+            window.open(item.previewUrl, '_blank');
+            showToast('Membuka foto di tab baru...', 'info');
+        } else {
+            showToast('Gagal mengunduh foto: ' + e.message, 'error');
+        }
+    }
+}
+
+/**
+ * Global helper to auto-inject storefront packshot into uploadedScreenshots gallery
+ */
+window.kdAddStorefrontImage = function(imageUrl, productName = 'foto_produk') {
+    if (!imageUrl) return;
+    try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                const maxDim = 800;
+                let width = img.naturalWidth || img.width;
+                let height = img.naturalHeight || img.height;
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                const base64 = dataUrl.split(',')[1];
+
+                uploadedScreenshots = [{
+                    id: 'img_' + Date.now(),
+                    base64: base64,
+                    mimeType: 'image/jpeg',
+                    name: (productName || 'produk_etalase').substring(0, 30),
+                    previewUrl: dataUrl
+                }];
+                renderScreenshotsGallery();
+            } catch (_) {
+                uploadedScreenshots = [{
+                    id: 'img_' + Date.now(),
+                    base64: '',
+                    mimeType: 'image/jpeg',
+                    name: (productName || 'produk_etalase').substring(0, 30),
+                    previewUrl: imageUrl
+                }];
+                renderScreenshotsGallery();
+            }
+        };
+        img.onerror = () => {
+            uploadedScreenshots = [{
+                id: 'img_' + Date.now(),
+                base64: '',
+                mimeType: 'image/jpeg',
+                name: (productName || 'produk_etalase').substring(0, 30),
+                previewUrl: imageUrl
+            }];
+            renderScreenshotsGallery();
+        };
+        img.src = imageUrl;
+    } catch (_) {
+        uploadedScreenshots = [{
+            id: 'img_' + Date.now(),
+            base64: '',
+            mimeType: 'image/jpeg',
+            name: (productName || 'produk_etalase').substring(0, 30),
+            previewUrl: imageUrl
+        }];
+        renderScreenshotsGallery();
+    }
+};
+
+/**
  * Gallery Renderer for Multi-Screenshot References
  */
 function renderScreenshotsGallery() {
@@ -1040,11 +1148,21 @@ function renderScreenshotsGallery() {
         thumb.className = 'relative group rounded-lg overflow-hidden border border-slate-700 bg-slate-900 aspect-square flex items-center justify-center';
         thumb.innerHTML = `
             <img src="${item.previewUrl}" class="w-full h-full object-cover" alt="${item.name}">
-            <button type="button" class="btn-del-img absolute top-1 right-1 p-1 bg-black/80 hover:bg-rose-600 text-white rounded transition shadow" title="Hapus foto ini">
-                <i data-lucide="trash-2" class="w-3 h-3"></i>
-            </button>
+            <div class="absolute top-1 right-1 flex items-center gap-1 opacity-90 group-hover:opacity-100 transition">
+                <button type="button" class="btn-dl-img p-1 bg-black/80 hover:bg-emerald-600 text-white rounded transition shadow" title="Unduh foto HD">
+                    <i data-lucide="download" class="w-3 h-3"></i>
+                </button>
+                <button type="button" class="btn-del-img p-1 bg-black/80 hover:bg-rose-600 text-white rounded transition shadow" title="Hapus foto ini">
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                </button>
+            </div>
             <span class="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-slate-300 px-1 py-0.5 truncate text-center">${item.name}</span>
         `;
+
+        thumb.querySelector('.btn-dl-img')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            downloadImageItem(item);
+        });
 
         thumb.querySelector('.btn-del-img')?.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1262,6 +1380,18 @@ function initUgcCreator() {
         }
         if (imageFiles.length > 0) {
             addScreenshotFiles(imageFiles);
+        }
+    });
+
+    // Download all screenshots button
+    const btnDownloadAll = document.getElementById('btn-download-all-screenshots');
+    btnDownloadAll?.addEventListener('click', async () => {
+        if (uploadedScreenshots.length === 0) {
+            showToast('Belum ada foto referensi yang diunggah.', 'info');
+            return;
+        }
+        for (const item of uploadedScreenshots) {
+            await downloadImageItem(item);
         }
     });
 
@@ -1523,7 +1653,9 @@ async function handleGenerateUgc() {
     }
 }
 
+window.renderUgcResults = renderUgcResults;
 function renderUgcResults(campaign) {
+    window.renderUgcResults = renderUgcResults;
     const resultsContainer = document.getElementById('ugc-results');
     const actionsHeader = document.getElementById('ugc-actions');
     const summaryCard = document.getElementById('ugc-summary-card');
@@ -1532,6 +1664,7 @@ function renderUgcResults(campaign) {
     const fullPromptCode = document.getElementById('ugc-full-prompt-code');
     const btnCopyFullPrompt = document.getElementById('btn-copy-full-prompt-block');
 
+    document.getElementById('ugc-empty-state')?.classList.add('hidden');
     resultsContainer.classList.remove('hidden');
     actionsHeader.classList.remove('hidden');
 
@@ -1636,6 +1769,41 @@ function renderUgcResults(campaign) {
     if (sceneList) {
         sceneList.innerHTML = '';
         sceneList.classList.add('hidden');
+    }
+
+    // 4. Populate Affiliate Marketplace Links Card (Keranjang Kuning TikTok & Keranjang Oranye Shopee)
+    const linkCard = document.getElementById('ugc-marketplace-links-card');
+    const linkDisplay = document.getElementById('ugc-marketplace-link-display');
+    const btnCopyMarketplaceLink = document.getElementById('btn-copy-marketplace-link');
+    const btnOpenShopee = document.getElementById('btn-open-shopee-link');
+    const btnOpenTiktok = document.getElementById('btn-open-tiktok-link');
+
+    if (linkCard && linkDisplay) {
+        const pName = campaign.product_analysis?.product_name || document.getElementById('ugc-name')?.value.trim() || 'Produk Pilihan';
+        const currentUrl = document.getElementById('ugc-url')?.value.trim();
+        const activeProduct = window.kdCurrentSelectedProduct;
+
+        const shopeeLink = (activeProduct && activeProduct.shopee_url) ? activeProduct.shopee_url :
+            (currentUrl && currentUrl.includes('shopee.co.id') ? currentUrl : `https://shopee.co.id/search?keyword=${encodeURIComponent(pName)}`);
+
+        const tiktokLink = (activeProduct && activeProduct.tiktok_url) ? activeProduct.tiktok_url :
+            (currentUrl && currentUrl.includes('tiktok.com') ? currentUrl : `https://www.tiktok.com/tag/${encodeURIComponent(pName.replace(/\s+/g, ''))}`);
+
+        const primaryDisplayLink = currentUrl || shopeeLink;
+        linkDisplay.value = primaryDisplayLink;
+
+        if (btnOpenShopee) {
+            btnOpenShopee.href = shopeeLink;
+        }
+        if (btnOpenTiktok) {
+            btnOpenTiktok.href = tiktokLink;
+        }
+
+        if (btnCopyMarketplaceLink) {
+            btnCopyMarketplaceLink.onclick = () => {
+                copyToClipboard(primaryDisplayLink, 'Tautan etalase produk disalin untuk Keranjang Kuning/Oranye!');
+            };
+        }
     }
 
     if (window.lucide) window.lucide.createIcons();
@@ -4766,44 +4934,64 @@ function renderTrendProductsList(products) {
     }
 
     listContainer.innerHTML = products.map((p, idx) => `
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition space-y-2.5">
-            <div class="flex items-start justify-between gap-2">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                            ${p.tag || `#${idx + 1} Trending`}
-                        </span>
-                        <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                            ${p.trend_velocity || 'High Demand'}
-                        </span>
-                        <span class="text-[10px] text-slate-400 font-semibold hidden sm:inline">
-                            ${p.category || 'Affiliate'}
-                        </span>
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition flex flex-col sm:flex-row gap-3">
+            ${p.image_url ? `
+                <div class="w-full sm:w-24 sm:h-24 h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex-shrink-0 relative group">
+                    <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                    <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-mono text-emerald-400 font-bold">HD Foto</span>
+                </div>
+            ` : ''}
+            <div class="flex-1 min-w-0 space-y-2.5">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="space-y-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                ${p.tag || `#${idx + 1} Trending`}
+                            </span>
+                            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                ${p.trend_velocity || 'High Demand'}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-semibold hidden sm:inline">
+                                ${p.category || 'Affiliate'}
+                            </span>
+                        </div>
+                        <h4 class="text-xs sm:text-sm font-bold text-white leading-snug">${p.name}</h4>
                     </div>
-                    <h4 class="text-xs sm:text-sm font-bold text-white leading-snug">${p.name}</h4>
+                    <div class="text-right flex-shrink-0">
+                        <span class="text-xs font-bold text-white block">${p.price_range || '-'}</span>
+                        <span class="text-[10px] text-amber-400 font-bold block">Komisi: ${p.est_commission || '15%'}</span>
+                    </div>
                 </div>
-                <div class="text-right flex-shrink-0">
-                    <span class="text-xs font-bold text-white block">${p.price_range || '-'}</span>
-                    <span class="text-[10px] text-amber-400 font-bold block">Komisi: ${p.est_commission || '15%'}</span>
+
+                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300">
+                    <strong class="text-amber-400 flex items-center gap-1 mb-0.5">
+                        <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i>
+                        Alasan Viral & Hook Angle:
+                    </strong>
+                    <p class="leading-relaxed line-clamp-2">${p.hook_angle || p.selling_points || '-'}</p>
                 </div>
-            </div>
 
-            <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] text-slate-300">
-                <strong class="text-amber-400 flex items-center gap-1 mb-0.5">
-                    <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i>
-                    Alasan Viral & Hook Angle:
-                </strong>
-                <p class="leading-relaxed">${p.hook_angle || p.selling_points || '-'}</p>
-            </div>
-
-            <div class="flex items-center justify-between pt-1">
-                <span class="text-[10px] text-slate-400 truncate max-w-[50%]">
-                    Gaya: <strong class="text-slate-300">${p.recommended_tone || 'Ceria & Akrab'}</strong>
-                </span>
-                <button type="button" class="btn-pick-product px-3 py-1.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 active:scale-95" data-index="${idx}">
-                    <span>⚡ Pilih & Buat Storyboard</span>
-                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                </button>
+                <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-slate-400">
+                            Gaya: <strong class="text-slate-300">${p.recommended_tone || 'Ceria & Akrab'}</strong>
+                        </span>
+                        ${p.shopee_url ? `
+                            <a href="${p.shopee_url}" target="_blank" rel="noopener noreferrer" class="text-[10px] text-orange-400 hover:text-orange-300 font-semibold underline flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                Shopee ↗
+                            </a>
+                        ` : ''}
+                        ${p.tiktok_url ? `
+                            <a href="${p.tiktok_url}" target="_blank" rel="noopener noreferrer" class="text-[10px] text-slate-300 hover:text-white font-semibold underline flex items-center gap-0.5" onclick="event.stopPropagation()">
+                                TikTok ↗
+                            </a>
+                        ` : ''}
+                    </div>
+                    <button type="button" class="btn-pick-product px-3 py-1.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 active:scale-95" data-index="${idx}">
+                        <span>⚡ Pilih & Buat Storyboard</span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');

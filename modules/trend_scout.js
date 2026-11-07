@@ -18,6 +18,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+380% Terjual Minggu Ini',
         viral_score: 99,
         tag: '🔥 #1 Viral TikTok Shop',
+        image_url: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Serum%20Niacinamide',
+        tiktok_url: 'https://www.tiktok.com/tag/serumniacinamide',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Serum%20Niacinamide',
         hook_angle: 'Problem-solving flek hitam & bekas jerawat membandel pudar dalam 7 hari. Visual tekstur cair cepat meresap sangat disukai algoritma FYP.',
         selling_points: 'Beli 1 Gratis 1 promo gajian, memudarkan bekas jerawat & flek hitam dalam 7 hari, bersertifikat BPOM & Halal, tekstur watery cepat meresap tanpa lengket.',
         recommended_tone: 'Casual & Ceria (Gen Z)',
@@ -35,6 +39,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+420% Permintaan Kreator',
         viral_score: 97,
         tag: '⚡ Wajib Kreator Pemula',
+        image_url: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Wireless%20Mic%20Clip%20On',
+        tiktok_url: 'https://www.tiktok.com/tag/wirelessmic',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Wireless%20Mic%20Clip%20On',
         hook_angle: 'Uji suara di tempat bising vs pakai mic clip-on (perbandingan audio sebelum/sesudah). Solusi audio jernih tanpa kabel ribet.',
         selling_points: 'Plug and play langsung colok tanpa aplikasi, jangkauan sinyal hingga 20 meter, baterai tahan 8 jam non-stop, fitur smart noise cancelling suara angin & bising hilang total.',
         recommended_tone: 'Review Jujur & Edukatif',
@@ -52,6 +60,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+310% Terjual di TikTok Live',
         viral_score: 96,
         tag: '🔥 Paling Laris di Live',
+        image_url: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Mini%20Chopper%20Listrik',
+        tiktok_url: 'https://www.tiktok.com/tag/minichopper',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Mini%20Chopper%20Listrik',
         hook_angle: 'Cincang bawang & cabai cuma 5 detik tanpa pedih di mata. Demo visual cincang daging & bumbu cepat tanpa colokan listrik terus menerus (bisa dicas).',
         selling_points: 'Bisa dicas USB tanpa kabel saat dipakai, 3 mata pisau stainless steel super tajam, cincang cabai bawang daging cuma hitungan detik, wadah food grade mudah dicuci.',
         recommended_tone: 'FOMO & Urgensi Diskon',
@@ -69,6 +81,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+290% Pencarian Harian',
         viral_score: 95,
         tag: '⭐ Rekomendasi Dokter Kulit',
+        image_url: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Sunscreen%20Serum%20SPF50',
+        tiktok_url: 'https://www.tiktok.com/tag/sunscreenviral',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Sunscreen%20Serum%20SPF50',
         hook_angle: 'Buktikan sunscreen tanpa whitecast, tidak pedih di mata, dan hasil kulit glowing sehat di bawah terik matahari.',
         selling_points: 'Proteksi maksimal SPF 50 PA++++ anti sinar UVA & UVB, nol persen whitecast, sensasi dingin menyegarkan di kulit berminyak, cocok untuk semua jenis kulit pria & wanita.',
         recommended_tone: 'Review Jujur & Edukatif',
@@ -86,6 +102,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+240% Favorit Anak Kost',
         viral_score: 94,
         tag: '⚡ Favorit Anak Kos',
+        image_url: 'https://images.unsplash.com/photo-1544233726-9f1d2b27be8b?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Panci%20Listrik%20Serbaguna',
+        tiktok_url: 'https://www.tiktok.com/tag/pancilistrik',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Panci%20Listrik%20Serbaguna',
         hook_angle: 'Masak mie, rebus telur, hingga goreng sosis cuma pakai 1 alat colok listrik tanpa kompor gas.',
         selling_points: 'Lapisan keramik anti lengket premium mudah dibersihkan, daya hemat cuma 450 watt tidak bikin jeglek, dilengkapi kukusan stainless steel, multifungsi rebus goreng kukus praktis.',
         recommended_tone: 'Casual & Ceria (Gen Z)',
@@ -103,6 +123,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+370% FYP Mukbang',
         viral_score: 93,
         tag: '🔥 Sensasi Mukbang Viral',
+        image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Baso%20Aci%20Tulang%20Rangu',
+        tiktok_url: 'https://www.tiktok.com/tag/basoacitulangrangu',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Baso%20Aci%20Tulang%20Rangu',
         hook_angle: 'Mukbang ASMR seruput kuah merah mercon dengan kriuk tulang rangu yang menggoda selera makan penonton.',
         selling_points: 'Sensasi kuah merah cabai asli pedas gurih nagih, tekstur baso kenyal renyah tulang rangu asli, porsi kenyang lengkap dengan siomay kering dan pilus cikur, halal & higienis.',
         recommended_tone: 'Casual & Ceria (Gen Z)',
@@ -120,6 +144,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+210% OOTD Kuliah',
         viral_score: 91,
         tag: '⭐ OOTD Mahasiswa Viral',
+        image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Tas%20Selempang%20Kanvas',
+        tiktok_url: 'https://www.tiktok.com/tag/tasselempang',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Tas%20Selempang%20Kanvas',
         hook_angle: 'Uji siram air ke tas (anti air gerimis) + spill muatan barang: muat dompet, HP, payung lipat, dan botol minum.',
         selling_points: 'Bahan kanvas cordura tebal anti cipratan air (water-resistant), tali strap empuk bisa diatur panjang pendek, banyak kompartemen resleting rapi, model unisex cocok cowok & cewek.',
         recommended_tone: 'Casual & Ceria (Gen Z)',
@@ -137,6 +165,10 @@ export const DEFAULT_TRENDING_PRODUCTS = [
         trend_velocity: '+190% Alat Wajib Ngonten',
         viral_score: 90,
         tag: '⚡ Ngonten Mandiri',
+        image_url: 'https://images.unsplash.com/photo-1589492477829-5e65395b66cc?w=600&auto=format&fit=crop&q=80',
+        shopee_url: 'https://shopee.co.id/search?keyword=Tripod%20Tongsis%20Bluetooth',
+        tiktok_url: 'https://www.tiktok.com/tag/tripodtongsis',
+        marketplace_url: 'https://shopee.co.id/search?keyword=Tripod%20Tongsis%20Bluetooth',
         hook_angle: 'Bikin video TikTok & foto OOTD sendiri di jalan tanpa minta tolong orang lain dengan tombol remote wireless.',
         selling_points: 'Kaki tripod kokoh anti goyang saat ditiup angin, remote bluetooth shutter connect instan hingga 10 meter, bisa diputar 360 derajat vertikal horizontal, lampu LED bawaan untuk selfie malam.',
         recommended_tone: 'Review Jujur & Edukatif',
@@ -214,7 +246,14 @@ Keluarkan HANYA format JSON valid tanpa tanda markdown pembuka/penutup:
 
     const responseText = await callGemini(prompt, { temperature: 0.4 });
     const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
+    const items = JSON.parse(cleanJson);
+    return items.map(item => ({
+        ...item,
+        image_url: item.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
+        shopee_url: item.shopee_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(item.name || nicheQuery)}`,
+        tiktok_url: item.tiktok_url || `https://www.tiktok.com/tag/${encodeURIComponent((item.name || nicheQuery).replace(/\s+/g, ''))}`,
+        marketplace_url: item.marketplace_url || item.shopee_url || `https://shopee.co.id/search?keyword=${encodeURIComponent(item.name || nicheQuery)}`
+    }));
 }
 
 /**
@@ -228,9 +267,25 @@ export function applyProductToUgcForm(product) {
     const toneSelect = document.getElementById('ugc-tone');
     const talentSelect = document.getElementById('ugc-talent');
     const sellingTextarea = document.getElementById('ugc-selling');
+    const urlInput = document.getElementById('ugc-url');
 
     if (nameInput) nameInput.value = product.name || '';
     if (sellingTextarea) sellingTextarea.value = product.selling_points || '';
+
+    // Set Storefront Search / Affiliate Link
+    const storeUrl = product.marketplace_url || product.shopee_url || product.tiktok_url || 
+        (product.name ? `https://shopee.co.id/search?keyword=${encodeURIComponent(product.name)}` : '');
+    if (urlInput && storeUrl) {
+        urlInput.value = storeUrl;
+    }
+
+    // Auto-inject HD Reference Image into Gallery
+    if (product.image_url && typeof window.kdAddStorefrontImage === 'function') {
+        window.kdAddStorefrontImage(product.image_url, product.name);
+    }
+
+    // Save active selected product into window for result card rendering
+    window.kdCurrentSelectedProduct = product;
 
     // Match category
     if (catSelect && product.category) {
