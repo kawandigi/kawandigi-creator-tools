@@ -1,8 +1,10 @@
 {
   "name": "kawandigi CREATOR TOOLS",
   "short_name": "kawandigi",
+  "id": "https://kawandigi.site/",
+  "start_url": "https://kawandigi.site/",
+  "scope": "/",
   "description": "kawandigi CREATOR TOOLS - Studio AI UGC Affiliate & Drama Series Creator",
-  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#060515",

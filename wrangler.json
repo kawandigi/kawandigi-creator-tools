@@ -17,5 +17,15 @@
     "crons": [
       "0 17 * * *"
     ]
-  }
+  },
+  "routes": [
+    {
+      "pattern": "kawandigi.site",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.kawandigi.site",
+      "custom_domain": true
+    }
+  ]
 }
