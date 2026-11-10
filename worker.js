@@ -465,6 +465,9 @@ export default {
                 SELECT email FROM device_licenses WHERE status = 'active' AND (tier = 'all_access' OR tier_name LIKE '%VIP%')
               ) AND (plan = 'Trial Pengunjung' OR plan IS NULL OR plan = '')
             `).run();
+
+            // Clean up obsolete test/dummy records
+            await db.prepare("DELETE FROM members WHERE email = 'rian.test@gmail.com' OR id = 'usr_real_01'").run();
           } catch (_) {}
         } catch (e) {
           console.warn('D1 table creation check:', e.message);
@@ -839,6 +842,32 @@ export default {
         }
 
         return new Response(JSON.stringify({ status: 'success', data: membersList }), { headers: corsHeaders });
+      }
+
+      // 4c. Delete Member API (Permanent delete from Cloudflare D1 & in-memory)
+      if ((url.pathname === '/api/members' && request.method === 'DELETE') || (url.pathname === '/api/members/delete' && request.method === 'POST')) {
+        try {
+          let body = {};
+          try { body = await request.json(); } catch (_) {}
+          const email = (url.searchParams.get('email') || body.email || '').toLowerCase().trim();
+          if (!email) {
+            return new Response(JSON.stringify({ status: 'error', message: 'Email required' }), { status: 400, headers: corsHeaders });
+          }
+
+          if (db) {
+            await ensureD1Tables();
+            await db.prepare('DELETE FROM members WHERE LOWER(TRIM(email)) = ?').bind(email).run();
+            await db.prepare('DELETE FROM device_licenses WHERE LOWER(TRIM(email)) = ?').bind(email).run();
+          }
+
+          if (globalThis.__kd_members) {
+            globalThis.__kd_members = globalThis.__kd_members.filter(m => m.email.toLowerCase().trim() !== email);
+          }
+
+          return new Response(JSON.stringify({ status: 'success', message: `Member ${email} berhasil dihapus permanen` }), { headers: corsHeaders });
+        } catch (e) {
+          return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
+        }
       }
 
       // 5. Cloudflare Centralized Settings API (Google OAuth, Admin WhatsApp & Custom Pricing)

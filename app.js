@@ -4332,31 +4332,14 @@ function renderAdminMembers(filter = '') {
     if (badgeCount) badgeCount.textContent = localMembers.length;
     renderAdminMembersTableRows(localMembers, filter);
 
-    // Asynchronous 2-way sync with Cloudflare D1 Backend
+    // Asynchronous sync with Cloudflare D1 Backend (Server is source of truth)
     fetch('/api/members')
         .then(res => res.json())
         .then(res => {
-            if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-                const currentLocal = getMemberList();
-                const map = new Map();
-                currentLocal.forEach(m => {
-                    if (m && m.email) map.set(m.email.toLowerCase(), m);
-                });
-                res.data.forEach(m => {
-                    if (m && m.email) {
-                        const existing = map.get(m.email.toLowerCase());
-                        map.set(m.email.toLowerCase(), {
-                            ...existing,
-                            ...m,
-                            totalGenerates: Math.max(m.totalGenerates ?? m.total_generates ?? 0, existing?.totalGenerates ?? 0),
-                            xp: Math.max(m.xp ?? 0, existing?.xp ?? 0)
-                        });
-                    }
-                });
-                const mergedList = Array.from(map.values());
-                saveMemberList(mergedList);
-                if (badgeCount) badgeCount.textContent = mergedList.length;
-                renderAdminMembersTableRows(mergedList, filter);
+            if (res && res.status === 'success' && Array.isArray(res.data)) {
+                saveMemberList(res.data);
+                if (badgeCount) badgeCount.textContent = res.data.length;
+                renderAdminMembersTableRows(res.data, filter);
             }
         })
         .catch(err => console.warn('Sync /api/members error:', err));
@@ -4688,11 +4671,23 @@ window.kdRefreshMembers = () => {
     renderAdminMembers();
     showToast('Data member berhasil disegarkan dari Cloudflare D1', 'info');
 };
-window.kdDeleteMember = (email) => {
-    if (confirm(`Hapus member ${email}?`)) {
+window.kdDeleteMember = async (email) => {
+    if (!email) return;
+    if (confirm(`Hapus member ${email} secara permanen dari database Cloudflare?`)) {
+        try {
+            await fetch('/api/members/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+        } catch (e) {
+            console.warn('API delete member error:', e);
+        }
         deleteMemberRecord(email);
+        const remaining = getMemberList().filter(m => m.email.toLowerCase() !== email.toLowerCase());
+        saveMemberList(remaining);
         renderAdminMembers();
-        showToast('Member dihapus.', 'info');
+        showToast(`Member ${email} berhasil dihapus permanen.`, 'info');
     }
 };
 window.kdToggleFlag = (toolId, state) => {
