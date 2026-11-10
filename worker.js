@@ -445,6 +445,27 @@ export default {
           try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN status TEXT DEFAULT 'active'").run(); } catch (_) {}
           try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN notes TEXT DEFAULT ''").run(); } catch (_) {}
           try { await db.prepare("ALTER TABLE device_licenses ADD COLUMN created_at DATETIME").run(); } catch (_) {}
+
+          // Auto-sync & protect VIP licenses: elevate owner/member licenses to all_devices & sync members plan
+          try {
+            await db.prepare(`
+              UPDATE device_licenses
+              SET device_scope = 'all_devices', status = 'active'
+              WHERE email = 'noeldianprama@gmail.com' OR notes LIKE '%xavier%'
+            `).run();
+            await db.prepare(`
+              UPDATE members
+              SET plan = 'VIP Master Lifetime (All-Access VIP)'
+              WHERE email = 'noeldianprama@gmail.com'
+            `).run();
+            await db.prepare(`
+              UPDATE members
+              SET plan = 'VIP Master Lifetime (All-Access VIP)'
+              WHERE email IN (
+                SELECT email FROM device_licenses WHERE status = 'active' AND (tier = 'all_access' OR tier_name LIKE '%VIP%')
+              ) AND (plan = 'Trial Pengunjung' OR plan IS NULL OR plan = '')
+            `).run();
+          } catch (_) {}
         } catch (e) {
           console.warn('D1 table creation check:', e.message);
         }
@@ -618,18 +639,69 @@ export default {
             return new Response(JSON.stringify({ status: 'error', message: 'Email is required' }), { status: 400, headers: corsHeaders });
           }
 
-          const plan = body.plan || (body.subscription && body.subscription.plan) || 'VIP Master Lifetime';
+          const userEmail = body.email.toLowerCase().trim();
+          const clientDevId = (body.device_id || '').trim();
+          const clientDevName = (body.device_name || '').trim();
+
+          // Check admin
+          let adminEmail = (env.ADMIN_EMAIL || 'admin.kawandigi@gmail.com').toLowerCase().trim();
+          const isAdmin = userEmail === adminEmail;
+
+          // Check if user has an active license in device_licenses
+          let activeLicense = null;
+          if (db) {
+            await ensureD1Tables();
+            try {
+              const licRow = await db.prepare(`
+                SELECT license_key, tier, tier_name, device_scope, status, device_id, device_name, email
+                FROM device_licenses
+                WHERE LOWER(TRIM(email)) = ? AND status = 'active'
+                ORDER BY (CASE WHEN tier = 'all_access' THEN 1 ELSE 2 END)
+                LIMIT 1
+              `).bind(userEmail).first();
+
+              if (licRow) {
+                activeLicense = licRow;
+                // If user is logging in on their device, sync device_id
+                if (clientDevId && (licRow.device_id !== clientDevId || !licRow.device_id)) {
+                  await db.prepare(`
+                    UPDATE device_licenses
+                    SET device_id = ?, device_name = COALESCE(NULLIF(?, ''), device_name), last_verified = CURRENT_TIMESTAMP
+                    WHERE license_key = ?
+                  `).bind(clientDevId, clientDevName, licRow.license_key).run();
+                  licRow.device_id = clientDevId;
+                }
+              }
+            } catch (e) {
+              console.warn('D1 check active license in auth error:', e.message);
+            }
+          }
+
+          // Determine plan: VIP if licensed or admin, preserved if already VIP, else Member KawanDigi
+          let plan = 'Member KawanDigi';
+          let isSubscriptionActive = false;
+          if (isAdmin) {
+            plan = 'Superadmin Official Lifetime';
+            isSubscriptionActive = true;
+          } else if (activeLicense) {
+            plan = `${activeLicense.tier_name || 'All-Access VIP'} Lifetime`;
+            isSubscriptionActive = true;
+          } else if (body.plan && body.plan !== 'Trial Pengunjung') {
+            plan = body.plan;
+            isSubscriptionActive = true;
+          }
+
           const totalGenerates = body.totalGenerates ?? body.total_generates ?? 0;
           const xp = body.xp ?? 10;
           const level = body.level || 'Novice Creator';
           const nowStr = new Date().toISOString();
 
           // Sync into worker memory store fallback
-          const memberIdx = globalThis.__kd_members.findIndex(m => m.email.toLowerCase() === body.email.toLowerCase());
+          const memberIdx = globalThis.__kd_members.findIndex(m => m.email.toLowerCase() === userEmail);
           const memberRecord = {
             id: body.id || 'usr_' + Date.now(),
             name: body.name || 'Member KawanDigi',
-            email: body.email.toLowerCase(),
+            email: userEmail,
             picture: body.picture || 'assets/icons/favicon.png',
             plan: plan,
             totalGenerates: totalGenerates,
@@ -642,6 +714,12 @@ export default {
           };
 
           if (memberIdx >= 0) {
+            const existingPlan = globalThis.__kd_members[memberIdx].plan;
+            if (!activeLicense && !isAdmin && existingPlan && existingPlan !== 'Trial Pengunjung' && existingPlan !== 'Member KawanDigi') {
+              plan = existingPlan;
+              memberRecord.plan = existingPlan;
+              isSubscriptionActive = true;
+            }
             globalThis.__kd_members[memberIdx] = {
               ...globalThis.__kd_members[memberIdx],
               ...memberRecord,
@@ -666,7 +744,11 @@ export default {
               ON CONFLICT(email) DO UPDATE SET
                 name = excluded.name,
                 picture = excluded.picture,
-                plan = excluded.plan,
+                plan = CASE
+                  WHEN excluded.plan != 'Trial Pengunjung' AND excluded.plan != 'Member KawanDigi' THEN excluded.plan
+                  WHEN members.plan IS NOT NULL AND members.plan != '' AND members.plan != 'Trial Pengunjung' THEN members.plan
+                  ELSE excluded.plan
+                END,
                 total_generates = MAX(members.total_generates, excluded.total_generates),
                 xp = MAX(members.xp, excluded.xp),
                 level = excluded.level,
@@ -690,10 +772,24 @@ export default {
               memberRecord.xp = d1User.xp || 10;
               memberRecord.level = d1User.level || memberRecord.level;
               memberRecord.plan = d1User.plan || memberRecord.plan;
+              if (d1User.plan && (d1User.plan.includes('VIP') || d1User.plan.includes('Pro') || d1User.plan.includes('Superadmin'))) {
+                isSubscriptionActive = true;
+              }
             }
           }
 
-          return new Response(JSON.stringify({ status: 'success', data: memberRecord }), { headers: corsHeaders });
+          return new Response(JSON.stringify({
+            status: 'success',
+            data: {
+              ...memberRecord,
+              subscription: {
+                plan: memberRecord.plan,
+                active: isSubscriptionActive,
+                deviceScope: activeLicense ? (activeLicense.device_scope || 'all_devices') : 'all_devices'
+              }
+            },
+            activeLicenses: activeLicense ? [activeLicense] : []
+          }), { headers: corsHeaders });
         } catch (e) {
           console.error('Auth google sync error:', e);
           return new Response(JSON.stringify({ status: 'error', error: e.message }), { status: 500, headers: corsHeaders });
@@ -1015,6 +1111,7 @@ export default {
       if (url.pathname === '/api/license/user-status' && request.method === 'GET') {
         const email = (url.searchParams.get('email') || '').toLowerCase().trim();
         const deviceId = (url.searchParams.get('device_id') || '').trim();
+        const deviceName = (url.searchParams.get('device_name') || '').trim();
 
         let activeLicenses = [];
         let otherBoundDevice = null;
@@ -1025,22 +1122,32 @@ export default {
             const rows = await db.prepare(`
               SELECT license_key, tier, tier_name, device_scope, status, device_id, device_name, email
               FROM device_licenses
-              WHERE (email = ? AND email != '') OR (device_id = ? AND device_id != '')
+              WHERE (LOWER(TRIM(email)) = ? AND email != '') OR (device_id = ? AND device_id != '')
             `).bind(email, deviceId).all();
 
             const list = rows.results || [];
             for (const r of list) {
               if (r.status === 'revoked') continue;
-              if (r.device_scope === 'all_devices') {
-                if (email && r.email === email) {
-                  activeLicenses.push(r);
+              const isOwner = email && r.email && r.email.toLowerCase().trim() === email;
+
+              if (isOwner) {
+                // If user owns the license, auto-sync device if needed and activate!
+                if (r.device_scope !== 'all_devices' && deviceId && r.device_id !== deviceId) {
+                  await db.prepare(`
+                    UPDATE device_licenses
+                    SET device_id = ?, device_name = COALESCE(NULLIF(?, ''), device_name), last_verified = CURRENT_TIMESTAMP
+                    WHERE license_key = ?
+                  `).bind(deviceId, deviceName, r.license_key).run();
+                  r.device_id = deviceId;
+                  if (deviceName) r.device_name = deviceName;
                 }
-              } else {
-                if (r.device_id === deviceId) {
-                  activeLicenses.push(r);
-                } else if (email && r.email === email && r.device_id && r.device_id !== deviceId) {
-                  otherBoundDevice = r.device_name || 'Perangkat Lain';
-                }
+                activeLicenses.push(r);
+              } else if (r.device_id === deviceId) {
+                activeLicenses.push(r);
+              } else if (r.device_scope === 'all_devices') {
+                if (isOwner) activeLicenses.push(r);
+              } else if (email && r.email && r.email.toLowerCase().trim() === email) {
+                otherBoundDevice = r.device_name || 'Perangkat Lain';
               }
             }
           } catch (e) {

@@ -55,21 +55,44 @@ export function getDeviceName() {
 export function getLicenses() {
     try {
         const raw = localStorage.getItem(LICENSE_STORAGE_KEY);
-        if (!raw) return {};
-        const parsed = JSON.parse(raw);
         const myDevId = getDeviceId();
         const user = getCurrentUser();
         const userEmail = user?.email?.toLowerCase().trim();
+
+        let parsed = raw ? JSON.parse(raw) : {};
+
+        // If user session has active VIP, ensure all_access license is present in memory
+        if (user && user.subscription && user.subscription.active) {
+            const planName = user.subscription.plan || 'All-Access VIP';
+            if (planName.includes('VIP') || planName.includes('Superadmin')) {
+                if (!parsed['all_access']) {
+                    parsed['all_access'] = {
+                        active: true,
+                        tier: planName,
+                        key: 'SESSION-VIP',
+                        deviceScope: 'all_devices',
+                        boundEmail: userEmail,
+                        activatedAt: new Date().toISOString()
+                    };
+                }
+            }
+        }
 
         const validLicenses = {};
         for (const [tool, lic] of Object.entries(parsed)) {
             if (lic && lic.active) {
                 // All-devices license: valid if user is logged in with matching email
                 if (lic.deviceScope === 'all_devices') {
-                    if (userEmail && (!lic.boundEmail || lic.boundEmail === userEmail)) {
+                    if (userEmail && (!lic.boundEmail || lic.boundEmail.toLowerCase().trim() === userEmail)) {
                         validLicenses[tool] = lic;
                         continue;
                     }
+                }
+
+                // If user owns this license by verified email: always valid on user's active device
+                if (userEmail && lic.boundEmail && lic.boundEmail.toLowerCase().trim() === userEmail) {
+                    validLicenses[tool] = lic;
+                    continue;
                 }
 
                 // If legacy license has no boundDeviceId, lock it to this device
@@ -138,18 +161,23 @@ export function hasToolAccess(toolId) {
         }
     }
 
+    // 2. Active VIP subscription in user session
+    if (user && user.subscription && user.subscription.active) {
+        return { allowed: true, type: 'all_access', trialLeft: 9999, plan: user.subscription.plan };
+    }
+
     const currentDeviceId = getDeviceId();
     const licenses = getLicenses();
     
-    // 2. Master All-Access VIP (Locked to this device OR All-Device)
+    // 3. Master All-Access VIP (Locked to this device OR All-Device)
     const vip = licenses['all_access'];
     if (vip && vip.active) {
         if (!vip.expires || new Date(vip.expires) > new Date()) {
-            return { allowed: true, type: 'all_access', trialLeft: 0, deviceScope: vip.deviceScope || 'single_device' };
+            return { allowed: true, type: 'all_access', trialLeft: 0, deviceScope: vip.deviceScope || 'all_devices' };
         }
     }
 
-    // 3. Tool Specific License (Locked to this device OR All-Device)
+    // 4. Tool Specific License (Locked to this device OR All-Device)
     const toolLic = licenses[toolId];
     if (toolLic && toolLic.active) {
         if (!toolLic.expires || new Date(toolLic.expires) > new Date()) {
@@ -157,7 +185,7 @@ export function hasToolAccess(toolId) {
         }
     }
 
-    // 4. Free Trial check on this device
+    // 5. Free Trial check on this device
     const used = getTrialUsage(toolId);
     const trialLeft = Math.max(0, FREE_TRIAL_LIMIT - used);
     if (trialLeft > 0) {
@@ -174,7 +202,8 @@ export async function fetchUserLicenseStatus(user) {
     if (!user || !user.email) return { activeLicenses: [], otherBoundDevice: null };
     try {
         const devId = getDeviceId();
-        const res = await fetch(`/api/license/user-status?email=${encodeURIComponent(user.email)}&device_id=${encodeURIComponent(devId)}`);
+        const devName = getDeviceName();
+        const res = await fetch(`/api/license/user-status?email=${encodeURIComponent(user.email)}&device_id=${encodeURIComponent(devId)}&device_name=${encodeURIComponent(devName)}`);
         const data = await res.json();
         if (data.status === 'success' && data.activeLicenses && data.activeLicenses.length > 0) {
             const rawLocal = localStorage.getItem(LICENSE_STORAGE_KEY);
@@ -185,15 +214,28 @@ export async function fetchUserLicenseStatus(user) {
                     active: true,
                     tier: lic.tier_name || lic.tier,
                     key: lic.license_key,
-                    deviceScope: lic.device_scope || 'single_device',
-                    boundDeviceId: lic.device_id,
-                    boundDeviceName: lic.device_name,
-                    boundEmail: lic.email,
+                    deviceScope: lic.device_scope || 'all_devices',
+                    boundDeviceId: lic.device_id || devId,
+                    boundDeviceName: lic.device_name || devName,
+                    boundEmail: lic.email || user.email,
                     activatedAt: lic.activated_at || new Date().toISOString(),
                     expires: null
                 };
             }
             saveLicenses(allLicenses);
+
+            // Update user subscription in session
+            const cur = getCurrentUser();
+            if (cur && cur.email && cur.email.toLowerCase().trim() === user.email.toLowerCase().trim()) {
+                const planTitle = `${data.activeLicenses[0].tier_name || 'All-Access VIP'} Lifetime`;
+                cur.subscription = {
+                    plan: planTitle,
+                    active: true,
+                    deviceScope: data.activeLicenses[0].device_scope || 'all_devices',
+                    boundDeviceId: data.activeLicenses[0].device_id || devId
+                };
+                localStorage.setItem('kawandigi_user_session', JSON.stringify(cur));
+            }
         }
         return data;
     } catch (e) {
