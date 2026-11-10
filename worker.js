@@ -448,25 +448,12 @@ export default {
 
           // Auto-sync & protect VIP licenses: elevate owner/member licenses to all_devices & sync members plan
           try {
-            await db.prepare(`
-              UPDATE device_licenses
-              SET device_scope = 'all_devices', status = 'active'
-              WHERE email = 'noeldianprama@gmail.com' OR notes LIKE '%xavier%'
-            `).run();
-            await db.prepare(`
-              UPDATE members
-              SET plan = 'VIP Master Lifetime (All-Access VIP)'
-              WHERE email = 'noeldianprama@gmail.com'
-            `).run();
-            await db.prepare(`
-              UPDATE members
-              SET plan = 'VIP Master Lifetime (All-Access VIP)'
-              WHERE email IN (
-                SELECT email FROM device_licenses WHERE status = 'active' AND (tier = 'all_access' OR tier_name LIKE '%VIP%')
-              ) AND (plan = 'Trial Pengunjung' OR plan IS NULL OR plan = '')
-            `).run();
-
-            // Clean up obsolete test/dummy records
+            await db.prepare("UPDATE device_licenses SET device_scope = 'all_devices', status = 'active' WHERE email = 'noeldianprama@gmail.com' OR notes LIKE '%xavier%'").run();
+          } catch (_) {}
+          try {
+            await db.prepare("UPDATE members SET plan = 'VIP Master Lifetime (All-Access VIP)' WHERE email = 'noeldianprama@gmail.com'").run();
+          } catch (_) {}
+          try {
             await db.prepare("DELETE FROM members WHERE email = 'rian.test@gmail.com' OR id = 'usr_real_01'").run();
           } catch (_) {}
         } catch (e) {
@@ -845,10 +832,15 @@ export default {
       }
 
       // 4c. Delete Member API (Permanent delete from Cloudflare D1 & in-memory)
-      if ((url.pathname === '/api/members' && request.method === 'DELETE') || (url.pathname === '/api/members/delete' && request.method === 'POST')) {
+      if (
+        (url.pathname === '/api/members' && request.method === 'DELETE') ||
+        (url.pathname === '/api/members/delete')
+      ) {
         try {
           let body = {};
-          try { body = await request.json(); } catch (_) {}
+          if (request.method === 'POST') {
+            try { body = await request.json(); } catch (_) {}
+          }
           const email = (url.searchParams.get('email') || body.email || '').toLowerCase().trim();
           if (!email) {
             return new Response(JSON.stringify({ status: 'error', message: 'Email required' }), { status: 400, headers: corsHeaders });
@@ -856,12 +848,16 @@ export default {
 
           if (db) {
             await ensureD1Tables();
-            await db.prepare('DELETE FROM members WHERE LOWER(TRIM(email)) = ?').bind(email).run();
-            await db.prepare('DELETE FROM device_licenses WHERE LOWER(TRIM(email)) = ?').bind(email).run();
+            try {
+              await db.prepare('DELETE FROM members WHERE LOWER(TRIM(email)) = ?').bind(email).run();
+              await db.prepare('DELETE FROM device_licenses WHERE LOWER(TRIM(email)) = ?').bind(email).run();
+            } catch (dbErr) {
+              console.warn('D1 delete member error:', dbErr.message);
+            }
           }
 
-          if (globalThis.__kd_members) {
-            globalThis.__kd_members = globalThis.__kd_members.filter(m => m.email.toLowerCase().trim() !== email);
+          if (globalThis.__kd_members && Array.isArray(globalThis.__kd_members)) {
+            globalThis.__kd_members = globalThis.__kd_members.filter(m => m && m.email && m.email.toLowerCase().trim() !== email);
           }
 
           return new Response(JSON.stringify({ status: 'success', message: `Member ${email} berhasil dihapus permanen` }), { headers: corsHeaders });
