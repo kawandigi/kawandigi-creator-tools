@@ -2550,149 +2550,6 @@ function initThemeToggle() {
 }
 
 // =========================================================================
-// COLOR THEMES PRESETS & DYNAMIC ACCENT SYSTEM
-// PALET 3 WARNA: Sky Blue (#2C96D8), Cloud White (#F8FAFC), Scarlet Red (#EB2F33)
-// =========================================================================
-
-const COLOR_THEMES = [
-    {
-        id: 'sky-trio',
-        name: 'Sky Blue & Scarlet (Seperti Contoh)',
-        badge: '60% Sky Blue • 30% Cloud White • 10% Scarlet Red',
-        colors: ['#2C96D8', '#EB2F33'],
-        description: 'Sesuai contoh: Dominan Sky Blue, kontras Cloud White, dan aksen tombol merah Scarlet yang menarik perhatian.',
-        border: '#2C96D8'
-    },
-    {
-        id: 'scarlet-red',
-        name: 'Scarlet Focus (Aksen Kuat)',
-        badge: 'Scarlet Red Dominan • Aksen Sky Blue',
-        colors: ['#EB2F33', '#2C96D8'],
-        description: 'Varian aksen merah scarlet yang berani dan energik untuk memicu konversi tinggi.',
-        border: '#EB2F33'
-    },
-    {
-        id: 'cloud-white',
-        name: 'Cloud Minimalist (Segar & Bersih)',
-        badge: 'Airy Clean White • Sky Blue • Scarlet CTA',
-        colors: ['#0284c7', '#EB2F33'],
-        description: 'Nuansa putih awan minimalis yang sejuk dengan tombol aksi merah scarlet.',
-        border: '#38bdf8'
-    }
-];
-
-export function getStoredColorTheme() {
-    const saved = localStorage.getItem('kawandigi_color_theme');
-    if (saved && COLOR_THEMES.some(t => t.id === saved)) {
-        return saved;
-    }
-    return 'sky-trio';
-}
-
-export function applyColorTheme(themeId, notify = false) {
-    const valid = COLOR_THEMES.some(t => t.id === themeId) ? themeId : 'sky-trio';
-    document.documentElement.setAttribute('data-color-theme', valid);
-    localStorage.setItem('kawandigi_color_theme', valid);
-
-    renderColorThemeGrid();
-    renderQuickThemeSwatches();
-
-    if (window.lucide) window.lucide.createIcons();
-
-    if (notify) {
-        const themeObj = COLOR_THEMES.find(t => t.id === valid);
-        showToast(`Tema warna diubah ke ${themeObj?.name || valid}`, 'info');
-    }
-}
-
-function renderColorThemeGrid() {
-    const grid = document.getElementById('color-theme-grid');
-    if (!grid) return;
-
-    const currentTheme = getStoredColorTheme();
-    grid.innerHTML = COLOR_THEMES.map(t => {
-        const isActive = t.id === currentTheme;
-        return `
-            <div onclick="window.kdApplyColorTheme('${t.id}', true)" class="p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isActive ? 'bg-slate-800/95 border-brand-500 shadow-md ring-2 ring-brand-500/40' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40'}">
-                <div class="flex items-start sm:items-center gap-3 min-w-0">
-                    <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center p-0.5 shadow-md relative overflow-hidden" style="background: linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]});">
-                        <div class="w-3.5 h-3.5 rounded-full bg-white shadow-sm border border-slate-900/20"></div>
-                    </div>
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2">
-                            <h4 class="text-xs font-bold text-white truncate">
-                                ${t.name}
-                            </h4>
-                            ${isActive ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-brand-500/20 text-brand-300 font-extrabold uppercase border border-brand-500/30">Aktif</span>' : ''}
-                        </div>
-                        <p class="text-[10px] text-slate-300 mt-0.5">${t.description || t.badge}</p>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3.5 h-3.5 rounded-full border border-white/20 inline-block" style="background-color: ${t.colors[0]};" title="Warna Utama"></span>
-                        <span class="w-3.5 h-3.5 rounded-full border border-white/20 inline-block" style="background-color: ${t.colors[1]};" title="Warna Aksen"></span>
-                        <span class="w-3.5 h-3.5 rounded-full border border-slate-300 inline-block" style="background-color: #F8FAFC;" title="Cloud White"></span>
-                    </div>
-                    <div>
-                        ${isActive 
-                            ? '<span class="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold shadow-sm"><i data-lucide="check" class="w-3 h-3"></i></span>' 
-                            : '<span class="w-5 h-5 rounded-full border border-slate-700 block"></span>'}
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function renderQuickThemeSwatches() {
-    const container = document.getElementById('profile-theme-quick-swatches');
-    if (!container) return;
-
-    const currentTheme = getStoredColorTheme();
-    container.innerHTML = COLOR_THEMES.map(t => {
-        const isActive = t.id === currentTheme;
-        return `
-            <button type="button" onclick="window.kdApplyColorTheme('${t.id}', true)" title="${t.name} (${t.badge})" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all transform active:scale-90 cursor-pointer ${isActive ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-900 scale-110 shadow-lg' : 'hover:scale-105 opacity-80 hover:opacity-100'}" style="background: linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]});">
-                ${isActive ? '<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>' : ''}
-            </button>
-        `;
-    }).join('');
-}
-
-function initColorThemeManager() {
-    const modal = document.getElementById('modal-color-theme');
-    const btnOpen = document.getElementById('btn-color-theme');
-    const btnClose = document.getElementById('btn-close-color-theme-modal');
-    const btnDone = document.getElementById('btn-done-color-theme');
-
-    const openModal = () => {
-        if (!modal) return;
-        renderColorThemeGrid();
-        modal.classList.remove('hidden');
-        if (window.lucide) window.lucide.createIcons();
-    };
-
-    const closeModal = () => {
-        modal?.classList.add('hidden');
-    };
-
-    btnOpen?.addEventListener('click', openModal);
-    btnClose?.addEventListener('click', closeModal);
-    btnDone?.addEventListener('click', closeModal);
-    modal?.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
-
-    window.kdOpenColorThemeModal = openModal;
-    window.kdCloseColorThemeModal = closeModal;
-    window.kdApplyColorTheme = applyColorTheme;
-
-    // Apply stored theme on load
-    applyColorTheme(getStoredColorTheme());
-}
-
-// =========================================================================
 // PROJECT HISTORY CONTROLLER (Max 20 Projects, Browser Local Storage)
 // =========================================================================
 function updateHistoryBadge() {
@@ -3878,9 +3735,7 @@ function openUserProfileModal() {
         }
     }
 
-    renderQuickThemeSwatches();
     modal.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
 }
 
 function waitForGoogleGis(callback, maxAttempts = 30) {
@@ -4931,7 +4786,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initDramaCreator();
     initLicenseManager();
     initThemeToggle();
-    initColorThemeManager();
     initHistoryManager();
     initCollapsibleBanners();
     initAuthManager();
