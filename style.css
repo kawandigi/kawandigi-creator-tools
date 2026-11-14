@@ -9,138 +9,111 @@ body {
 
 /* ========================================================================= */
 /* DYNAMIC COLOR THEMES PRESETS & ACCENT PALETTES                            */
+/* PALET 3 WARNA: Sky Blue (#2C96D8), Cloud White (#F8FAFC), Scarlet Red (#EB2F33) */
 /* ========================================================================= */
 
-:root, [data-color-theme="indigo"] {
-    --color-brand-50: #f0efff;
-    --color-brand-100: #e2e0ff;
-    --color-brand-200: #c7c4fe;
-    --color-brand-300: #a6a1fd;
-    --color-brand-400: #7e75fb;
-    --color-brand-500: #544ce7;
-    --color-brand-600: #433acb;
-    --color-brand-700: #352cb2;
-    --color-brand-800: #2c2591;
-    --color-brand-900: #252174;
-    --color-brand-950: #151249;
-    --color-brand-rgb: 84, 76, 231;
-    --color-accent-400: #a78bfa;
-    --color-accent-500: #8b5cf6;
-    --hero-card-gradient: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 50%, #4338ca 100%);
-    --hero-card-shadow: 0 15px 35px -5px rgba(67, 56, 202, 0.35);
-    --btn-buat-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%);
-    --btn-buat-shadow: 0 8px 20px -2px rgba(6, 182, 212, 0.5);
-    --primary-gradient: linear-gradient(135deg, #544ce7 0%, #433acb 100%);
+:root, [data-color-theme="sky-trio"], [data-color-theme="indigo"] {
+    --color-sky-blue: #2C96D8;
+    --color-cloud-white: #F8FAFC;
+    --color-scarlet-red: #EB2F33;
+
+    /* Brand Scale: Sky Blue (#2C96D8) */
+    --color-brand-50: #f0f8fd;
+    --color-brand-100: #e0f1fa;
+    --color-brand-200: #bae3f5;
+    --color-brand-300: #7dcded;
+    --color-brand-400: #3bb3e5;
+    --color-brand-500: #2C96D8;
+    --color-brand-600: #1b78b5;
+    --color-brand-700: #176092;
+    --color-brand-800: #175179;
+    --color-brand-900: #184465;
+    --color-brand-950: #102b42;
+    --color-brand-rgb: 44, 150, 216;
+
+    /* Accent Scale: Scarlet Red (#EB2F33) - 1 Accent Color to Direct Attention */
+    --color-scarlet-400: #f85054;
+    --color-scarlet-500: #EB2F33;
+    --color-scarlet-600: #d41c20;
+    --color-scarlet-700: #b21417;
+    --color-accent-400: #f85054;
+    --color-accent-500: #EB2F33;
+    --color-accent-600: #d41c20;
+
+    /* Cloud White Surfaces */
+    --color-cloud-50: #ffffff;
+    --color-cloud-100: #F8FAFC;
+    --color-cloud-200: #f1f5f9;
+
+    /* Hero Card Sky Gradient */
+    --hero-card-gradient: linear-gradient(135deg, #176092 0%, #2C96D8 50%, #4cb6ef 100%);
+    --hero-card-shadow: 0 16px 36px -6px rgba(44, 150, 216, 0.45);
+
+    /* Attention CTA Gradient (Scarlet Red Glow) */
+    --btn-buat-gradient: linear-gradient(135deg, #f85054 0%, #EB2F33 50%, #c91f23 100%);
+    --btn-buat-shadow: 0 8px 24px -2px rgba(235, 47, 51, 0.55);
+    --primary-gradient: linear-gradient(135deg, #2C96D8 0%, #176092 100%);
 }
 
-[data-color-theme="emerald"] {
-    --color-brand-50: #ecfdf5;
-    --color-brand-100: #d1fae5;
-    --color-brand-200: #a7f3d0;
-    --color-brand-300: #6ee7b7;
-    --color-brand-400: #34d399;
-    --color-brand-500: #10b981;
-    --color-brand-600: #059669;
-    --color-brand-700: #047857;
-    --color-brand-800: #065f46;
-    --color-brand-900: #064e3b;
-    --color-brand-950: #022c22;
-    --color-brand-rgb: 16, 185, 129;
-    --color-accent-400: #84cc16;
-    --color-accent-500: #10b981;
-    --hero-card-gradient: linear-gradient(135deg, #047857 0%, #059669 50%, #0d9488 100%);
-    --hero-card-shadow: 0 15px 35px -5px rgba(5, 150, 105, 0.35);
-    --btn-buat-gradient: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
-    --btn-buat-shadow: 0 8px 20px -2px rgba(16, 185, 129, 0.5);
-    --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
+[data-color-theme="scarlet-red"] {
+    --color-sky-blue: #2C96D8;
+    --color-cloud-white: #F8FAFC;
+    --color-scarlet-red: #EB2F33;
 
-[data-color-theme="rose"] {
+    /* Brand Scale: Scarlet Red (#EB2F33) Dominant */
     --color-brand-50: #fff1f2;
     --color-brand-100: #ffe4e6;
     --color-brand-200: #fecdd3;
     --color-brand-300: #fda4af;
-    --color-brand-400: #fb7185;
-    --color-brand-500: #f43f5e;
-    --color-brand-600: #e11d48;
-    --color-brand-700: #be123c;
-    --color-brand-800: #9f1239;
-    --color-brand-900: #881337;
-    --color-brand-950: #4c0519;
-    --color-brand-rgb: 244, 63, 94;
-    --color-accent-400: #fb923c;
-    --color-accent-500: #f43f5e;
-    --hero-card-gradient: linear-gradient(135deg, #9f1239 0%, #e11d48 50%, #f43f5e 100%);
-    --hero-card-shadow: 0 15px 35px -5px rgba(225, 29, 72, 0.35);
-    --btn-buat-gradient: linear-gradient(135deg, #fb7185 0%, #f43f5e 50%, #e11d48 100%);
-    --btn-buat-shadow: 0 8px 20px -2px rgba(244, 63, 94, 0.5);
-    --primary-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    --color-brand-400: #f85054;
+    --color-brand-500: #EB2F33;
+    --color-brand-600: #d41c20;
+    --color-brand-700: #b21417;
+    --color-brand-800: #931416;
+    --color-brand-900: #7a1416;
+    --color-brand-950: #440708;
+    --color-brand-rgb: 235, 47, 51;
+
+    /* Accent Scale: Sky Blue (#2C96D8) */
+    --color-accent-400: #3bb3e5;
+    --color-accent-500: #2C96D8;
+    --color-accent-600: #1b78b5;
+
+    --hero-card-gradient: linear-gradient(135deg, #931416 0%, #d41c20 40%, #EB2F33 100%);
+    --hero-card-shadow: 0 16px 36px -6px rgba(235, 47, 51, 0.45);
+    --btn-buat-gradient: linear-gradient(135deg, #3bb3e5 0%, #2C96D8 50%, #176092 100%);
+    --btn-buat-shadow: 0 8px 24px -2px rgba(44, 150, 216, 0.55);
+    --primary-gradient: linear-gradient(135deg, #EB2F33 0%, #b21417 100%);
 }
 
-[data-color-theme="amber"] {
-    --color-brand-50: #fffbeb;
-    --color-brand-100: #fef3c7;
-    --color-brand-200: #fde68a;
-    --color-brand-300: #fcd34d;
-    --color-brand-400: #fbbf24;
-    --color-brand-500: #f59e0b;
-    --color-brand-600: #d97706;
-    --color-brand-700: #b45309;
-    --color-brand-800: #92400e;
-    --color-brand-900: #78350f;
-    --color-brand-950: #451a03;
-    --color-brand-rgb: 245, 158, 11;
-    --color-accent-400: #f97316;
-    --color-accent-500: #f59e0b;
-    --hero-card-gradient: linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%);
-    --hero-card-shadow: 0 15px 35px -5px rgba(217, 119, 6, 0.35);
-    --btn-buat-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-    --btn-buat-shadow: 0 8px 20px -2px rgba(245, 158, 11, 0.5);
-    --primary-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
+[data-color-theme="cloud-white"] {
+    --color-sky-blue: #2C96D8;
+    --color-cloud-white: #F8FAFC;
+    --color-scarlet-red: #EB2F33;
 
-[data-color-theme="cyan"] {
-    --color-brand-50: #ecfeff;
-    --color-brand-100: #cffafe;
-    --color-brand-200: #a5f3fc;
-    --color-brand-300: #67e8f9;
-    --color-brand-400: #22d3ee;
-    --color-brand-500: #06b6d4;
-    --color-brand-600: #0891b2;
-    --color-brand-700: #0e7490;
-    --color-brand-800: #155e75;
-    --color-brand-900: #164e63;
-    --color-brand-950: #083344;
-    --color-brand-rgb: 6, 182, 212;
-    --color-accent-400: #38bdf8;
-    --color-accent-500: #0284c7;
-    --hero-card-gradient: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #0284c7 100%);
-    --hero-card-shadow: 0 15px 35px -5px rgba(8, 145, 178, 0.35);
-    --btn-buat-gradient: linear-gradient(135deg, #22d3ee 0%, #06b6d4 50%, #0284c7 100%);
-    --btn-buat-shadow: 0 8px 20px -2px rgba(6, 182, 212, 0.5);
-    --primary-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-}
+    /* Clean Airy Sky Tone */
+    --color-brand-50: #f8fafc;
+    --color-brand-100: #f1f5f9;
+    --color-brand-200: #e2e8f0;
+    --color-brand-300: #94a3b8;
+    --color-brand-400: #38bdf8;
+    --color-brand-500: #0284c7;
+    --color-brand-600: #0369a1;
+    --color-brand-700: #075985;
+    --color-brand-800: #0c4a6e;
+    --color-brand-900: #082f49;
+    --color-brand-950: #051a2a;
+    --color-brand-rgb: 2, 132, 199;
 
-[data-color-theme="purple"] {
-    --color-brand-50: #faf5ff;
-    --color-brand-100: #f3e8ff;
-    --color-brand-200: #e9d5ff;
-    --color-brand-300: #d8b4fe;
-    --color-brand-400: #c084fc;
-    --color-brand-500: #a855f7;
-    --color-brand-600: #9333ea;
-    --color-brand-700: #7e22ce;
-    --color-brand-800: #6b21a8;
-    --color-brand-900: #581c87;
-    --color-brand-950: #3b0764;
-    --color-brand-rgb: 168, 85, 247;
-    --color-accent-400: #ec4899;
-    --color-accent-500: #a855f7;
-    --hero-card-gradient: linear-gradient(135deg, #581c87 0%, #7e22ce 50%, #a855f7 100%);
-    --hero-card-shadow: 0 15px 35px -5px rgba(126, 34, 206, 0.35);
-    --btn-buat-gradient: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #ec4899 100%);
-    --btn-buat-shadow: 0 8px 20px -2px rgba(168, 85, 247, 0.5);
-    --primary-gradient: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+    --color-accent-400: #f85054;
+    --color-accent-500: #EB2F33;
+    --color-accent-600: #d41c20;
+
+    --hero-card-gradient: linear-gradient(135deg, #075985 0%, #0284c7 50%, #38bdf8 100%);
+    --hero-card-shadow: 0 16px 36px -6px rgba(2, 132, 199, 0.4);
+    --btn-buat-gradient: linear-gradient(135deg, #f85054 0%, #EB2F33 50%, #c91f23 100%);
+    --btn-buat-shadow: 0 8px 24px -2px rgba(235, 47, 51, 0.55);
+    --primary-gradient: linear-gradient(135deg, #0284c7 0%, #075985 100%);
 }
 
 /* Home Hero Card Dynamic Theme Gradient */
@@ -148,6 +121,23 @@ body {
     background: var(--hero-card-gradient) !important;
     box-shadow: var(--hero-card-shadow) !important;
     transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Scarlet Red Attention CTA Button (Directs Attention) */
+.cta-scarlet-btn {
+    background: var(--btn-buat-gradient, linear-gradient(135deg, #f85054 0%, #EB2F33 50%, #c91f23 100%)) !important;
+    box-shadow: var(--btn-buat-shadow, 0 8px 20px -2px rgba(235, 47, 51, 0.5)) !important;
+    color: #ffffff !important;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.cta-scarlet-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 26px -2px rgba(235, 47, 51, 0.65) !important;
+}
+
+.cta-scarlet-btn:active {
+    transform: scale(0.96);
 }
 
 /* Custom Scrollbar */
