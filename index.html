@@ -90,7 +90,15 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#0b0f19] dark:bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-[#0b0f19] dark:bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-brand-500 selection:text-white relative">
+
+    <!-- Ambient Background Glassmorphism Glow Mesh (Fixed & Non-interactive) -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-purple-600/15 dark:bg-purple-600/20 blur-3xl transform-gpu"></div>
+        <div class="absolute top-1/4 -right-24 w-96 h-96 rounded-full bg-sky-500/15 dark:bg-sky-500/22 blur-3xl transform-gpu"></div>
+        <div class="absolute bottom-24 left-1/4 w-80 h-80 rounded-full bg-rose-500/10 dark:bg-rose-500/16 blur-3xl transform-gpu"></div>
+        <div class="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-cyan-400/12 dark:bg-cyan-400/18 blur-3xl transform-gpu"></div>
+    </div>
 
     <!-- PWA & App Animated Splash Screen (Bouncing KD Logo) -->
     <div id="pwa-splash" class="kd-splash-overlay">
