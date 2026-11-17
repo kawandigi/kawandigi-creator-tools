@@ -91,6 +91,19 @@ import {
     getActivityLogs,
     calculateLevel
 } from './modules/gamification_manager.js';
+import { 
+    initCharacterVault, 
+    saveCharacterToVault, 
+    getAllCharactersFromVault, 
+    getCharacterById, 
+    updateCharacterImage, 
+    deleteCharacterFromVault, 
+    exportCharacterPackage 
+} from './modules/character_vault.js';
+import { 
+    generateCharacterProfile, 
+    CHARACTER_PRESETS 
+} from './modules/character_creator.js';
 
 // Global State
 // Super Admin Email Whitelist (Access Control)
@@ -212,6 +225,7 @@ function switchTab(tabId) {
         'ugc': document.getElementById('sidebar-tab-ugc'),
         'flow': document.getElementById('sidebar-tab-flow'),
         'drama': document.getElementById('sidebar-tab-drama'),
+        'character': document.getElementById('sidebar-tab-character'),
         'leaderboard': document.getElementById('sidebar-tab-leaderboard'),
         'tutorial': document.getElementById('sidebar-tab-tutorial'),
         'license': document.getElementById('sidebar-tab-license'),
@@ -248,6 +262,7 @@ function switchTab(tabId) {
         'ugc': document.getElementById('section-ugc'),
         'flow': document.getElementById('section-flow'),
         'drama': document.getElementById('section-drama'),
+        'character': document.getElementById('section-character'),
         'tutorial': document.getElementById('section-tutorial'),
         'license': document.getElementById('section-license'),
         'admin': document.getElementById('section-admin')
@@ -299,6 +314,7 @@ function switchTab(tabId) {
         'ugc': 'AI UGC Affiliate Video Creator',
         'flow': 'Google Flow Studio',
         'drama': 'AI Drama & Micro-Series',
+        'character': 'AI Influencer & Character Maker',
         'leaderboard': 'Peringkat & Gamifikasi',
         'tutorial': 'Tutorial & Panduan Video',
         'admin': 'Console Admin KawanDigi',
@@ -314,6 +330,8 @@ function switchTab(tabId) {
         renderLeaderboard();
     } else if (tabId === 'tutorial') {
         renderTutorials();
+    } else if (tabId === 'character') {
+        renderCharacterGallery();
     } else if (tabId === 'license') {
         applyPricingToUI();
         updateLicenseCards();
@@ -2444,6 +2462,681 @@ export function applyFeatureFlagVisibility() {
             switchTab('catalog');
         }
     }
+}
+
+// =========================================================================
+// AI INFLUENCER & CHARACTER MAKER CONTROLLER (VAULT & GENERATOR)
+// =========================================================================
+let activeCharacter = null;
+let currentModalCharacter = null;
+
+function renderCharacterResults(char) {
+    if (!char) return;
+    const resBox = document.getElementById('char-results');
+    if (!resBox) return;
+
+    // Header info
+    const nameEl = document.getElementById('char-res-name');
+    const taglineEl = document.getElementById('char-res-tagline');
+    const nicheEl = document.getElementById('char-res-niche');
+    const badgeEl = document.getElementById('char-res-type-badge');
+    const avatarLetter = document.getElementById('char-res-avatar-letter');
+    const avatarImg = document.getElementById('char-res-avatar-img');
+
+    if (nameEl) nameEl.textContent = char.name || 'Maya Putri';
+    if (taglineEl) taglineEl.textContent = char.tagline || 'Virtual Influencer';
+    if (nicheEl) nicheEl.textContent = `Niche: ${char.niche || 'Lifestyle'}`;
+
+    const isArtist = char.type === 'artist';
+    if (badgeEl) {
+        badgeEl.textContent = isArtist ? 'AI ARTIST / SINGER' : 'AI INFLUENCER / KOL';
+        badgeEl.className = `px-2 py-0.5 rounded-full ${isArtist ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-pink-500/20 text-pink-300 border-pink-500/30'} text-[10px] font-bold border`;
+    }
+
+    if (char.character_sheet_image) {
+        if (avatarImg) {
+            avatarImg.src = char.character_sheet_image;
+            avatarImg.classList.remove('hidden');
+        }
+        if (avatarLetter) avatarLetter.classList.add('hidden');
+    } else {
+        if (avatarImg) avatarImg.classList.add('hidden');
+        if (avatarLetter) {
+            avatarLetter.textContent = (char.name || 'M').charAt(0).toUpperCase();
+            avatarLetter.classList.remove('hidden');
+        }
+    }
+
+    // Prompts
+    const sheetEl = document.getElementById('char-prompt-sheet-text');
+    const dnaEl = document.getElementById('char-prompt-dna-text');
+    const flowEl = document.getElementById('char-prompt-flow-text');
+
+    if (sheetEl) sheetEl.textContent = char.character_sheet_prompt || '';
+    if (dnaEl) dnaEl.textContent = char.master_dna_prompt || '';
+    if (flowEl) flowEl.textContent = char.google_flow_video_prompt || '';
+
+    // Variations Grid
+    const variationsGrid = document.getElementById('char-photo-variations-grid');
+    if (variationsGrid) {
+        if (Array.isArray(char.photo_variations) && char.photo_variations.length > 0) {
+            variationsGrid.innerHTML = char.photo_variations.map((pv, idx) => `
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <h5 class="text-xs font-bold text-white">${pv.title || 'Pose ' + (idx + 1)}</h5>
+                            <button type="button" data-var-idx="${idx}" class="btn-copy-var-prompt px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-pink-300 text-[11px] font-semibold flex items-center gap-1 transition">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                <span>Salin</span>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">${pv.purpose || ''}</p>
+                    </div>
+                    <pre class="p-2 bg-slate-900 rounded-lg text-[11px] text-slate-300 font-mono whitespace-pre-wrap leading-relaxed max-h-24 overflow-y-auto select-all">${pv.prompt || ''}</pre>
+                </div>
+            `).join('');
+
+            // Wire copy buttons
+            variationsGrid.querySelectorAll('.btn-copy-var-prompt').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.varIdx, 10);
+                    const prompt = char.photo_variations[idx]?.prompt;
+                    if (prompt) {
+                        navigator.clipboard.writeText(prompt);
+                        showToast(`Prompt foto variasi ${idx + 1} disalin!`, 'success');
+                    }
+                });
+            });
+        } else {
+            variationsGrid.innerHTML = '<p class="text-slate-500 text-xs col-span-2">Tidak ada variasi foto tambahan.</p>';
+        }
+    }
+
+    // Social Profile
+    const userEl = document.getElementById('char-social-usernames');
+    const catchEl = document.getElementById('char-social-catchphrase');
+    const pillarsEl = document.getElementById('char-social-pillars');
+    const bioEl = document.getElementById('char-social-bio');
+
+    if (userEl) userEl.textContent = (char.social_profile?.suggested_usernames || []).join(', ') || '-';
+    if (catchEl) catchEl.textContent = char.social_profile?.catchphrase ? `"${char.social_profile.catchphrase}"` : '-';
+    if (pillarsEl) {
+        const pillars = char.social_profile?.content_pillars || [];
+        pillarsEl.innerHTML = pillars.map(p => `<li>${p}</li>`).join('') || '<li>Konten harian OOTD & review</li>';
+    }
+    if (bioEl) bioEl.textContent = char.social_profile?.instagram_bio || '-';
+
+    // Artist Specs
+    const artistSec = document.getElementById('char-artist-section');
+    if (artistSec) {
+        if (isArtist && char.artist_specs) {
+            artistSec.classList.remove('hidden');
+            const vocalEl = document.getElementById('char-vocal-timbre');
+            const musicEl = document.getElementById('char-music-genre');
+            const sunoEl = document.getElementById('char-suno-prompt');
+            if (vocalEl) vocalEl.textContent = char.artist_specs.vocal_timbre || '-';
+            if (musicEl) musicEl.textContent = char.artist_specs.music_genre || '-';
+            if (sunoEl) sunoEl.textContent = char.artist_specs.suno_prompt || '-';
+        } else {
+            artistSec.classList.add('hidden');
+        }
+    }
+
+    resBox.classList.remove('hidden');
+    lucide.createIcons();
+}
+
+async function renderCharacterGallery() {
+    const grid = document.getElementById('char-gallery-grid');
+    const badge = document.getElementById('char-gallery-count');
+    const searchInput = document.getElementById('char-gallery-search');
+    const filterSelect = document.getElementById('char-gallery-filter');
+
+    if (!grid) return;
+
+    try {
+        const allChars = await getAllCharactersFromVault();
+        if (badge) badge.textContent = (allChars || []).length;
+
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        const typeFilter = filterSelect?.value || 'all';
+
+        let filtered = (allChars || []).filter(c => {
+            if (typeFilter !== 'all' && c.type !== typeFilter) return false;
+            if (query) {
+                const nameMatch = (c.name || '').toLowerCase().includes(query);
+                const nicheMatch = (c.niche || '').toLowerCase().includes(query);
+                const taglineMatch = (c.tagline || '').toLowerCase().includes(query);
+                return nameMatch || nicheMatch || taglineMatch;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full py-12 text-center bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center mx-auto">
+                        <i data-lucide="user-x" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Belum Ada Karakter Tersimpan</h4>
+                        <p class="text-xs text-slate-400 max-w-md mx-auto mt-1">
+                            ${query || typeFilter !== 'all' ? 'Tidak ada karakter yang cocok dengan pencarian / filter Anda.' : 'Buat AI Influencer atau Virtual Artist pertamamu di tab Studio Generator. Semua karakter dan gambar character sheet akan tersimpan aman di sini!'}
+                        </p>
+                    </div>
+                    ${!query && typeFilter === 'all' ? `
+                        <button type="button" onclick="document.getElementById('char-subtab-generator')?.click()" class="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs rounded-xl shadow transition inline-flex items-center gap-1.5">
+                            <i data-lucide="wand-2" class="w-4 h-4"></i>
+                            <span>Buka Studio Generator</span>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+        }
+
+        grid.innerHTML = filtered.map(char => {
+            const hasImg = Boolean(char.character_sheet_image);
+            const isArtist = char.type === 'artist';
+            const initial = (char.name || 'C').charAt(0).toUpperCase();
+            const dateStr = char.createdAt ? new Date(char.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+
+            return `
+                <div class="bg-slate-900 border border-slate-800 hover:border-pink-500/40 rounded-2xl p-4 flex flex-col justify-between space-y-3 transition group shadow-sm">
+                    <div class="space-y-3">
+                        <!-- Top Image / Avatar Header -->
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-slate-950 border border-pink-500/30 overflow-hidden flex items-center justify-center text-pink-400 font-black text-xl flex-shrink-0 relative">
+                                ${hasImg 
+                                    ? `<img src="${char.character_sheet_image}" class="w-full h-full object-cover" alt="${char.name}">` 
+                                    : `<span class="bg-gradient-to-tr from-pink-500 to-rose-600 w-full h-full flex items-center justify-center text-white font-black">${initial}</span>`
+                                }
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <h4 class="text-sm font-bold text-white truncate">${char.name || 'Tanpa Nama'}</h4>
+                                    <span class="px-1.5 py-0.2 rounded-full ${isArtist ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-pink-500/20 text-pink-300 border-pink-500/30'} text-[9px] font-bold border">
+                                        ${isArtist ? 'ARTIST' : 'INFLUENCER'}
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-300 truncate mt-0.5">${char.tagline || char.niche || '-'}</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">${dateStr}</p>
+                            </div>
+                        </div>
+
+                        <!-- Mini Snippet of Sheet Prompt -->
+                        <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 line-clamp-2 font-mono">
+                            ${char.character_sheet_prompt || char.master_dna_prompt || '-'}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-1.5">
+                        <button type="button" data-char-id="${char.id}" data-action="copy-sheet" class="flex-1 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-pink-300 hover:text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition" title="Salin Prompt Turnaround Sheet">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>Salin Sheet</span>
+                        </button>
+                        <button type="button" data-char-id="${char.id}" data-action="view-detail" class="py-1.5 px-2.5 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow transition" title="Buka Detail & Prompts Lengkap">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                            <span>Detail</span>
+                        </button>
+                        <button type="button" data-char-id="${char.id}" data-action="download-pkg" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition" title="Download Paket DNA (.txt) ke HP/PC">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" data-char-id="${char.id}" data-action="delete" class="p-1.5 text-rose-400 hover:text-rose-300 rounded-lg hover:bg-rose-950/40 transition" title="Hapus Karakter">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        lucide.createIcons();
+    } catch (err) {
+        console.error('[CharacterMaker] Error rendering gallery:', err);
+    }
+}
+
+async function openCharacterDetailModal(id) {
+    const char = await getCharacterById(id);
+    if (!char) {
+        showToast('Karakter tidak ditemukan.', 'error');
+        return;
+    }
+
+    currentModalCharacter = char;
+    const modal = document.getElementById('modal-char-detail');
+    if (!modal) return;
+
+    // Header
+    const nameEl = document.getElementById('modal-char-name');
+    const nicheEl = document.getElementById('modal-char-niche');
+    const badgeEl = document.getElementById('modal-char-badge');
+    const avatarLetter = document.getElementById('modal-char-avatar-letter');
+    const avatarImg = document.getElementById('modal-char-avatar-img');
+    const imgPreviewWrap = document.getElementById('modal-char-img-preview-wrap');
+    const imgPreview = document.getElementById('modal-char-img-preview');
+
+    if (nameEl) nameEl.textContent = char.name || 'Karakter';
+    if (nicheEl) nicheEl.textContent = char.tagline || char.niche || '-';
+    if (badgeEl) {
+        badgeEl.textContent = char.type === 'artist' ? 'AI ARTIST' : 'AI INFLUENCER';
+        badgeEl.className = `px-2 py-0.5 rounded-full ${char.type === 'artist' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-pink-500/20 text-pink-300 border-pink-500/30'} text-[10px] font-bold border`;
+    }
+
+    if (char.character_sheet_image) {
+        if (avatarImg) {
+            avatarImg.src = char.character_sheet_image;
+            avatarImg.classList.remove('hidden');
+        }
+        if (avatarLetter) avatarLetter.classList.add('hidden');
+        if (imgPreviewWrap && imgPreview) {
+            imgPreview.src = char.character_sheet_image;
+            imgPreviewWrap.classList.remove('hidden');
+        }
+    } else {
+        if (avatarImg) avatarImg.classList.add('hidden');
+        if (avatarLetter) {
+            avatarLetter.textContent = (char.name || 'C').charAt(0).toUpperCase();
+            avatarLetter.classList.remove('hidden');
+        }
+        if (imgPreviewWrap) imgPreviewWrap.classList.add('hidden');
+    }
+
+    // Prompts
+    const sheetEl = document.getElementById('modal-char-sheet-text');
+    const dnaEl = document.getElementById('modal-char-dna-text');
+    const flowEl = document.getElementById('modal-char-flow-text');
+    if (sheetEl) sheetEl.textContent = char.character_sheet_prompt || '-';
+    if (dnaEl) dnaEl.textContent = char.master_dna_prompt || '-';
+    if (flowEl) flowEl.textContent = char.google_flow_video_prompt || '-';
+
+    // Variations
+    const varEl = document.getElementById('modal-char-variations');
+    if (varEl) {
+        if (Array.isArray(char.photo_variations) && char.photo_variations.length > 0) {
+            varEl.innerHTML = char.photo_variations.map((pv, i) => `
+                <div class="p-2.5 bg-slate-900/90 rounded-lg border border-slate-800 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-200 text-[11px]">${pv.title || 'Pose ' + (i + 1)}</span>
+                        <button type="button" data-modal-var-idx="${i}" class="btn-modal-var-copy text-pink-300 hover:text-white p-1">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 line-clamp-2 font-mono">${pv.prompt || '-'}</p>
+                </div>
+            `).join('');
+
+            varEl.querySelectorAll('.btn-modal-var-copy').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.modalVarIdx, 10);
+                    const prompt = char.photo_variations[idx]?.prompt;
+                    if (prompt) {
+                        navigator.clipboard.writeText(prompt);
+                        showToast(`Prompt pose ${idx + 1} disalin!`, 'success');
+                    }
+                });
+            });
+        } else {
+            varEl.innerHTML = '<p class="text-slate-500 text-[11px]">Tidak ada variasi pose tersimpan.</p>';
+        }
+    }
+
+    // Social
+    const userEl = document.getElementById('modal-char-usernames');
+    const catchEl = document.getElementById('modal-char-catchphrase');
+    const bioEl = document.getElementById('modal-char-bio');
+    if (userEl) userEl.textContent = (char.social_profile?.suggested_usernames || []).join(', ') || '-';
+    if (catchEl) catchEl.textContent = char.social_profile?.catchphrase ? `"${char.social_profile.catchphrase}"` : '-';
+    if (bioEl) bioEl.textContent = char.social_profile?.instagram_bio || '-';
+
+    modal.classList.remove('hidden');
+    lucide.createIcons();
+}
+
+function initCharacterMaker() {
+    function applyPresetToForm(preset) {
+        if (!preset) return;
+        if (preset.type === 'artist') {
+            const radio = document.getElementById('char-type-artist');
+            if (radio) radio.checked = true;
+        } else {
+            const radio = document.getElementById('char-type-influencer');
+            if (radio) radio.checked = true;
+        }
+        const nameInput = document.getElementById('char-input-name');
+        const genderSelect = document.getElementById('char-input-gender');
+        const ageInput = document.getElementById('char-input-age');
+        const ethnicitySelect = document.getElementById('char-input-ethnicity');
+        const hairInput = document.getElementById('char-input-hair');
+        const bodyInput = document.getElementById('char-input-body');
+        const fashionInput = document.getElementById('char-input-fashion');
+        const nicheInput = document.getElementById('char-input-niche');
+        const vibeInput = document.getElementById('char-input-vibe');
+        const traitsInput = document.getElementById('char-input-traits');
+
+        if (nameInput) nameInput.value = preset.name || '';
+        if (genderSelect) genderSelect.value = preset.gender || 'female';
+        if (ageInput) ageInput.value = preset.ageGroup || '22';
+        if (ethnicitySelect) ethnicitySelect.value = preset.ethnicity || 'indonesian_natural';
+        if (hairInput) hairInput.value = preset.hairStyle || '';
+        if (bodyInput) bodyInput.value = preset.bodyType || '';
+        if (fashionInput) fashionInput.value = preset.fashionStyle || '';
+        if (nicheInput) nicheInput.value = preset.niche || '';
+        if (vibeInput) vibeInput.value = preset.vibe || '';
+        if (traitsInput) traitsInput.value = preset.customTraits || '';
+        showToast(`Preset "${preset.name}" diterapkan!`, 'info');
+    }
+
+    // Preset Buttons
+    document.getElementById('btn-char-preset-maya')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[0]));
+    document.getElementById('btn-char-preset-alya')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[1]));
+    document.getElementById('btn-char-preset-rian')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[2]));
+    document.getElementById('btn-char-preset-kenzo')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[3]));
+
+    // Subtab Switching
+    const subtabGen = document.getElementById('char-subtab-generator');
+    const subtabGal = document.getElementById('char-subtab-gallery');
+    const viewGen = document.getElementById('char-view-generator');
+    const viewGal = document.getElementById('char-view-gallery');
+
+    subtabGen?.addEventListener('click', () => {
+        subtabGen.className = 'px-4 py-2 rounded-xl bg-pink-600 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-pink-500/25 transition';
+        subtabGal.className = 'px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-2 border border-slate-800 transition';
+        viewGen?.classList.remove('hidden');
+        viewGal?.classList.add('hidden');
+    });
+
+    subtabGal?.addEventListener('click', () => {
+        subtabGal.className = 'px-4 py-2 rounded-xl bg-pink-600 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-pink-500/25 transition';
+        subtabGen.className = 'px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-2 border border-slate-800 transition';
+        viewGal?.classList.remove('hidden');
+        viewGen?.classList.add('hidden');
+        renderCharacterGallery();
+    });
+
+    document.getElementById('btn-char-gallery-to-gen')?.addEventListener('click', () => {
+        subtabGen?.click();
+    });
+    document.getElementById('btn-char-refresh-gallery')?.addEventListener('click', () => {
+        renderCharacterGallery();
+        showToast('Galeri diperbarui.', 'info');
+    });
+
+    // Generate Character Profile
+    const btnGen = document.getElementById('btn-generate-character');
+    btnGen?.addEventListener('click', async () => {
+        const name = document.getElementById('char-input-name')?.value.trim() || 'Maya Putri';
+        const type = document.querySelector('input[name="char_type"]:checked')?.value || 'influencer';
+        const gender = document.getElementById('char-input-gender')?.value || 'female';
+        const ageGroup = document.getElementById('char-input-age')?.value.trim() || '22';
+        const ethnicity = document.getElementById('char-input-ethnicity')?.value || 'indonesian_natural';
+        const hairStyle = document.getElementById('char-input-hair')?.value.trim();
+        const bodyType = document.getElementById('char-input-body')?.value.trim();
+        const fashionStyle = document.getElementById('char-input-fashion')?.value.trim();
+        const niche = document.getElementById('char-input-niche')?.value.trim();
+        const vibe = document.getElementById('char-input-vibe')?.value.trim();
+        const customTraits = document.getElementById('char-input-traits')?.value.trim();
+
+        btnGen.disabled = true;
+        const oldHtml = btnGen.innerHTML;
+        btnGen.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Merancang Profil Karakter & Turnaround Sheet...</span>`;
+        lucide.createIcons();
+
+        try {
+            const char = await generateCharacterProfile({
+                name,
+                type,
+                gender,
+                ageGroup,
+                ethnicity,
+                hairStyle,
+                bodyType,
+                fashionStyle,
+                niche,
+                vibe,
+                customTraits
+            });
+
+            activeCharacter = char;
+            await saveCharacterToVault(char);
+            renderCharacterResults(char);
+
+            // Update badge count
+            const countBadge = document.getElementById('char-gallery-count');
+            const all = await getAllCharactersFromVault();
+            if (countBadge) countBadge.textContent = all.length;
+
+            showToast(`Profil karakter "${char.name}" berhasil dibuat dan disimpan ke Galeri!`, 'success');
+
+            // Scroll smoothly to results
+            document.getElementById('char-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            if (typeof trackActivity === 'function') {
+                trackActivity('create_character', { name: char.name, type: char.type });
+            }
+        } catch (err) {
+            console.error('[CharacterMaker] Error generating character:', err);
+            showToast('Gagal menghasilkan karakter: ' + err.message, 'error');
+        } finally {
+            btnGen.disabled = false;
+            btnGen.innerHTML = oldHtml;
+            lucide.createIcons();
+        }
+    });
+
+    // Upload Render Sheet from Results
+    const fileInput = document.getElementById('char-file-input');
+    fileInput?.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeCharacter) return;
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            const dataUrl = evt.target.result;
+            activeCharacter.character_sheet_image = dataUrl;
+            activeCharacter.avatar_image = dataUrl;
+            await saveCharacterToVault(activeCharacter);
+
+            // Update UI
+            const avatarImg = document.getElementById('char-res-avatar-img');
+            const avatarLetter = document.getElementById('char-res-avatar-letter');
+            if (avatarImg) {
+                avatarImg.src = dataUrl;
+                avatarImg.classList.remove('hidden');
+            }
+            if (avatarLetter) avatarLetter.classList.add('hidden');
+
+            showToast('Render Character Sheet berhasil disimpan ke Galeri!', 'success');
+            renderCharacterGallery();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Upload Render Sheet from Modal
+    const modalFileInput = document.getElementById('char-modal-file-input');
+    modalFileInput?.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !currentModalCharacter) return;
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            const dataUrl = evt.target.result;
+            currentModalCharacter.character_sheet_image = dataUrl;
+            currentModalCharacter.avatar_image = dataUrl;
+            await saveCharacterToVault(currentModalCharacter);
+
+            // Update modal UI
+            const avatarImg = document.getElementById('modal-char-avatar-img');
+            const avatarLetter = document.getElementById('modal-char-avatar-letter');
+            const imgWrap = document.getElementById('modal-char-img-preview-wrap');
+            const imgEl = document.getElementById('modal-char-img-preview');
+
+            if (avatarImg) {
+                avatarImg.src = dataUrl;
+                avatarImg.classList.remove('hidden');
+            }
+            if (avatarLetter) avatarLetter.classList.add('hidden');
+            if (imgWrap && imgEl) {
+                imgEl.src = dataUrl;
+                imgWrap.classList.remove('hidden');
+            }
+
+            showToast('Render Character Sheet diperbarui di Galeri!', 'success');
+            renderCharacterGallery();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Action Buttons in Results
+    document.getElementById('btn-char-download-pkg')?.addEventListener('click', () => {
+        if (!activeCharacter) return;
+        exportCharacterPackage(activeCharacter);
+        showToast(`Paket DNA ${activeCharacter.name} diunduh ke HP/PC Anda!`, 'success');
+    });
+
+    document.getElementById('btn-char-save-vault')?.addEventListener('click', async () => {
+        if (!activeCharacter) return;
+        await saveCharacterToVault(activeCharacter);
+        showToast(`Karakter ${activeCharacter.name} tersimpan di Galeri Lokal!`, 'success');
+        renderCharacterGallery();
+    });
+
+    document.getElementById('btn-copy-char-sheet')?.addEventListener('click', () => {
+        if (!activeCharacter?.character_sheet_prompt) return;
+        navigator.clipboard.writeText(activeCharacter.character_sheet_prompt);
+        showToast('Prompt Character Turnaround Sheet disalin!', 'success');
+    });
+
+    document.getElementById('btn-copy-master-dna')?.addEventListener('click', () => {
+        if (!activeCharacter?.master_dna_prompt) return;
+        navigator.clipboard.writeText(activeCharacter.master_dna_prompt);
+        showToast('Master DNA Identity prompt disalin!', 'success');
+    });
+
+    document.getElementById('btn-copy-flow-video')?.addEventListener('click', () => {
+        if (!activeCharacter?.google_flow_video_prompt) return;
+        navigator.clipboard.writeText(activeCharacter.google_flow_video_prompt);
+        showToast('Prompt Video Google Flow disalin!', 'success');
+    });
+
+    document.getElementById('btn-char-open-flow')?.addEventListener('click', () => {
+        if (!activeCharacter?.google_flow_video_prompt) return;
+        navigator.clipboard.writeText(activeCharacter.google_flow_video_prompt);
+        showToast('Prompt video disalin! Membuka Google Flow...', 'success');
+        window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+    });
+
+    document.getElementById('btn-copy-suno-prompt')?.addEventListener('click', () => {
+        if (!activeCharacter?.artist_specs?.suno_prompt) return;
+        navigator.clipboard.writeText(activeCharacter.artist_specs.suno_prompt);
+        showToast('Prompt musik Suno AI disalin!', 'success');
+    });
+
+    // Gallery Grid Delegation
+    const galleryGrid = document.getElementById('char-gallery-grid');
+    galleryGrid?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+
+        const action = btn.dataset.action;
+        const charId = btn.dataset.charId;
+        if (!charId) return;
+
+        if (action === 'copy-sheet') {
+            const char = await getCharacterById(charId);
+            if (char?.character_sheet_prompt) {
+                navigator.clipboard.writeText(char.character_sheet_prompt);
+                showToast(`Prompt Character Sheet "${char.name}" disalin!`, 'success');
+            }
+        } else if (action === 'view-detail') {
+            openCharacterDetailModal(charId);
+        } else if (action === 'download-pkg') {
+            const char = await getCharacterById(charId);
+            if (char) {
+                exportCharacterPackage(char);
+                showToast(`Paket DNA "${char.name}" diunduh!`, 'success');
+            }
+        } else if (action === 'delete') {
+            const char = await getCharacterById(charId);
+            const name = char?.name || 'karakter ini';
+            if (confirm(`Apakah Anda yakin ingin menghapus "${name}" dari Galeri Lokal?`)) {
+                await deleteCharacterFromVault(charId);
+                showToast(`"${name}" telah dihapus dari Galeri.`, 'info');
+                renderCharacterGallery();
+            }
+        }
+    });
+
+    // Gallery Search & Filter
+    document.getElementById('char-gallery-search')?.addEventListener('input', () => {
+        renderCharacterGallery();
+    });
+    document.getElementById('char-gallery-filter')?.addEventListener('change', () => {
+        renderCharacterGallery();
+    });
+
+    // Modal Close
+    document.getElementById('btn-close-char-modal')?.addEventListener('click', () => {
+        document.getElementById('modal-char-detail')?.classList.add('hidden');
+    });
+    document.getElementById('modal-char-detail')?.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-char-detail') {
+            document.getElementById('modal-char-detail')?.classList.add('hidden');
+        }
+    });
+
+    // Modal Actions
+    document.getElementById('btn-modal-char-download')?.addEventListener('click', () => {
+        if (currentModalCharacter) {
+            exportCharacterPackage(currentModalCharacter);
+            showToast(`Paket DNA "${currentModalCharacter.name}" diunduh!`, 'success');
+        }
+    });
+    document.getElementById('btn-modal-char-delete')?.addEventListener('click', async () => {
+        if (!currentModalCharacter) return;
+        const name = currentModalCharacter.name || 'karakter ini';
+        if (confirm(`Apakah Anda yakin ingin menghapus "${name}" dari Galeri?`)) {
+            await deleteCharacterFromVault(currentModalCharacter.id);
+            document.getElementById('modal-char-detail')?.classList.add('hidden');
+            showToast(`"${name}" dihapus dari Galeri.`, 'info');
+            renderCharacterGallery();
+        }
+    });
+    document.getElementById('btn-modal-copy-sheet')?.addEventListener('click', () => {
+        if (currentModalCharacter?.character_sheet_prompt) {
+            navigator.clipboard.writeText(currentModalCharacter.character_sheet_prompt);
+            showToast('Prompt Character Sheet disalin!', 'success');
+        }
+    });
+    document.getElementById('btn-modal-copy-dna')?.addEventListener('click', () => {
+        if (currentModalCharacter?.master_dna_prompt) {
+            navigator.clipboard.writeText(currentModalCharacter.master_dna_prompt);
+            showToast('Master DNA disalin!', 'success');
+        }
+    });
+    document.getElementById('btn-modal-copy-flow')?.addEventListener('click', () => {
+        if (currentModalCharacter?.google_flow_video_prompt) {
+            navigator.clipboard.writeText(currentModalCharacter.google_flow_video_prompt);
+            showToast('Prompt Google Flow disalin!', 'success');
+        }
+    });
+    document.getElementById('btn-modal-open-flow')?.addEventListener('click', () => {
+        if (currentModalCharacter?.google_flow_video_prompt) {
+            navigator.clipboard.writeText(currentModalCharacter.google_flow_video_prompt);
+            showToast('Prompt disalin! Membuka Google Flow...', 'success');
+            window.open('https://aitestkitchen.withgoogle.com/tools/video-fx', '_blank');
+        }
+    });
+
+    // Initial Vault Connection & count
+    initCharacterVault().then(() => {
+        getAllCharactersFromVault().then(chars => {
+            const badge = document.getElementById('char-gallery-count');
+            if (badge) badge.textContent = (chars || []).length;
+        });
+    });
 }
 
 function initLicenseManager() {
@@ -4664,6 +5357,7 @@ function saveTutorialFromEditor() {
 }
 
 // Window global helper bindings for inline onclick handlers
+window.kdToast = showToast;
 window.kdSwitchTab = switchTab;
 window.kdOpenDrawer = openDrawer;
 window.kdCloseDrawer = closeDrawer;
@@ -4799,6 +5493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initVideoTierModal();
     initUgcCreator();
     initDramaCreator();
+    initCharacterMaker();
     initLicenseManager();
     initThemeToggle();
     initHistoryManager();

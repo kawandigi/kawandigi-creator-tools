@@ -40,6 +40,16 @@ export const DEFAULT_FEATURE_FLAGS = [
         actionTab: 'flow'
     },
     {
+        id: 'character',
+        name: 'AI Influencer & Character Maker',
+        icon: 'user-check',
+        badge: 'BARU • PRO',
+        description: 'Ciptakan karakter konsisten untuk AI Influencer, Virtual KOL, atau AI Singer lengkap dengan Turnaround Character Sheet, Google Flow Veo Video, & Galeri Penyimpanan Lokal.',
+        enabled: true,
+        category: 'Karakter & Virtual KOL',
+        actionTab: 'character'
+    },
+    {
         id: 'voiceover',
         name: 'AI Studio Voiceover & Dubbing Multi-Aksen',
         icon: 'mic',

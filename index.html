@@ -130,6 +130,13 @@
                 </div>
                 <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">HOT</span>
             </button>
+            <button type="button" id="sidebar-tab-character" onclick="window.kdSwitchTab('character'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="user-check" class="w-4 h-4 text-pink-400"></i>
+                    <span>AI Influencer & Character Maker</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30">NEW</span>
+            </button>
             <button type="button" id="sidebar-tab-leaderboard" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
                 <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
                 <span>Peringkat & Gamifikasi</span>
@@ -325,8 +332,8 @@
                     </button>
                 </div>
 
-                <!-- 6 Circular App Buttons Grid -->
-                <div class="grid grid-cols-4 sm:grid-cols-6 gap-3 sm:gap-4 py-1">
+                <!-- Circular App Buttons Grid -->
+                <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 sm:gap-4 py-1">
                     <!-- 1. UGC Affiliate (Purple) -->
                     <button type="button" id="home-btn-ugc" onclick="window.kdSwitchTab('ugc')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition">
@@ -350,6 +357,15 @@
                             <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[9px] font-black border border-slate-900 shadow">HOT</span>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">AI Drama</span>
+                    </button>
+
+                    <!-- 4. AI Character Maker (Pink/Rose with Badge) -->
+                    <button type="button" id="home-btn-character" onclick="window.kdSwitchTab('character')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-pink-500/20 group-hover:shadow-pink-500/40 transition relative">
+                            <i data-lucide="user-check" class="w-6 h-6"></i>
+                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-pink-600 text-white text-[9px] font-black border border-slate-900 shadow">NEW</span>
+                        </div>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Character</span>
                     </button>
 
                     <!-- 4. Peringkat (Pink/Rose) -->
@@ -1222,6 +1238,389 @@
                             <div id="drama-scene-list" class="space-y-3"></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB: AI INFLUENCER & CHARACTER MAKER       -->
+        <!-- ========================================== -->
+        <section id="section-character" class="tab-content hidden space-y-4 sm:space-y-6">
+            <!-- Mobile Compact Header -->
+            <div class="sm:hidden flex items-center justify-between pb-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
+                        <i data-lucide="user-check" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-bold text-slate-800 dark:text-white leading-tight">AI Character Maker</h1>
+                        <p class="text-[10px] text-slate-400">Influencer & Virtual Artist Creator</p>
+                    </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 text-[10px] font-bold border border-pink-500/30">PRO</span>
+            </div>
+
+            <!-- Desktop Header Banner -->
+            <div class="hidden sm:block bg-gradient-to-r from-pink-900/30 via-slate-900 to-rose-900/20 border border-pink-500/30 rounded-2xl p-6 relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-xs font-semibold mb-3">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        <span>AI Influencer & Virtual Artist Engine</span>
+                    </div>
+                    <h2 class="text-2xl font-black text-white tracking-tight mb-2">AI Influencer & Character Maker</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Ciptakan karakter konsisten untuk AI Influencer, Virtual KOL, atau AI Singer lengkap dengan Turnaround Character Sheet, Google Flow Veo 10s Motion Prompt, dan simpan langsung ke Galeri Lokal perangkat Anda (HP & PC).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Sub-Navigation Tabs: Generator vs Galeri Vault -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2">
+                    <button type="button" id="char-subtab-generator" class="px-4 py-2 rounded-xl bg-pink-600 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-pink-500/25 transition">
+                        <i data-lucide="wand-2" class="w-4 h-4"></i>
+                        <span>✨ Studio Generator</span>
+                    </button>
+                    <button type="button" id="char-subtab-gallery" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-2 border border-slate-800 transition">
+                        <i data-lucide="layout-grid" class="w-4 h-4 text-pink-400"></i>
+                        <span>🖼️ Galeri Karakter Saya</span>
+                        <span id="char-gallery-count" class="px-1.5 py-0.2 rounded-full bg-slate-800 text-pink-300 text-[10px] font-bold border border-slate-700">0</span>
+                    </button>
+                </div>
+                <button type="button" id="btn-char-refresh-gallery" title="Perbarui Galeri" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+                    <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- VIEW 1: STUDIO GENERATOR -->
+            <div id="char-view-generator" class="space-y-5">
+                <!-- Preset Quick-Pick Chips -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-xs font-bold text-slate-200">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-pink-400"></i>
+                            <span>Pilih Cepat Karakter Populer (Preset):</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400">1-Klik langsung siap</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button type="button" id="btn-char-preset-maya" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
+                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Maya Putri</div>
+                            <div class="text-[10px] text-slate-400">Beauty & Lifestyle KOL</div>
+                        </button>
+                        <button type="button" id="btn-char-preset-alya" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
+                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Alya Melody</div>
+                            <div class="text-[10px] text-slate-400">Virtual Singer & Indie Pop</div>
+                        </button>
+                        <button type="button" id="btn-char-preset-rian" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
+                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Rian Pratama</div>
+                            <div class="text-[10px] text-slate-400">Tech & Streetwear Reviewer</div>
+                        </button>
+                        <button type="button" id="btn-char-preset-kenzo" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
+                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Kenzo Daiki</div>
+                            <div class="text-[10px] text-slate-400">Cyberpunk Virtual DJ</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Form Grid -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4">
+                    <!-- Type Selection (Influencer vs Artist) -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-300">Tipe Karakter:</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="relative flex items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-950 cursor-pointer hover:border-pink-500 transition has-[:checked]:border-pink-500 has-[:checked]:bg-pink-950/20">
+                                <input type="radio" name="char_type" id="char-type-influencer" value="influencer" checked class="sr-only">
+                                <div class="text-center">
+                                    <div class="text-xs font-bold text-white flex items-center justify-center gap-1.5">
+                                        <i data-lucide="instagram" class="w-3.5 h-3.5 text-pink-400"></i>
+                                        <span>AI Influencer / KOL</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Endorsement, OOTD & Konten Medsos</p>
+                                </div>
+                            </label>
+                            <label class="relative flex items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-950 cursor-pointer hover:border-pink-500 transition has-[:checked]:border-pink-500 has-[:checked]:bg-pink-950/20">
+                                <input type="radio" name="char_type" id="char-type-artist" value="artist" class="sr-only">
+                                <div class="text-center">
+                                    <div class="text-xs font-bold text-white flex items-center justify-center gap-1.5">
+                                        <i data-lucide="music" class="w-3.5 h-3.5 text-purple-400"></i>
+                                        <span>AI Artist / Virtual Singer</span>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Musisi, Lagu Suno AI & Stage Visual</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Row 1: Name & Gender & Age -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="space-y-1">
+                            <label for="char-input-name" class="block text-xs font-bold text-slate-300">Nama Karakter:</label>
+                            <input type="text" id="char-input-name" placeholder="Contoh: Maya Putri" value="Maya Putri" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label for="char-input-gender" class="block text-xs font-bold text-slate-300">Gender:</label>
+                            <select id="char-input-gender" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+                                <option value="female" selected>Wanita (Female)</option>
+                                <option value="male">Pria (Male)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label for="char-input-age" class="block text-xs font-bold text-slate-300">Rentang Usia (Tahun):</label>
+                            <input type="text" id="char-input-age" placeholder="Contoh: 22" value="22" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Ethnicity & Hair -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label for="char-input-ethnicity" class="block text-xs font-bold text-slate-300">Etnisitas & Ciri Wajah:</label>
+                            <select id="char-input-ethnicity" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+                                <option value="indonesian_natural" selected>Indonesian Natural (Sawo Matang & Soft Features)</option>
+                                <option value="eurasian">Eurasian / Blasteran (Mata Hazel & Sharp Features)</option>
+                                <option value="east_asian">East Asian / K-Pop Idol (Porcelain Skin & Glass Glow)</option>
+                                <option value="caucasian">Caucasian / Western (Defined & Striking)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label for="char-input-hair" class="block text-xs font-bold text-slate-300">Gaya Rambut & Warna:</label>
+                            <input type="text" id="char-input-hair" placeholder="Contoh: Sebahu bergelombang warna dark brown dengan soft curtain bangs" value="Sebahu bergelombang warna dark brown dengan soft curtain bangs" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Body & Fashion -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label for="char-input-body" class="block text-xs font-bold text-slate-300">Bentuk Tubuh / Postur:</label>
+                            <input type="text" id="char-input-body" placeholder="Contoh: Petite fit & natural" value="Petite fit & natural" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label for="char-input-fashion" class="block text-xs font-bold text-slate-300">Signature Fashion / OOTD:</label>
+                            <input type="text" id="char-input-fashion" placeholder="Contoh: Korean Minimalist Cafe OOTD (cardigan krem & high-waist pants)" value="Korean Minimalist Cafe OOTD (cardigan krem & high-waist pants)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Niche & Vibe -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label for="char-input-niche" class="block text-xs font-bold text-slate-300">Niche / Industri Fokus:</label>
+                            <input type="text" id="char-input-niche" placeholder="Contoh: Skincare, Beauty & Lifestyle" value="Skincare, Beauty & Lifestyle" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                        <div class="space-y-1">
+                            <label for="char-input-vibe" class="block text-xs font-bold text-slate-300">Vibe & Kepribadian:</label>
+                            <input type="text" id="char-input-vibe" placeholder="Contoh: Ceria, ramah, hangat, dan estetik" value="Ceria, ramah, hangat, dan estetik" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Custom Traits -->
+                    <div class="space-y-1">
+                        <label for="char-input-traits" class="block text-xs font-bold text-slate-300">Ciri Khas & Ciri Unik (Untuk Konsistensi):</label>
+                        <textarea id="char-input-traits" rows="2" placeholder="Contoh: Lesung pipi manis di pipi kanan, kulit sawo matang glowing alami, riasan clean girl look." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">Lesung pipi manis di pipi kanan, kulit sawo matang glowing alami, riasan wajah clean girl look.</textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-2">
+                        <button type="button" id="btn-generate-character" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transition active:scale-[0.99]">
+                            <i data-lucide="wand-2" class="w-4 h-4"></i>
+                            <span id="btn-generate-character-label">✨ Generate Profil Karakter & Turnaround Sheet</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RESULTS CONTAINER (GENERATED CHARACTER) -->
+                <div id="char-results" class="hidden space-y-4">
+                    <!-- Character Profile Header Card -->
+                    <div class="bg-gradient-to-r from-pink-950/40 via-slate-900 to-slate-900 border border-pink-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div id="char-res-avatar-wrap" class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-800 border-2 border-pink-500/40 flex-shrink-0 flex items-center justify-center text-pink-400 font-black text-2xl shadow">
+                                    <span id="char-res-avatar-letter">M</span>
+                                    <img id="char-res-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h3 id="char-res-name" class="text-lg font-black text-white">Maya Putri</h3>
+                                        <span id="char-res-type-badge" class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30">AI INFLUENCER</span>
+                                    </div>
+                                    <p id="char-res-tagline" class="text-xs text-slate-300 mt-0.5">Virtual Beauty & Lifestyle Creator</p>
+                                    <p id="char-res-niche" class="text-[11px] text-pink-400 font-semibold">Niche: Skincare & Lifestyle</p>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons Bar -->
+                            <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                                <button type="button" id="btn-char-save-vault" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-pink-500/20 transition">
+                                    <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                                    <span>Simpan ke Galeri</span>
+                                </button>
+                                <button type="button" id="btn-char-download-pkg" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition" title="Download file .txt DNA dan gambar ke HP/PC">
+                                    <i data-lucide="download" class="w-3.5 h-3.5 text-pink-400"></i>
+                                    <span>Download Paket (.txt)</span>
+                                </button>
+                                <label for="char-file-input" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer transition" title="Upload render gambar hasil Gemini/Imagen untuk ditampilkan di profil & galeri">
+                                    <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    <span>Upload Render Sheet</span>
+                                    <input type="file" id="char-file-input" accept="image/*" class="sr-only">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 1: Character Turnaround Sheet Prompt (MAIN) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30">PROMPT UTAMA</span>
+                                <h4 class="text-xs sm:text-sm font-bold text-white">Character Turnaround Sheet (Gemini / Imagen 3 / Flux)</h4>
+                            </div>
+                            <button type="button" id="btn-copy-char-sheet" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-pink-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Salin Prompt Sheet</span>
+                            </button>
+                        </div>
+                        <div class="p-3 bg-pink-950/20 border border-pink-500/20 rounded-xl text-[11px] text-pink-200 leading-relaxed flex items-start gap-2">
+                            <i data-lucide="info" class="w-4 h-4 text-pink-400 flex-shrink-0 mt-0.5"></i>
+                            <span><strong>Tips Menghasilkan Gambar Karakter:</strong> Salin prompt di bawah ini, lalu tempelkan di Gemini Imagen 3, Leonardo AI, atau Flux. Prompt ini dirancang khusus untuk menghasilkan 1 lembar gambar komprehensif berisi multi-sudut (tampak depan, 3/4, samping, dan ragam ekspresi wajah). Setelah gambar digenerate, unduh dan unggah melalui tombol <em>Upload Render Sheet</em> di atas agar tersimpan di Galeri Karakter Anda!</span>
+                        </div>
+                        <div class="relative">
+                            <pre id="char-prompt-sheet-text" class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto select-all"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Master DNA Prompt -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">KONSISTENSI WAJAH</span>
+                                <h4 class="text-xs sm:text-sm font-bold text-white">Master DNA Identity Prompt</h4>
+                            </div>
+                            <button type="button" id="btn-copy-master-dna" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Salin Master DNA</span>
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Gunakan prompt DNA dasar ini di awal setiap prompt foto selanjutnya agar fitur wajah, warna kulit, dan rambut karakter selalu konsisten.</p>
+                        <div class="relative">
+                            <pre id="char-prompt-dna-text" class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto select-all"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Google Flow Veo 10s Video Motion -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">GOOGLE FLOW / VEO</span>
+                                <h4 class="text-xs sm:text-sm font-bold text-white">10-Detik Video Motion Prompt (Veo AI 9:16)</h4>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" id="btn-copy-flow-video" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Salin</span>
+                                </button>
+                                <button type="button" id="btn-char-open-flow" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow transition">
+                                    <i data-lucide="film" class="w-3.5 h-3.5"></i>
+                                    <span>Buka di Google Flow</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Prompt video gerak vertikal 9:16 durasi 10 detik siap pakai untuk Google Flow (Veo AI) untuk membuat karakter Anda bergerak hidup.</p>
+                        <div class="relative">
+                            <pre id="char-prompt-flow-text" class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto select-all"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: 4 Photo Variations Grid -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="camera" class="w-4 h-4 text-pink-400"></i>
+                                <span>Paket 4 Variasi Foto Postingan Medsos</span>
+                            </h4>
+                            <span class="text-[11px] text-slate-400">Siap Generate di Gemini / Midjourney</span>
+                        </div>
+                        <div id="char-photo-variations-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                    </div>
+
+                    <!-- Card 5: Biodata & Strategi Medsos -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                            <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
+                            <span>Profil Media Sosial & Bio Instagram</span>
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Rekomendasi Username</span>
+                                <div id="char-social-usernames" class="text-xs text-pink-400 font-mono"></div>
+                            </div>
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Sapaan Khas (Catchphrase)</span>
+                                <div id="char-social-catchphrase" class="text-xs text-slate-200 font-semibold italic"></div>
+                            </div>
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Ide Konten Pilar</span>
+                                <ul id="char-social-pillars" class="text-[11px] text-slate-300 list-disc list-inside space-y-0.5"></ul>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Bio Instagram Estetik:</span>
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 whitespace-pre-wrap font-sans" id="char-social-bio"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6: AI Artist Specs (Hidden if not artist) -->
+                    <div id="char-artist-section" class="hidden bg-slate-900 border border-purple-500/40 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold border border-purple-500/30">AI ARTIST & SINGER</span>
+                                <h4 class="text-xs sm:text-sm font-bold text-white">Spesifikasi Vokal & Prompt Lagu Suno AI</h4>
+                            </div>
+                            <button type="button" id="btn-copy-suno-prompt" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Salin Suno Prompt</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">Timbre Vokal:</span>
+                                <div id="char-vocal-timbre" class="text-slate-200 font-semibold"></div>
+                            </div>
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">Genre Musik Utama:</span>
+                                <div id="char-music-genre" class="text-slate-200 font-semibold"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">Prompt Suno / Udio AI untuk Bikin Musik:</span>
+                            <pre id="char-suno-prompt" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-purple-300 font-mono whitespace-pre-wrap"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: GALERI KARAKTER SAYA (VAULT) -->
+            <div id="char-view-gallery" class="hidden space-y-4">
+                <!-- Gallery Filter & Actions Bar -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <div class="relative flex-1 sm:w-64">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="char-gallery-search" placeholder="Cari nama karakter..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                        </div>
+                        <select id="char-gallery-filter" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
+                            <option value="all">Semua Tipe</option>
+                            <option value="influencer">AI Influencer</option>
+                            <option value="artist">AI Artist / Singer</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-char-gallery-to-gen" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow transition">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Buat Karakter Baru</span>
+                    </button>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div id="char-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Cards will be dynamically injected here -->
                 </div>
             </div>
         </section>
@@ -2507,6 +2906,126 @@
                 <button type="button" id="btn-save-tutorial-editor" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition">
                     Simpan Tutorial
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: DETAIL KARAKTER & PROMPT VAULT     -->
+    <!-- ========================================== -->
+    <div id="modal-char-detail" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div id="modal-char-avatar-wrap" class="w-12 h-12 rounded-xl bg-slate-800 border border-pink-500/40 overflow-hidden flex items-center justify-center text-pink-400 font-bold text-lg flex-shrink-0">
+                        <span id="modal-char-avatar-letter">C</span>
+                        <img id="modal-char-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 id="modal-char-name" class="text-base sm:text-lg font-black text-white">Nama Karakter</h3>
+                            <span id="modal-char-badge" class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30">INFLUENCER</span>
+                        </div>
+                        <p id="modal-char-niche" class="text-xs text-slate-400">Niche / Industri</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-char-modal" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1 text-xs custom-scrollbar">
+                <!-- Action Bar Inside Modal -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" id="btn-modal-char-download" class="px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Download Paket DNA (.txt)</span>
+                    </button>
+                    <label for="char-modal-file-input" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-semibold text-xs flex items-center gap-1.5 border border-slate-700 cursor-pointer transition">
+                        <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>Ganti / Upload Foto Sheet</span>
+                        <input type="file" id="char-modal-file-input" accept="image/*" class="sr-only">
+                    </label>
+                    <button type="button" id="btn-modal-char-delete" class="px-3 py-1.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 font-semibold text-xs flex items-center gap-1.5 border border-rose-500/30 transition ml-auto">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        <span>Hapus</span>
+                    </button>
+                </div>
+
+                <!-- Rendered Image Preview (If available) -->
+                <div id="modal-char-img-preview-wrap" class="hidden rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 p-2 text-center">
+                    <img id="modal-char-img-preview" class="max-h-80 mx-auto rounded-xl object-contain shadow" alt="Character Sheet Render">
+                </div>
+
+                <!-- Prompt 1: Turnaround Character Sheet -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-pink-300 flex items-center gap-1.5">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            Character Turnaround Sheet Prompt (Gemini/Imagen/Flux)
+                        </span>
+                        <button type="button" id="btn-modal-copy-sheet" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-pink-300 text-[11px] font-semibold flex items-center gap-1 transition">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>Salin</span>
+                        </button>
+                    </div>
+                    <pre id="modal-char-sheet-text" class="text-[11px] text-slate-300 font-mono whitespace-pre-wrap max-h-36 overflow-y-auto leading-relaxed select-all bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80"></pre>
+                </div>
+
+                <!-- Prompt 2: Master DNA Identity -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-indigo-300 flex items-center gap-1.5">
+                            <i data-lucide="fingerprint" class="w-3.5 h-3.5"></i>
+                            Master DNA Consistency Prompt
+                        </span>
+                        <button type="button" id="btn-modal-copy-dna" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-semibold flex items-center gap-1 transition">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>Salin</span>
+                        </button>
+                    </div>
+                    <pre id="modal-char-dna-text" class="text-[11px] text-slate-300 font-mono whitespace-pre-wrap max-h-28 overflow-y-auto leading-relaxed select-all bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80"></pre>
+                </div>
+
+                <!-- Prompt 3: Google Flow Veo Video -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-emerald-300 flex items-center gap-1.5">
+                            <i data-lucide="film" class="w-3.5 h-3.5"></i>
+                            Google Flow (Veo AI 10s Motion Video)
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="btn-modal-copy-flow" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 text-[11px] font-semibold flex items-center gap-1 transition">
+                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                <span>Salin</span>
+                            </button>
+                            <button type="button" id="btn-modal-open-flow" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 transition">
+                                <i data-lucide="external-link" class="w-3 h-3"></i>
+                                <span>Buka di Flow</span>
+                            </button>
+                        </div>
+                    </div>
+                    <pre id="modal-char-flow-text" class="text-[11px] text-slate-300 font-mono whitespace-pre-wrap max-h-28 overflow-y-auto leading-relaxed select-all bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80"></pre>
+                </div>
+
+                <!-- Photo Variations -->
+                <div class="space-y-2">
+                    <span class="font-bold text-slate-200 block">4 Variasi Foto Pose Medsos:</span>
+                    <div id="modal-char-variations" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                </div>
+
+                <!-- Social Profile & Bio -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                    <span class="font-bold text-cyan-300 block">Biodata & Instagram Bio:</span>
+                    <div class="text-[11px] text-slate-300 space-y-1">
+                        <div><strong class="text-slate-400">Username:</strong> <span id="modal-char-usernames" class="text-pink-400 font-mono"></span></div>
+                        <div><strong class="text-slate-400">Sapaan:</strong> <span id="modal-char-catchphrase" class="italic"></span></div>
+                        <div><strong class="text-slate-400">Bio:</strong></div>
+                        <div id="modal-char-bio" class="p-2.5 bg-slate-900 rounded-lg text-slate-200 whitespace-pre-wrap font-sans text-xs"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
