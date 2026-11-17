@@ -496,6 +496,7 @@ function populateGoogleFlowStudio(campaign) {
                         <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-extrabold text-xs border border-emerald-500/30">
                             ${isMulti ? `KLIP ${part.part_number} (10s)` : 'PROMPT 10s UTUH'}
                         </span>
+                        ${campaign.enable_doodle ? '<span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-extrabold text-[9px] border border-amber-500/30 flex items-center gap-0.5"><i data-lucide="pencil" class="w-2.5 h-2.5"></i> Doodle</span>' : ''}
                         <span class="text-xs font-bold text-white">${part.part_title || part.title || (isMulti ? `Bagian ${part.part_number}` : 'Video UGC Siap Pakai')}</span>
                     </div>
                     <span class="text-[10px] text-slate-400 font-medium">${part.scenes_included || '6 Tahapan UGC'}</span>
@@ -1575,6 +1576,9 @@ async function handleGenerateUgc() {
     }
 
     try {
+        const includeTextOverlay = document.getElementById('ugc-include-text-overlay')?.checked || false;
+        const enableDoodle = document.getElementById('ugc-enable-doodle')?.checked || false;
+
         const campaign = await generateUgcCampaign({
             productUrl,
             productName,
@@ -1583,7 +1587,8 @@ async function handleGenerateUgc() {
             videoDuration: selectedUgcDuration,
             tone,
             talentPreference,
-            includeTextOverlay: document.getElementById('ugc-include-text-overlay')?.checked || false
+            includeTextOverlay,
+            enableDoodle
         });
 
         currentUgcCampaign = campaign;
@@ -1599,6 +1604,7 @@ async function handleGenerateUgc() {
             duration: selectedUgcDuration || 10,
             tone: tone,
             talentPreference: talentPreference,
+            enableDoodle: enableDoodle,
             previewText: campaign.scenes?.[0]?.voiceover_script || campaign.scenes?.[0]?.visual_description || '',
             inputs: {
                 productUrl,
@@ -1606,7 +1612,8 @@ async function handleGenerateUgc() {
                 productCategory,
                 tone,
                 talentPreference,
-                includeTextOverlay: document.getElementById('ugc-include-text-overlay')?.checked || false,
+                includeTextOverlay,
+                enableDoodle,
                 videoDuration: selectedUgcDuration,
                 sellingPoints
             },
@@ -1614,7 +1621,7 @@ async function handleGenerateUgc() {
         });
         recordGenerationActivity('UGC Affiliate', campaign.product_analysis?.product_name || 'UGC Script', 10);
 
-        showToast('Storyboard UGC Affiliate berhasil dirancang & disimpan ke Riwayat!', 'success');
+        showToast(enableDoodle ? 'Storyboard UGC dengan Animasi Doodle Art berhasil dirancang!' : 'Storyboard UGC Affiliate berhasil dirancang & disimpan ke Riwayat!', 'success');
     } catch (err) {
         showToast(err.message, 'error');
         emptyState?.classList.remove('hidden');
@@ -1652,7 +1659,10 @@ function renderUgcResults(campaign) {
     summaryCard.innerHTML = `
         <div class="flex items-center justify-between font-bold text-brand-300 text-xs pb-1 border-b border-brand-500/20">
             <span class="flex items-center gap-1.5"><i data-lucide="award" class="w-4 h-4 text-amber-400"></i> Hasil Analisis & Formula Konten UGC</span>
-            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase">Durasi ${campaign.duration_seconds || selectedUgcDuration || 10}s • ${campaign.total_narasi_kata || 24} Kata</span>
+            <div class="flex items-center gap-1.5">
+                ${campaign.enable_doodle ? '<span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold uppercase border border-amber-500/30 flex items-center gap-1"><i data-lucide="pencil" class="w-3 h-3"></i> Doodle Art</span>' : ''}
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase">Durasi ${campaign.duration_seconds || selectedUgcDuration || 10}s • ${campaign.total_narasi_kata || 24} Kata</span>
+            </div>
         </div>
         <div class="pt-1.5 text-slate-300 space-y-1 text-[11px]">
             <p><strong class="text-white">Produk/Tempat:</strong> ${analysis.product_name || 'Produk Pilihan'}</p>
@@ -2755,6 +2765,11 @@ function loadProject(item, quiet = false) {
             }
             if (promoInput && item.inputs.sellingPoints) promoInput.value = item.inputs.sellingPoints;
             if (item.inputs.videoDuration) setUgcDuration(item.inputs.videoDuration);
+
+            const doodleCheck = document.getElementById('ugc-enable-doodle');
+            if (doodleCheck) doodleCheck.checked = !!item.inputs?.enableDoodle;
+            const textCheck = document.getElementById('ugc-include-text-overlay');
+            if (textCheck) textCheck.checked = !!item.inputs?.includeTextOverlay;
         }
 
         currentUgcCampaign = item.data;

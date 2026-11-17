@@ -429,12 +429,13 @@ export const scrapeProductFromUrl = fetchPageContent;
 /**
  * Sanitize & translate any rogue English terms to pure natural Bahasa Indonesia
  */
-function sanitizeIndonesianUgc(campaign, targetDuration = 10, includeTextOverlay = false) {
+function sanitizeIndonesianUgc(campaign, targetDuration = 10, includeTextOverlay = false, enableDoodle = false) {
     if (!campaign || !Array.isArray(campaign.scenes)) return campaign;
     const dur = parseInt(targetDuration, 10) || campaign.duration_seconds || 10;
     const partCount = dur <= 10 ? 1 : (dur <= 20 ? 2 : 3);
     campaign.duration_seconds = dur;
     campaign.part_count = partCount;
+    campaign.enable_doodle = !!enableDoodle;
 
     // Enforce Shopee Video Caption (Maks. 150 Karakter)
     if (campaign.captions) {
@@ -548,6 +549,11 @@ function sanitizeIndonesianUgc(campaign, targetDuration = 10, includeTextOverlay
                 }
                 s.caption_overlay = '-';
             }
+
+            // Opsi Doodle Art Animation: pastikan instruksi doodle disematkan
+            if (enableDoodle && !/doodle/i.test(s.google_flow_prompt)) {
+                s.google_flow_prompt += ' Style: Mixed-media with playful 2D hand-drawn doodle animation. Animated white and glowing sketch lines dynamically popping in real-time around the product, cute curving doodle arrows, minimalist line-art iconography and motion sketch lines. Visual iconography storytelling, no typography, no alphabet letters.';
+            }
         }
     });
 
@@ -630,6 +636,9 @@ function sanitizeIndonesianUgc(campaign, targetDuration = 10, includeTextOverlay
                     p.google_flow_prompt += ' Clean footage, tanpa teks di layar, tanpa subtitle, no typography, no watermarks.';
                 }
             }
+            if (enableDoodle && !/doodle/i.test(p.google_flow_prompt)) {
+                p.google_flow_prompt += ' Style: Mixed-media with playful 2D hand-drawn doodle animation. Animated white and bright sketch lines, curving doodle arrows, cute line-art icon doodles popping around the product. Visual iconography storytelling, no typography, no alphabet letters.';
+            }
         });
     }
 
@@ -684,7 +693,7 @@ function parseJsonSafely(rawText) {
  * Instant Fast Synthesizer: Generates ideal UGC campaign directly from existing form inputs
  * Guarantees zero latency and 0% failure even if external AI connection fluctuates
  */
-function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints, videoDuration, tone, talentPreference = 'auto', includeTextOverlay = false }) {
+function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints, videoDuration, tone, talentPreference = 'auto', includeTextOverlay = false, enableDoodle = false }) {
     const dur = parseInt(videoDuration, 10) || 10;
     const pName = productName || 'Produk Rekomendasi Pilihan';
     const sPoints = sellingPoints || 'Kualitas terbaik, nyaman digunakan, dan sangat terjangkau.';
@@ -719,6 +728,9 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
 
     const makeFlowPrompt = (tLabel, visual, camera, vo, sub) => {
         let p = `Video UGC vertikal 9:16 kualitas FHD. Talent: ${tLabel}. Visual adegan: ${visual} Pergerakan kamera: ${camera}. Voiceover bahasa Indonesia: "${vo}".`;
+        if (enableDoodle) {
+            p += ` Style: Mixed-media with playful 2D hand-drawn doodle animation. Animated white and bright sketch lines dynamically popping in real-time around the product, cute curving doodle arrows, minimalist line-art iconography and motion sketch lines. Visual iconography storytelling, no typography, no alphabet letters.`;
+        }
         if (includeTextOverlay && sub) {
             p += ` Teks subtitle di layar: "${sub}".`;
         } else {
@@ -1099,7 +1111,8 @@ function synthesizeUgcFromDetails({ productName, productCategory, sellingPoints,
                 hashtags: ["#tipshemat", "#rekomendasiproduk", "#reviewproduk"],
                 full_text: `Tips cari produk yang awet buat harian tanpa bikin kantong jebol:\n${pName} ini recommended banget karena ${sPoints.slice(0, 100)}.\nLink lengkapnya ada di bawah video ini ya.\n#tipshemat #rekomendasiproduk #reviewproduk`
             }
-        }
+        },
+        enable_doodle: !!enableDoodle
     };
 }
 
@@ -1125,7 +1138,8 @@ export async function generateUgcCampaign({
     voiceGender = 'Cewek Ceria',
     talentPreference = 'auto',
     imageAnalysis = null,
-    includeTextOverlay = false
+    includeTextOverlay = false,
+    enableDoodle = false
 }) {
     // 1. License / Trial Check
     const access = hasToolAccess('ugc');
@@ -1166,6 +1180,18 @@ GAYA VISUAL & MODEL (BEBAS / REKOMENDASI AI):
 `;
     }
 
+    const doodleDirective = enableDoodle ? `
+ATURAN KHUSUS GAYA VISUAL DOODLE ART ANIMATION (OPSI PENGGUNA AKTIF):
+- PENGGUNA MENGAKTIFKAN GAYA VISUAL DOODLE ART ANIMASI!
+- Video WAJIB menggabungkan rekaman subjek/produk dengan animasi gambar tangan doodle 2D bergerak (mixed-media with playful 2D hand-drawn doodle animation).
+- Di setiap "google_flow_prompt", WAJIB menyertakan elemen visual doodle spesifik berikut:
+  "Style: Mixed-media with playful 2D hand-drawn doodle animation. Animated white and bright doodle sketch lines dynamically popping and drawing in real-time around the subject, cute curving doodle arrows pointing to the product, cute minimalist line-art iconography (sparkles, hearts, reaction sketches, and product benefit icons) appearing frame-by-frame with comic-style doodle motion lines. Pure visual iconography storytelling, no typography, no alphabet letters, clean aesthetic."
+- Di "visual_description" pada setiap adegan, sebutkan secara spesifik elemen doodle apa yang muncul (contoh: "Animasi doodle panah melingkar dan efek bintang sketch muncul di sekitar produk", "Coretan doodle ekspresi terkejut dan ikon hati berputar").
+` : `
+ATURAN GAYA VISUAL STANDAR (TANPA DOODLE):
+- Visual adegan dan "google_flow_prompt" menggunakan gaya rekaman sinematik dan realistis standar tanpa efek coretan doodle.
+`;
+
     const textOverlayRule = includeTextOverlay ? `
 ATURAN TEKS/SUBTITLE DI LAYAR VIDEO (OPSI PENGGUNA DIAKTIFKAN):
 - Pengguna memilih menyertakan teks overlay di dalam video.
@@ -1184,6 +1210,7 @@ ATURAN WAJIB PROMPT VIDEO BERSIH TANPA TEKS (DEFAULT: CLEAN FOOTAGE):
 Tugasmu adalah menghasilkan Storyboard UGC ideal (Hook, Problem, Pengenalan, Demonstrasi, Honest Review, CTA), prompt video Google Flow / Veo per klip 10 detik, dan 3 template caption siap pakai untuk TikTok & Shopee Video.
 
 ${talentDirective}
+${doodleDirective}
 ${textOverlayRule}
 
 ATURAN STRUKTUR SCENE (WAJIB TEPAT 6 TAHAPAN INI, BERAPAPUN DURASINYA):
@@ -1355,6 +1382,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
     userPrompt += `- Tipe Voiceover: ${voiceGender}\n`;
     userPrompt += `- Preferensi Model / Talent: ${talentPreference.toUpperCase()} (${talentPreference === 'faceless' ? 'WAJIB FACELESS / TANPA MODEL WAJAH / FOKUS UNBOXING HANDS ONLY' : (talentPreference === 'female' ? 'WAJIB MODEL WANITA' : (talentPreference === 'male' ? 'WAJIB MODEL PRIA' : 'BEBAS REKOMENDASI AI'))})\n`;
     userPrompt += `- Format Teks Video: ${includeTextOverlay ? 'Sertakan teks safe-zone overlay di layar' : 'PROMPT WAJIB BERSIH TANPA TEKS DI LAYAR (Clean Footage)'}\n`;
+    userPrompt += `- Animasi Doodle Art: ${enableDoodle ? 'AKTIF (Sertakan animasi 2D hand-drawn doodle art bergerak di setiap scene)' : 'NONAKTIF (Standar sinematik)'}\n`;
 
     try {
         const rawResponse = await callGemini(userPrompt, systemPrompt, null, null, null, { jsonMode: true, disableThinking: true });
@@ -1362,7 +1390,7 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
         if (!parsed || !Array.isArray(parsed.scenes) || parsed.scenes.length === 0) {
             throw new Error('Format adegan tidak lengkap');
         }
-        const campaign = sanitizeIndonesianUgc(parsed, dur, includeTextOverlay);
+        const campaign = sanitizeIndonesianUgc(parsed, dur, includeTextOverlay, enableDoodle);
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');
         }
@@ -1376,7 +1404,8 @@ Keluarkan respon HANYA dalam format JSON valid (tanpa markdown backtick):
             videoDuration: dur,
             tone,
             talentPreference,
-            includeTextOverlay
+            includeTextOverlay,
+            enableDoodle
         });
         if (access.type === 'trial') {
             incrementTrialUsage('ugc');
