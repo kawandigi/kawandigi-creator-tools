@@ -576,14 +576,55 @@ html:not(.dark) .drawer-menu-item:not(.bg-brand-600):hover {
     background: rgba(224, 231, 255, 0.7) !important;
 }
 
-.mobile-nav-btn.active {
+/* Mobile Bottom Dock Nav Buttons (Active Purple Glow & Inactive States) */
+.mobile-nav-btn.active,
+html:not(.dark) .mobile-nav-btn.active,
+html.dark .mobile-nav-btn.active {
     color: #5551FA !important;
 }
-html.dark .mobile-nav-btn:not(.active) {
-    color: #9CA3AF !important;
+
+.mobile-nav-btn.active *,
+.mobile-nav-btn.active svg,
+.mobile-nav-btn.active span,
+.mobile-nav-btn.active i,
+html:not(.dark) .mobile-nav-btn.active *,
+html:not(.dark) .mobile-nav-btn.active svg,
+html:not(.dark) .mobile-nav-btn.active span,
+html:not(.dark) .mobile-nav-btn.active i,
+html.dark .mobile-nav-btn.active *,
+html.dark .mobile-nav-btn.active svg,
+html.dark .mobile-nav-btn.active span,
+html.dark .mobile-nav-btn.active i {
+    color: #5551FA !important;
+    stroke: #5551FA !important;
+    font-weight: 800 !important;
 }
-html:not(.dark) .mobile-nav-btn:not(.active) {
-    color: #4B5563 !important;
+
+/* Glowing purple aura when active (Menyala Ungu) */
+.mobile-nav-btn.active svg,
+html:not(.dark) .mobile-nav-btn.active svg,
+html.dark .mobile-nav-btn.active svg {
+    filter: drop-shadow(0 2px 8px rgba(85, 81, 250, 0.55)) !important;
+    transform: scale(1.08);
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+html.dark .mobile-nav-btn:not(.active),
+html.dark .mobile-nav-btn:not(.active) *,
+html.dark .mobile-nav-btn:not(.active) svg,
+html.dark .mobile-nav-btn:not(.active) span {
+    color: #9CA3AF !important;
+    stroke: #9CA3AF !important;
+    filter: none !important;
+}
+
+html:not(.dark) .mobile-nav-btn:not(.active),
+html:not(.dark) .mobile-nav-btn:not(.active) *,
+html:not(.dark) .mobile-nav-btn:not(.active) svg,
+html:not(.dark) .mobile-nav-btn:not(.active) span {
+    color: #64748B !important;
+    stroke: #64748B !important;
+    filter: none !important;
 }
 
 /* Bottom FAB Button */

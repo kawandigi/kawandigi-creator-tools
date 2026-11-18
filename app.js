@@ -288,7 +288,8 @@ function switchTab(tabId) {
             sections[id].classList.remove('hidden');
             desktopTabs[id]?.classList.add('active');
             mobileTabs[id]?.classList.add('active');
-            mobileTabs[id]?.classList.replace('text-slate-400', 'text-brand-400');
+            mobileTabs[id]?.classList.remove('text-slate-400');
+            mobileTabs[id]?.classList.add('text-brand-400');
 
             if (sidebarTabs[id]) {
                 sidebarTabs[id].classList.add('bg-brand-600', 'text-white', 'font-bold', 'shadow-md', 'shadow-brand-500/25');
@@ -298,7 +299,8 @@ function switchTab(tabId) {
             sections[id].classList.add('hidden');
             desktopTabs[id]?.classList.remove('active');
             mobileTabs[id]?.classList.remove('active');
-            mobileTabs[id]?.classList.replace('text-brand-400', 'text-slate-400');
+            mobileTabs[id]?.classList.remove('text-brand-400');
+            mobileTabs[id]?.classList.add('text-slate-400');
 
             if (sidebarTabs[id]) {
                 sidebarTabs[id].classList.remove('bg-brand-600', 'text-white', 'font-bold', 'shadow-md', 'shadow-brand-500/25');
