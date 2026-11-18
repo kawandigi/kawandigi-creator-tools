@@ -178,6 +178,11 @@ ATURAN STRATEGIS PENEMPATAN PRODUK:
   * Sudut kamera (close up shot / over the shoulder)
   * Ekspresi aktor saat berinteraksi dengan produk
 
+ATURAN KONSISTENSI VISUAL KARAKTER (CHARACTER LOCK WAJIB):
+- Karakter HARUS memiliki identitas visual yang seragam: nama, usia, warna kulit, gaya rambut, dan setelan pakaian spesifik (signature wardrobe).
+- Di SETIAP prompt Google Flow (Klip 1, Klip 2, Klip 3, dst), deskripsi visual karakter dan pakaian ini WAJIB diulang sama persis kata demi kata di awal kalimat (Contoh: "Same consistent character: Maya, 22-year-old Indonesian woman with warm golden-tan skin, shoulder-length wavy dark hair with curtain bangs, wearing an oversized beige knit cardigan and white top...").
+- Pakaian dan gaya rambut yang identik adalah kunci 90% konsistensi visual di Google Flow / Veo AI.
+
 ATURAN SCENE BREAKDOWN:
 - Terdiri dari tepat ${sceneCount} adegan (@ 10 detik per adegan).
 - Setiap adegan memiliki: Waktu (00:00 - 00:10), Deskripsi Visual & Aksi Aktor, Naskah Dialog Alami (${toneText}), Efek Suara (SFX), dan Prompt Google Flow (Veo AI).
@@ -350,6 +355,8 @@ function synthesizeDramaSketchFallback({
     const placementName = PLACEMENT_TYPES[placementType]?.name || 'The Hero Problem Solver';
 
     const doodlePromptNote = includeDoodle ? ', dilengkapi doodle animasi lucu berkedip di atas produk' : '';
+    const charADna = "Consistent character: Maya, a 22-year-old Indonesian woman with warm glowing tan skin, shoulder-length wavy dark hair with bangs, wearing an oversized beige knit cardigan and white top";
+    const charBDna = "Consistent character: Salsa, a 23-year-old Indonesian woman with porcelain skin, sleek straight black hair, wearing an emerald green blazer and denim jeans";
 
     const result = {
         sketch_info: {
@@ -368,36 +375,36 @@ function synthesizeDramaSketchFallback({
             actor_reaction: 'Ekspresi mata melebar kagum, mengangguk puas, lalu tersenyum percaya diri ke kamera.'
         },
         characters: [
-            { name: 'Karakter A', role: 'Tokoh yang mengalami masalah', wardrobe: 'Pakaian kasual santai sehari-hari' },
-            { name: 'Karakter B', role: 'Tokoh penyelamat yang solutif', wardrobe: 'Pakaian rapi modis dan trendy' }
+            { name: 'Maya', role: 'Tokoh yang mengalami masalah', wardrobe: 'Cardigan rajut krem oversized & kaos putih' },
+            { name: 'Salsa', role: 'Tokoh penyelamat yang solutif', wardrobe: 'Blazer hijau emerald modern & celana denim' }
         ],
         scenes: is30s ? [
             {
                 scene_number: 1,
                 timestamp: '00:00 - 00:10',
                 scene_title: 'Hook Masalah: Kepanikan Memuncak',
-                visual_action: 'Karakter A mondar-mandir panik di depan cermin, memegang kepala frustrasi sambil memeriksa jam tangan. Kamera handheld dinamis.',
-                dialogue: 'A: "Gawat banget, 10 menit lagi gue harus ketemu klien tapi kondisinya kacau begini! Bisa batal semua rencana!"',
+                visual_action: 'Maya mondar-mandir panik di depan cermin, memegang kepala frustrasi sambil memeriksa jam tangan. Kamera handheld dinamis.',
+                dialogue: 'Maya: "Gawat banget, 10 menit lagi gue harus ketemu klien tapi kondisinya kacau begini! Bisa batal semua rencana!"',
                 audio_sfx: 'Sound effect detak jam cepat + BGM komedi panik',
-                google_flow_prompt: `Video vertikal 9:16 sinematik fotorealistis. Karakter A tampak panik mondar-mandir di ruangan modern estetik, melihat jam tangan dengan ekspresi cemas alami, pencahayaan hangat, kualitas FHD${doodlePromptNote}.`
+                google_flow_prompt: `Vertical 9:16 cinematic video. ${charADna}. She is pacing back and forth in an aesthetic modern living room, looking at her watch with genuine comical panicked expression, natural daylight, photorealistic 8k${doodlePromptNote}.`
             },
             {
                 scene_number: 2,
                 timestamp: '00:10 - 00:20',
                 scene_title: 'Product Entrance: Penyelamat Tiba',
-                visual_action: `Karakter B masuk membawa ${prod}. Kamera melakukan zoom halus fokus ke produk yang disodorkan. Karakter A berhenti panik dan tertegun.`,
-                dialogue: `B: "Santai dong, gak usah drama! Nih pake ${prod}, cukup 10 detik langsung beres semuanya."\nA: "Hah?! Beneran secepet itu?"`,
+                visual_action: `Salsa masuk membawa ${prod}. Kamera melakukan zoom halus fokus ke produk yang disodorkan. Maya berhenti panik dan tertegun.`,
+                dialogue: `Salsa: "Santai dong, gak usah drama! Nih pake ${prod}, cukup 10 detik langsung beres semuanya."\nMaya: "Hah?! Beneran secepet itu?"`,
                 audio_sfx: 'Sound effect swoosh + kilau ting! saat produk masuk',
-                google_flow_prompt: `Video vertikal 9:16 sinematik fotorealistis. Karakter B tersenyum percaya diri sambil menyodorkan kemasan ${prod} ke arah kamera dengan elegan, pencahayaan studio cerah, fokus tajam ke produk${doodlePromptNote}.`
+                google_flow_prompt: `Vertical 9:16 cinematic video. ${charBDna} enters holding a bottle of ${prod} with label clearly facing camera, offering it confidently to ${charADna}, soft studio lighting, sharp focus on product, 8k${doodlePromptNote}.`
             },
             {
                 scene_number: 3,
                 timestamp: '00:20 - 00:30',
                 scene_title: 'Hasil Menakjubkan & Plot Punchline',
-                visual_action: `Karakter A tersenyum puas setelah merasakan manfaat ${prod}. Karakter B berusaha mengambil kembali produknya tapi ditahan oleh Karakter A.`,
-                dialogue: `A: "Wah gila, kok bisa sebagus ini?! Fix ini jadi punya gue ya!"\nB: "Ehh enak aja, beli sendiri di keranjang kuning sana!"`,
+                visual_action: `Maya tersenyum puas setelah merasakan manfaat ${prod}. Salsa berusaha mengambil kembali produknya tapi ditahan oleh Maya.`,
+                dialogue: `Maya: "Wah gila, kok bisa sebagus ini?! Fix ini jadi punya gue ya!"\nSalsa: "Ehh enak aja, beli sendiri di keranjang kuning sana!"`,
                 audio_sfx: 'Sound effect tawa ringan sitkom + musik penutup ceria',
-                google_flow_prompt: `Video vertikal 9:16 sinematik fotorealistis. Kedua karakter tertawa ceria sambil berinteraksi akrab di ruangan cerah, ekspresi wajah sangat bahagia dan puas, video jernih FHD${doodlePromptNote}.`
+                google_flow_prompt: `Vertical 9:16 cinematic video. Both ${charADna} and ${charBDna} laughing together in a modern bright room, Maya smiling radiantly while holding ${prod}, warm cinematic lighting, photorealistic 8k${doodlePromptNote}.`
             }
         ] : [
             {
