@@ -353,8 +353,7 @@ html:not(.dark) .text-white:not(.home-hero-card *):not(.btn-primary *):not(butto
 }
 
 /* Logo "kawan" in header */
-html:not(.dark) .logo-kawan,
-html:not(.dark) .kd-title-white {
+html:not(.dark) .logo-kawan {
     color: #1E1B4B !important;
 }
 
@@ -776,20 +775,28 @@ html:not(.dark) .kd-toast-info {
     letter-spacing: -0.5px;
 }
 
+#pwa-splash .kd-title-white,
+.kd-splash-overlay .kd-title-white,
 .kd-title-white {
-    color: #F3F4F6;
+    color: #FFFFFF !important;
 }
 
+#pwa-splash .kd-title-brand,
+.kd-splash-overlay .kd-title-brand,
 .kd-title-brand {
-    color: #5551FA;
+    color: #7E75FB !important;
+    text-shadow: 0 0 16px rgba(126, 117, 251, 0.45);
 }
 
+#pwa-splash .kd-splash-tag,
+.kd-splash-overlay .kd-splash-tag,
 .kd-splash-tag {
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 2px;
-    color: #9CA3AF;
-    margin-top: 5px;
+    letter-spacing: 2.5px;
+    color: #CBD5E1 !important;
+    margin-top: 6px;
+    opacity: 0.9;
 }
 
 .kd-splash-loader {
