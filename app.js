@@ -1903,6 +1903,22 @@ function initDramaCreator() {
         if (previewImg) previewImg.src = '';
     });
 
+    // Modal Drama Flow Guide (Panduan Tag Karakter & Produk)
+    const modalGuide = document.getElementById('modal-drama-flow-guide');
+    const btnOpenGuide = document.getElementById('btn-open-drama-flow-guide');
+    const btnCloseGuide = document.getElementById('btn-close-drama-flow-guide');
+    const btnDoneGuide = document.getElementById('btn-done-drama-flow-guide');
+
+    btnOpenGuide?.addEventListener('click', () => {
+        modalGuide?.classList.remove('hidden');
+        if (window.lucide) window.lucide.createIcons();
+    });
+    btnCloseGuide?.addEventListener('click', () => modalGuide?.classList.add('hidden'));
+    btnDoneGuide?.addEventListener('click', () => modalGuide?.classList.add('hidden'));
+    modalGuide?.addEventListener('click', (e) => {
+        if (e.target === modalGuide) modalGuide.classList.add('hidden');
+    });
+
     // 2. Analisa Produk & Rekomendasikan Konsep Sketsa
     const btnAnalyze = document.getElementById('btn-drama-analyze');
     btnAnalyze?.addEventListener('click', async () => {

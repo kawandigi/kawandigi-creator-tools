@@ -1259,9 +1259,15 @@
             <!-- Hero Banner -->
             <div id="drama-hero-banner" class="hidden md:block bg-gradient-to-r from-brand-900/40 via-purple-900/30 to-slate-900 border border-brand-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden transition-all duration-300">
                 <div class="max-w-3xl">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 text-[10px] sm:text-xs font-bold mb-2 border border-brand-500/30">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
-                        Micro-Drama & Sketsa Penempatan Produk (Product Placement)
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 text-[10px] sm:text-xs font-bold border border-brand-500/30">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                            Micro-Drama & Sketsa Penempatan Produk (Product Placement)
+                        </div>
+                        <button type="button" id="btn-open-drama-flow-guide" class="text-xs px-3 py-1 rounded-xl bg-brand-500/15 hover:bg-brand-500/25 text-brand-600 dark:text-brand-300 border border-brand-500/40 font-bold flex items-center gap-1.5 transition shadow-sm">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-brand-500"></i>
+                            <span>📖 Panduan Tag Karakter & Produk di Flow</span>
+                        </button>
                     </div>
                     <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
                         AI Sketsa Drama & Product Placement Studio
@@ -3529,5 +3535,99 @@
             });
         }
     </script>
+
+    <!-- MODAL: PANDUAN TAG CHARACTER SHEET & PRODUK DI GOOGLE FLOW -->
+    <div id="modal-drama-flow-guide" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 hidden">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30">
+                        <i data-lucide="clapperboard" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white">Panduan Tag Karakter & Produk di Google Flow</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Cara mengunci wajah karakter dan kemasan produk agar 100% konsisten antar klip</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-drama-flow-guide" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed">
+                
+                <!-- LANGKAH 1 -->
+                <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 font-bold flex items-center justify-center text-xs border border-brand-500/30">1</span>
+                        <h4 class="font-bold text-white text-xs sm:text-sm">Siapkan Gambar Acuan (Crop Character Sheet)</h4>
+                    </div>
+                    <p class="text-slate-400 text-[11px]">
+                        <strong>PENTING:</strong> Jangan masukkan 1 lembar <em>Character Sheet</em> utuh (berisi 4 pose) sekaligus ke Google Flow! AI akan bingung memilih pose mana yang digerakkan.
+                    </p>
+                    <div class="p-2.5 rounded-lg bg-slate-900 border border-brand-500/20 text-[11px] text-slate-300 space-y-1">
+                        <p class="font-semibold text-emerald-400">✓ Yang Harus Dilakukan:</p>
+                        <p>Crop atau potong <strong>1 pose tampak depan (Front View / Headshot)</strong> dari Character Sheet Anda. Gunakan gambar beresolusi tinggi dengan pencahayaan jelas.</p>
+                    </div>
+                </div>
+
+                <!-- LANGKAH 2 -->
+                <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 font-bold flex items-center justify-center text-xs border border-brand-500/30">2</span>
+                        <h4 class="font-bold text-white text-xs sm:text-sm">Gunakan Mode "Start Image / Reference Frame" di Google Flow</h4>
+                    </div>
+                    <p class="text-slate-400 text-[11px]">
+                        Buka Google Flow (AI Test Kitchen / Veo). Klik ikon <strong>+ Add Image / Start Image</strong>, lalu unggah foto pose karakter Anda dari Langkah 1. Video yang digenerate akan mengunci wajah, mata, dan pakaian dari gambar tersebut.
+                    </p>
+                </div>
+
+                <!-- LANGKAH 3 -->
+                <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 font-bold flex items-center justify-center text-xs border border-brand-500/30">3</span>
+                        <h4 class="font-bold text-white text-xs sm:text-sm">Formula Tagging Prompt di Google Flow</h4>
+                    </div>
+                    <p class="text-slate-400 text-[11px]">
+                        Gunakan susunan tag baku ini saat menuliskan deskripsi aksi di kotak teks Google Flow:
+                    </p>
+                    <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-brand-300">
+                        [Anchor Karakter & Pakaian Persis] + [Aksi Memegang Produk] + [Lensa Kamera & Cahaya]
+                    </div>
+                    <p class="text-slate-400 text-[11px]">
+                        <strong>Contoh Prompt Klip 2 (Product Entrance):</strong>
+                    </p>
+                    <div class="p-2.5 rounded-lg bg-slate-900 border border-emerald-500/30 font-mono text-[10px] text-slate-300 leading-relaxed select-all">
+                        "Vertical 9:16 cinematic video. Consistent character: Maya, 22-year-old Indonesian woman wearing beige knit cardigan. She is holding [Brightening Glow Serum bottle] at chest level with label clearly facing camera, offering it confidently, 85mm portrait focus, shallow depth of field, 8k."
+                    </div>
+                </div>
+
+                <!-- LANGKAH 4: RAHASIA KONSISTENSI ANTAR KLIP -->
+                <div class="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/30 to-slate-950 border border-emerald-500/30 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">4</span>
+                        <h4 class="font-bold text-emerald-400 text-xs sm:text-sm">Trik Sutradara untuk Klip 1, 2, dan 3</h4>
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 text-[11px] text-slate-300">
+                        <li><strong>Klip 1 (0-10s)</strong>: Mulai dengan <em>Medium Shot</em> wajah karakter saat mengalami masalah.</li>
+                        <li><strong>Klip 2 (10-20s)</strong>: Kamera <em>Close-Up</em> fokus ke botol produk dan tangan memegang kemasan (*over-the-shoulder*). Penonton fokus ke produk, sehingga sedikit variasi mikro wajah tidak akan disadari.</li>
+                        <li><strong>Klip 3 (20-30s)</strong>: <em>Reaction shot</em> kembali tersenyum puas dengan pakaian (*wardrobe*) yang persis sama.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-3 sm:p-4 border-t border-slate-800 flex items-center justify-between bg-slate-950/70">
+                <span class="text-[11px] text-slate-500">KawanDigi Creator Tools • Best Practice Guide</span>
+                <button type="button" id="btn-done-drama-flow-guide" class="px-4 py-2 rounded-xl bg-[#5551FA] hover:bg-[#6366F1] text-white font-bold text-xs transition shadow-md shadow-[#5551FA]/30">
+                    Saya Mengerti ✓
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
