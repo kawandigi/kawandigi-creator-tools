@@ -2121,6 +2121,7 @@ async function handleGenerateDramaSketch() {
         });
 
         currentDramaSketch = sketch;
+        populateGoogleFlowStudio(sketch);
         renderDramaResults(sketch);
         actionsHeader?.classList.remove('hidden');
 
@@ -2187,6 +2188,87 @@ function renderDramaResults(sketch) {
             </div>
             <p class="text-xs text-slate-600 dark:text-slate-300 pt-1 leading-relaxed"><strong class="text-slate-900 dark:text-white">Logline:</strong> "${info.logline || '-'}"</p>
         `;
+    }
+
+    // 1.5. Workflow Render Google Flow: Klip Terpisah @ 10 Detik
+    const flowStepperBox = document.getElementById('drama-flow-stepper-box');
+    const scenes = sketch.scenes || [];
+    if (flowStepperBox && scenes.length > 0) {
+        flowStepperBox.innerHTML = `
+            <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-emerald-950/40 border border-emerald-500/40 rounded-xl p-4 text-xs space-y-3 shadow-md">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-emerald-500/20 gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="scissors" class="w-4 h-4"></i>
+                        </span>
+                        <div>
+                            <h5 class="text-xs font-bold text-emerald-400 dark:text-emerald-300">Alur Render Google Flow: ${scenes.length} Klip Terpisah (@ 10 Detik)</h5>
+                            <p class="text-[10px] text-slate-400">Google Flow (Veo AI) membatasi maksimal 10 detik per generate. Salin prompt per klip secara berurutan:</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-open-flow-drawer px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition flex-shrink-0">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        <span>Buka Studio Flow</span>
+                    </button>
+                </div>
+
+                <!-- Grid Klip 10 Detik Berurutan -->
+                <div class="grid grid-cols-1 sm:grid-cols-${Math.min(scenes.length, 3)} gap-2.5">
+                    ${scenes.map((s, idx) => `
+                        <div class="drama-clip-card p-3 rounded-xl bg-slate-950 border border-emerald-500/30 flex flex-col justify-between space-y-2.5 transition hover:border-emerald-500/60" id="drama-clip-card-${idx}">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px] border border-emerald-500/30">
+                                        KLIP ${idx + 1} (10s)
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-mono">${s.timestamp || ''}</span>
+                                </div>
+                                <h6 class="text-xs font-bold text-white leading-snug line-clamp-1">${s.scene_title || `Adegan ${idx + 1}`}</h6>
+                                <p class="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-relaxed">${s.visual_action || ''}</p>
+                            </div>
+                            <button type="button" data-clip-idx="${idx}" class="btn-copy-clip-step w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] rounded-lg flex items-center justify-center gap-1.5 transition shadow">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span class="btn-clip-text">Salin Prompt Klip ${idx + 1}</span>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="text-[11px] text-slate-300 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 flex items-start gap-2">
+                    <span class="text-emerald-400 font-bold flex-shrink-0">💡 Tips Satukan Video:</span>
+                    <span class="leading-relaxed">Generate Klip 1 di Google Flow lalu download. Ulangi untuk Klip 2 dan Klip 3. Setelah selesai, satukan ketiga file video secara berurutan di <strong>CapCut / VN Editor / TikTok</strong> dan tambahkan musik background.</span>
+                </div>
+            </div>
+        `;
+
+        // Wire copy buttons per clip
+        flowStepperBox.querySelectorAll('.btn-copy-clip-step').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.clipIdx, 10);
+                const prompt = scenes[idx]?.google_flow_prompt;
+                if (!prompt) return;
+
+                copyToClipboard(prompt, `Prompt Klip ${idx + 1} (10 detik) disalin! Siap ditempel di Google Flow.`);
+
+                // Visual active state on card and button
+                btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i><span>Tersalin ✓</span>`;
+                btn.classList.add('bg-emerald-500');
+                
+                const card = document.getElementById(`drama-clip-card-${idx}`);
+                if (card) {
+                    card.classList.add('ring-2', 'ring-emerald-400');
+                }
+
+                if (window.lucide) window.lucide.createIcons();
+            });
+        });
+
+        // Wire Open Studio Flow button
+        flowStepperBox.querySelector('.btn-open-flow-drawer')?.addEventListener('click', () => {
+            populateGoogleFlowStudio(sketch);
+            switchTab('flow');
+            showToast('Studio Google Flow dibuka dengan seluruh klip naskah sketsa!', 'info');
+        });
     }
 
     // 2. Product Placement Cue Box

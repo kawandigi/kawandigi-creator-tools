@@ -242,6 +242,14 @@ Kembalikan HANYA format JSON valid berikut (tanpa markdown backtick):
             incrementTrialUsage('drama');
         }
 
+        parsed.parts = (parsed.scenes || []).map((s, idx) => ({
+            part_number: s.scene_number || (idx + 1),
+            title: `Klip ${idx + 1} (${s.timestamp || `${idx * 10}-${(idx + 1) * 10}s`}): ${s.scene_title || 'Adegan'}`,
+            part_title: s.scene_title || `Klip ${idx + 1} (${s.timestamp})`,
+            scenes_included: s.timestamp || `00:${idx * 10} - 00:${(idx + 1) * 10}`,
+            google_flow_prompt: s.google_flow_prompt
+        }));
+
         return parsed;
     } catch (err) {
         console.warn('[DramaSketch] AI generate call fallback activated:', err.message);
@@ -343,7 +351,7 @@ function synthesizeDramaSketchFallback({
 
     const doodlePromptNote = includeDoodle ? ', dilengkapi doodle animasi lucu berkedip di atas produk' : '';
 
-    return {
+    const result = {
         sketch_info: {
             title: sketchTitle || `Sketsa: Rahasia Sukses Instan dengan ${prod}`,
             logline: sketchPremise || `Ketika kepanikan memuncak, ${prod} hadir sebagai penyelamat tak terduga yang bikin suasana jadi penuh tawa.`,
@@ -449,6 +457,16 @@ function synthesizeDramaSketchFallback({
         ],
         call_to_action: `Jangan sampai kehabisan promonya ya! Klik keranjang kuning di kiri bawah sekarang juga sebelum harga normal! ✨`
     };
+
+    result.parts = (result.scenes || []).map((s, idx) => ({
+        part_number: s.scene_number || (idx + 1),
+        title: `Klip ${idx + 1} (${s.timestamp}): ${s.scene_title}`,
+        part_title: s.scene_title || `Klip ${idx + 1} (${s.timestamp})`,
+        scenes_included: s.timestamp,
+        google_flow_prompt: s.google_flow_prompt
+    }));
+
+    return result;
 }
 
 /**
