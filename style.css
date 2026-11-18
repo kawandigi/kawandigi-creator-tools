@@ -1,6 +1,6 @@
 /* ========================================================================= */
-/* KAWANDIGI CREATOR TOOLS - GLASSMORPHISM UI / UX SYSTEM                    */
-/* Style: Frosted Glassmorphism dengan Palet Warna Resmi Identitas Logo KD   */
+/* KAWANDIGI CREATOR TOOLS - OPTIMIZED GLASSMORPHISM UI/UX SYSTEM           */
+/* High-Performance 60/120fps Fluidity | Strict Official Brand Palette      */
 /*                                                                           */
 /* TEMA TERANG (LIGHT MODE):                                                 */
 /* - Warna Utama: Biru-Ungu Khas (#5551FA), Biru-Ungu Gelap (#3B38D4)       */
@@ -41,50 +41,68 @@ html.dark {
     --brand-border: #2D2A70;
 }
 
+/* Base Body Setup */
 body {
     font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 /* ========================================================================= */
-/* GLASSMORPHISM CANVAS BACKGROUND WITH AMBIENT GLOW                         */
+/* 1. HIGH-PERFORMANCE AMBIENT BACKGROUND (ZERO SCROLL REPAINTS)             */
+/* Isolating gradient to fixed hardware-accelerated layer for 60/120fps      */
 /* ========================================================================= */
 
-/* Dark Mode Canvas */
-html.dark body {
-    background-color: #0F0F23 !important;
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -9999;
+    pointer-events: none;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Dark Mode Ambient Mesh */
+html.dark body::before {
+    background-color: #0F0F23;
     background-image: 
         radial-gradient(ellipse 70% 50% at 15% -10%, rgba(85, 81, 250, 0.22), transparent 70%),
         radial-gradient(ellipse 65% 45% at 85% 15%, rgba(119, 116, 255, 0.16), transparent 70%),
-        radial-gradient(circle 600px at 50% 85%, rgba(45, 42, 112, 0.28), transparent 75%) !important;
-    background-attachment: fixed !important;
-    background-repeat: no-repeat !important;
-    color: #F3F4F6 !important;
+        radial-gradient(circle 600px at 50% 85%, rgba(45, 42, 112, 0.28), transparent 75%);
 }
 
-/* Light Mode Canvas */
-html:not(.dark) body {
-    background-color: #FFFFFF !important;
+/* Light Mode Ambient Mesh */
+html:not(.dark) body::before {
+    background-color: #FFFFFF;
     background-image: 
         radial-gradient(ellipse 70% 50% at 15% -10%, rgba(224, 231, 255, 0.8), transparent 70%),
         radial-gradient(ellipse 65% 45% at 85% 15%, rgba(99, 102, 241, 0.1), transparent 70%),
-        radial-gradient(circle 600px at 50% 85%, rgba(245, 247, 255, 0.95), transparent 80%) !important;
-    background-attachment: fixed !important;
-    background-repeat: no-repeat !important;
+        radial-gradient(circle 600px at 50% 85%, rgba(245, 247, 255, 0.95), transparent 80%);
+}
+
+html.dark body {
+    background-color: transparent !important;
+    color: #F3F4F6 !important;
+}
+
+html:not(.dark) body {
+    background-color: transparent !important;
     color: #1E1B4B !important;
 }
 
 /* ========================================================================= */
-/* SCROLLBAR STYLING                                                         */
+/* 2. SCROLLBARS                                                             */
 /* ========================================================================= */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
-
-/* Dark Mode Scrollbars */
 html.dark ::-webkit-scrollbar-track {
     background: rgba(15, 15, 35, 0.5);
 }
@@ -96,8 +114,6 @@ html.dark ::-webkit-scrollbar-thumb {
 html.dark ::-webkit-scrollbar-thumb:hover {
     background: #6366F1;
 }
-
-/* Light Mode Scrollbars */
 html:not(.dark) ::-webkit-scrollbar-track {
     background: rgba(245, 247, 255, 0.5);
 }
@@ -110,131 +126,80 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
 }
 
 /* ========================================================================= */
-/* FROSTED GLASS HEADER, DRAWERS & NAVIGATION BAR                           */
+/* 3. FLOATING FIXED BARS (SELECTIVE BLUR FOR TRUE GLASSMORPHISM)            */
 /* ========================================================================= */
 
-/* Dark Mode Header */
+/* Header */
 html.dark header {
-    background: rgba(27, 27, 58, 0.72) !important;
-    border-bottom: 1px solid rgba(119, 116, 255, 0.18) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    box-shadow: 0 8px 32px 0 rgba(15, 15, 35, 0.45) !important;
+    background: rgba(27, 27, 58, 0.82) !important;
+    border-bottom: 1px solid rgba(119, 116, 255, 0.2) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 20px 0 rgba(15, 15, 35, 0.4) !important;
 }
 
-/* Light Mode Header */
 html:not(.dark) header {
-    background: rgba(255, 255, 255, 0.82) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
     border-bottom: 1px solid rgba(224, 231, 255, 0.9) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    box-shadow: 0 4px 24px 0 rgba(85, 81, 250, 0.06) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 20px 0 rgba(85, 81, 250, 0.05) !important;
 }
 
-/* Dark Mode Sidebars & History Drawers */
+/* Floating Bottom Dock */
+.bottom-dock {
+    height: 64px;
+}
+
+html.dark .bottom-dock {
+    background: rgba(27, 27, 58, 0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(119, 116, 255, 0.22) !important;
+    box-shadow: 0 -8px 28px 0 rgba(15, 15, 35, 0.55) !important;
+}
+
+html:not(.dark) .bottom-dock {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(224, 231, 255, 0.92) !important;
+    box-shadow: 0 -4px 24px 0 rgba(85, 81, 250, 0.08) !important;
+}
+
+/* Sidebar Drawers */
 html.dark #sidebar-drawer,
 html.dark #drawer-history-panel {
-    background: rgba(27, 27, 58, 0.85) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    background: rgba(27, 27, 58, 0.92) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
     border-color: rgba(119, 116, 255, 0.2) !important;
     box-shadow: 0 20px 50px rgba(15, 15, 35, 0.7) !important;
 }
 
-html.dark #sidebar-drawer .border-b,
-html.dark #sidebar-drawer .border-t {
-    border-color: rgba(45, 42, 112, 0.7) !important;
-}
-
-/* Light Mode Sidebars & History Drawers */
 html:not(.dark) #sidebar-drawer,
 html:not(.dark) #drawer-history-panel {
-    background: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border-color: rgba(224, 231, 255, 0.9) !important;
-    box-shadow: 0 20px 50px rgba(30, 27, 75, 0.08) !important;
-}
-
-html:not(.dark) #sidebar-drawer .border-b,
-html:not(.dark) #sidebar-drawer .border-t {
-    border-color: rgba(224, 231, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-color: rgba(224, 231, 255, 0.95) !important;
+    box-shadow: 0 20px 50px rgba(30, 27, 75, 0.1) !important;
 }
 
 /* Drawer Backdrops */
 #drawer-backdrop,
-#drawer-history-backdrop,
-html:not(.dark) #drawer-backdrop,
-html:not(.dark) #drawer-history-backdrop {
+#drawer-history-backdrop {
     background-color: rgba(15, 15, 35, 0.65) !important;
-    backdrop-filter: blur(14px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
-    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }
 
 /* ========================================================================= */
-/* NAVIGATION TABS, PILLS & ACTIVE CONTROLS                                  */
-/* ========================================================================= */
-.nav-tab.active,
-.drawer-menu-item.bg-brand-600 {
-    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
-    color: #FFFFFF !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-    box-shadow: 0 6px 18px 0 rgba(85, 81, 250, 0.42), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25) !important;
-    backdrop-filter: blur(10px) !important;
-}
-
-.nav-tab.active *,
-.drawer-menu-item.bg-brand-600 * {
-    color: #FFFFFF !important;
-    stroke: #FFFFFF !important;
-}
-
-/* Dark Mode Inactive Tabs */
-html.dark .nav-tab:not(.active),
-html.dark .drawer-menu-item:not(.bg-brand-600) {
-    color: #9CA3AF !important;
-}
-html.dark .nav-tab:not(.active):hover,
-html.dark .drawer-menu-item:not(.bg-brand-600):hover {
-    color: #F3F4F6 !important;
-    background: rgba(45, 42, 112, 0.5) !important;
-    border: 1px solid rgba(119, 116, 255, 0.15) !important;
-    backdrop-filter: blur(8px) !important;
-}
-
-/* Light Mode Inactive Tabs */
-html:not(.dark) .nav-tab:not(.active),
-html:not(.dark) .drawer-menu-item:not(.bg-brand-600) {
-    color: #4B5563 !important;
-}
-html:not(.dark) .nav-tab:not(.active):hover,
-html:not(.dark) .drawer-menu-item:not(.bg-brand-600):hover {
-    color: #1E1B4B !important;
-    background: rgba(224, 231, 255, 0.7) !important;
-    border: 1px solid rgba(99, 102, 241, 0.15) !important;
-    backdrop-filter: blur(8px) !important;
-}
-
-/* Mobile Nav Dock Active / Inactive */
-.mobile-nav-btn.active {
-    color: #5551FA !important;
-}
-html.dark .mobile-nav-btn:not(.active) {
-    color: #9CA3AF !important;
-}
-html:not(.dark) .mobile-nav-btn:not(.active) {
-    color: #4B5563 !important;
-}
-
-/* ========================================================================= */
-/* GLASSMORPHISM CARDS, PANELS & CONTAINERS                                 */
+/* 4. HIGH-PERFORMANCE CARDS & CONTAINERS (ZERO LIVE BLUR LAG)               */
+/* Solid translucent surfaces with specular highlights & diffuse shadows    */
 /* ========================================================================= */
 
-/* Dark Mode Elevated Glass Cards */
+/* Dark Mode Cards */
 html.dark .bg-slate-900,
 html.dark .bg-slate-900\/80,
 html.dark .bg-slate-900\/90,
@@ -243,15 +208,13 @@ html.dark .home-stat-card,
 html.dark .history-item-card,
 html.dark .glass-card,
 html.dark .glass-panel {
-    background: rgba(27, 27, 58, 0.65) !important;
-    backdrop-filter: blur(20px) saturate(170%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
-    border: 1px solid rgba(119, 116, 255, 0.18) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 0 12px 36px -4px rgba(15, 15, 35, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.08) !important;
+    background: rgba(27, 27, 58, 0.78) !important;
+    border: 1px solid rgba(119, 116, 255, 0.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 6px 24px -2px rgba(15, 15, 35, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Light Mode Elevated Glass Cards */
+/* Light Mode Cards */
 html:not(.dark) .bg-slate-900,
 html:not(.dark) .bg-slate-900\/80,
 html:not(.dark) .bg-slate-900\/90,
@@ -260,350 +223,105 @@ html:not(.dark) .home-stat-card,
 html:not(.dark) .history-item-card,
 html:not(.dark) .glass-card,
 html:not(.dark) .glass-panel {
-    background: rgba(245, 247, 255, 0.78) !important;
-    backdrop-filter: blur(20px) saturate(170%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
-    border: 1px solid rgba(224, 231, 255, 0.9) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.95) !important;
-    box-shadow: 0 10px 30px -4px rgba(85, 81, 250, 0.07), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+    background: rgba(245, 247, 255, 0.92) !important;
+    border: 1px solid rgba(224, 231, 255, 0.95) !important;
+    border-top: 1px solid rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 18px -2px rgba(85, 81, 250, 0.06), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
 }
 
-/* Subtle Glass Borders */
+/* Subtle Card Borders */
 html.dark .border-slate-800,
 html.dark .border-slate-800\/80,
 html.dark .border-slate-800\/60,
-html.dark .border-slate-800\/90,
-html.dark .border-slate-800\/50,
-html.dark .border-slate-700,
-html.dark .border-slate-700\/80,
-html.dark .border-slate-700\/60 {
-    border-color: rgba(45, 42, 112, 0.75) !important;
+html.dark .border-slate-700 {
+    border-color: rgba(45, 42, 112, 0.8) !important;
 }
 
 html:not(.dark) .border-slate-800,
 html:not(.dark) .border-slate-800\/80,
 html:not(.dark) .border-slate-800\/60,
-html:not(.dark) .border-slate-800\/90,
-html:not(.dark) .border-slate-800\/50,
-html:not(.dark) .border-slate-700,
-html:not(.dark) .border-slate-700\/80,
-html:not(.dark) .border-slate-700\/60 {
-    border-color: rgba(224, 231, 255, 0.9) !important;
+html:not(.dark) .border-slate-700 {
+    border-color: rgba(224, 231, 255, 0.95) !important;
 }
 
 /* ========================================================================= */
-/* GLASS FLOATING MODAL WINDOWS                                              */
+/* 5. VIBRANT HERO CARD (CRYSTAL CLEAR IN BOTH LIGHT & DARK MODES)          */
 /* ========================================================================= */
 
-/* Dark Mode Modals */
-html.dark div[id^="modal-"]:not(#pwa-splash) > div {
-    background: rgba(27, 27, 58, 0.85) !important;
-    backdrop-filter: blur(28px) saturate(190%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-    border: 1px solid rgba(119, 116, 255, 0.25) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
-    box-shadow: 0 25px 60px -12px rgba(15, 15, 35, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
-}
-
-/* Light Mode Modals */
-html:not(.dark) div[id^="modal-"]:not(#pwa-splash) > div {
-    background: rgba(255, 255, 255, 0.92) !important;
-    backdrop-filter: blur(28px) saturate(190%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-    border: 1px solid rgba(224, 231, 255, 0.95) !important;
-    border-top: 1px solid rgba(255, 255, 255, 1) !important;
-    box-shadow: 0 25px 60px -12px rgba(30, 27, 75, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
-}
-
-/* ========================================================================= */
-/* FROSTED FORM INPUTS, TEXTAREAS & RECESSED WELLS                          */
-/* ========================================================================= */
-
-/* Dark Mode Inputs */
-html.dark input.bg-slate-950,
-html.dark textarea.bg-slate-950,
-html.dark select.bg-slate-950,
-html.dark .bg-slate-950,
-html.dark .bg-slate-950\/60,
-html.dark .bg-slate-950\/70,
-html.dark .bg-slate-950\/80,
-html.dark .bg-slate-950\/90,
-html.dark input[type="text"]:not(#profile-subscription-card *):not(#license-card-hero *),
-html.dark input[type="number"]:not(#profile-subscription-card *):not(#license-card-hero *),
-html.dark textarea:not(#profile-subscription-card *):not(#license-card-hero *),
-html.dark select:not(#profile-subscription-card *):not(#license-card-hero *),
-html.dark .prompt-box,
-html.dark pre {
-    background: rgba(15, 15, 35, 0.65) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(45, 42, 112, 0.85) !important;
-    border-top: 1px solid rgba(119, 116, 255, 0.2) !important;
-    color: #F3F4F6 !important;
-    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.25) !important;
-}
-
-html.dark input:focus,
-html.dark textarea:focus,
-html.dark select:focus {
-    border-color: #7774FF !important;
-    border-top-color: #7774FF !important;
-    box-shadow: 0 0 0 3px rgba(119, 116, 255, 0.28), inset 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
-    outline: none !important;
-}
-
-html.dark input::placeholder,
-html.dark textarea::placeholder {
-    color: #9CA3AF !important;
-}
-
-/* Light Mode Inputs */
-html:not(.dark) input.bg-slate-950,
-html:not(.dark) textarea.bg-slate-950,
-html:not(.dark) select.bg-slate-950,
-html:not(.dark) .bg-slate-950,
-html:not(.dark) .bg-slate-950\/60,
-html:not(.dark) .bg-slate-950\/70,
-html:not(.dark) .bg-slate-950\/80,
-html:not(.dark) .bg-slate-950\/90,
-html:not(.dark) input,
-html:not(.dark) select,
-html:not(.dark) textarea,
-html:not(.dark) .prompt-box,
-html:not(.dark) pre {
-    background: rgba(255, 255, 255, 0.85) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(224, 231, 255, 0.95) !important;
-    border-top: 1px solid rgba(255, 255, 255, 1) !important;
-    color: #1E1B4B !important;
-    box-shadow: inset 0 1px 3px 0 rgba(30, 27, 75, 0.05) !important;
-}
-
-html:not(.dark) input:focus,
-html:not(.dark) select:focus,
-html:not(.dark) textarea:focus {
-    border-color: #5551FA !important;
-    border-top-color: #5551FA !important;
-    box-shadow: 0 0 0 3px rgba(85, 81, 250, 0.22) !important;
-    outline: none !important;
-}
-
-html:not(.dark) input::placeholder,
-html:not(.dark) textarea::placeholder {
-    color: #4B5563 !important;
-}
-
-/* ========================================================================= */
-/* GLASS PILLS, BADGES & INTERACTIVE CHIPS (GAMBAR 2 STYLE)                 */
-/* ========================================================================= */
-
-/* Dark Mode Secondary Badges, Chips & Duration Buttons */
-html.dark .bg-slate-800,
-html.dark .bg-slate-800\/80,
-html.dark .bg-slate-800\/60,
-html.dark .btn-duration:not(.active),
-html.dark .btn-drama-duration:not(.active) {
-    background: rgba(45, 42, 112, 0.45) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(119, 116, 255, 0.2) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-    color: #F3F4F6 !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
-}
-
-html.dark .btn-duration:not(.active):hover,
-html.dark .btn-drama-duration:not(.active):hover {
-    background: rgba(45, 42, 112, 0.75) !important;
-    border-color: #7774FF !important;
+.home-hero-card {
+    background: linear-gradient(135deg, #5551FA 0%, #4338CA 55%, #3B38D4 100%) !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 12px rgba(119, 116, 255, 0.25) !important;
-}
-
-html.dark .btn-duration.active,
-html.dark .btn-drama-duration.active {
-    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 16px 36px -6px rgba(85, 81, 250, 0.45) !important;
+}
+
+.home-hero-card * {
     color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(85, 81, 250, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
 }
 
-/* Light Mode Secondary Badges, Chips & Duration Buttons */
-html:not(.dark) .bg-slate-800,
-html:not(.dark) .bg-slate-800\/80,
-html:not(.dark) .bg-slate-800\/60 {
-    background: rgba(224, 231, 255, 0.7) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(224, 231, 255, 0.95) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.95) !important;
-    color: #3B38D4 !important;
+.home-hero-card .text-blue-100,
+.home-hero-card .text-blue-200,
+.home-hero-card p {
+    color: rgba(255, 255, 255, 0.85) !important;
 }
 
-html:not(.dark) .btn-duration:not(.active),
-html:not(.dark) .btn-drama-duration:not(.active) {
-    background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(224, 231, 255, 0.9) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.95) !important;
-    color: #1E1B4B !important;
-}
-
-html:not(.dark) .btn-duration:not(.active):hover,
-html:not(.dark) .btn-drama-duration:not(.active):hover {
-    border-color: #5551FA !important;
-    color: #5551FA !important;
-    background: rgba(245, 247, 255, 0.95) !important;
-    box-shadow: 0 4px 12px rgba(85, 81, 250, 0.12) !important;
-}
-
-html:not(.dark) .btn-duration.active,
-html:not(.dark) .btn-drama-duration.active {
-    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(85, 81, 250, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
-}
-
-/* ========================================================================= */
-/* HERO SECTION BANNERS (GLASSMORPHIC DEPTH)                                 */
-/* ========================================================================= */
-
-/* Dark Mode Hero Banners */
-html.dark [class*="bg-gradient-to-r"][class*="from-"],
-html.dark [class*="bg-gradient-to-b"][class*="from-"] {
-    background: linear-gradient(135deg, rgba(85, 81, 250, 0.22) 0%, rgba(27, 27, 58, 0.72) 55%, rgba(45, 42, 112, 0.42) 100%) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border: 1px solid rgba(119, 116, 255, 0.22) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.16) !important;
-    box-shadow: 0 16px 40px -10px rgba(15, 15, 35, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
-}
-
-/* Light Mode Hero Banners */
-html:not(.dark) [class*="bg-gradient-to-r"][class*="from-"],
-html:not(.dark) [class*="bg-gradient-to-b"][class*="from-"] {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 247, 255, 0.82) 50%, rgba(224, 231, 255, 0.65) 100%) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border: 1px solid rgba(224, 231, 255, 0.92) !important;
-    border-top: 1px solid rgba(255, 255, 255, 1) !important;
-    box-shadow: 0 16px 40px -10px rgba(85, 81, 250, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
-}
-
-/* ========================================================================= */
-/* UNIVERSAL PRIMARY ACTION BUTTONS (SPECULAR GLASS GRADIENT)               */
-/* ========================================================================= */
-button.bg-brand-600,
-button.bg-brand-500,
-button.bg-pink-600,
-button.bg-emerald-600,
-button.bg-indigo-600,
-[class*="bg-gradient-to-r"][class*="from-brand-600"],
-[class*="bg-gradient-to-r"][class*="from-pink-600"],
-[class*="bg-gradient-to-r"][class*="from-emerald-600"],
-[class*="bg-gradient-to-r"][class*="from-amber-500"],
-[class*="bg-gradient-to-r"][class*="from-cyan-600"],
-#btn-generate-ugc,
-#btn-generate-drama,
-#btn-generate-character {
-    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
-    color: #FFFFFF !important;
+.home-hero-card .bg-blue-950\/60 {
+    background: rgba(15, 15, 35, 0.45) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-    box-shadow: 0 8px 24px -2px rgba(85, 81, 250, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-button.bg-brand-600:hover,
-button.bg-brand-500:hover,
-button.bg-pink-600:hover,
-button.bg-emerald-600:hover,
-[class*="bg-gradient-to-r"][class*="from-brand-600"]:hover,
-[class*="bg-gradient-to-r"][class*="from-pink-600"]:hover,
-#btn-generate-ugc:hover,
-#btn-generate-drama:hover,
-#btn-generate-character:hover {
-    background: linear-gradient(135deg, #6366F1 0%, #5551FA 100%) !important;
-    box-shadow: 0 12px 30px -2px rgba(85, 81, 250, 0.6), 0 0 20px rgba(119, 116, 255, 0.35) !important;
-    transform: translateY(-2px);
-}
-
-button.bg-brand-600 *,
-button.bg-brand-500 *,
-button.bg-pink-600 *,
-button.bg-emerald-600 *,
-[class*="bg-gradient-to-r"][class*="from-brand-600"] *,
-[class*="bg-gradient-to-r"][class*="from-pink-600"] *,
-#btn-generate-ugc *,
-#btn-generate-drama *,
-#btn-generate-character * {
-    color: #FFFFFF !important;
-    stroke: #FFFFFF !important;
-}
-
-/* Generating Active Shimmer Button */
-@keyframes btn-generate-shimmer-flow {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-.btn-generating-active {
-    background: linear-gradient(135deg, #5551FA 0%, #6366F1 25%, #7774FF 50%, #3B38D4 75%, #5551FA 100%) !important;
-    background-size: 300% 300% !important;
-    animation: btn-generate-shimmer-flow 2s infinite ease-in-out !important;
-    cursor: wait !important;
-    box-shadow: 0 0 24px rgba(85, 81, 250, 0.7), 0 0 45px rgba(119, 116, 255, 0.4) !important;
-    opacity: 0.95 !important;
-    pointer-events: none !important;
-    color: #FFFFFF !important;
-}
-
-.btn-generating-active * {
-    color: #FFFFFF !important;
-    stroke: #FFFFFF !important;
+.home-hero-card #home-hero-progress {
+    background: linear-gradient(90deg, #FFFFFF 0%, #E0E7FF 100%) !important;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6) !important;
 }
 
 /* ========================================================================= */
-/* TYPOGRAPHY                                                                */
+/* 6. SQUIRCLE APP LAUNCHER BUTTONS (GAMBAR 1 / 3 REQUIREMENT)               */
+/* Tanpa kotak pembungkus, ikon squircle rounded-[20px] yang sleek & fluid   */
 /* ========================================================================= */
-html.dark h1,
-html.dark h2,
-html.dark h3,
-html.dark h4,
-html.dark h5,
-html.dark h6 {
+
+.app-squircle-btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    outline: none !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-squircle-btn .squircle-icon {
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.45) !important;
+    box-shadow: 0 8px 20px -3px rgba(85, 81, 250, 0.35) !important;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+
+.app-squircle-btn:hover .squircle-icon {
+    transform: translateY(-3px) scale(1.06) !important;
+    box-shadow: 0 12px 26px -2px rgba(85, 81, 250, 0.55), 0 0 18px rgba(119, 116, 255, 0.35) !important;
+}
+
+.app-squircle-btn:active .squircle-icon {
+    transform: scale(0.93) !important;
+}
+
+.app-squircle-btn span {
+    color: #1E1B4B !important;
+}
+
+html.dark .app-squircle-btn span {
     color: #F3F4F6 !important;
 }
 
-html.dark label {
-    color: #F3F4F6 !important;
-    font-weight: 700;
-}
+/* ========================================================================= */
+/* 7. LIGHT MODE READABILITY & CONTRAST REPAIR                              */
+/* Memperbaiki semua teks yang sebelumnya tidak terbaca di tema terang      */
+/* ========================================================================= */
 
-html.dark .text-slate-100,
-html.dark .text-slate-200,
-html.dark .text-slate-300 {
-    color: #F3F4F6 !important;
-}
-
-html.dark .text-slate-400,
-html.dark .text-slate-500 {
-    color: #9CA3AF !important;
-}
-
+/* General Headings & Labels in Light Mode */
 html:not(.dark) h1,
 html:not(.dark) h2,
 html:not(.dark) h3,
@@ -629,76 +347,247 @@ html:not(.dark) .text-slate-600 {
     color: #4B5563 !important;
 }
 
+/* Comprehensive text-white override inside light surfaces */
+html:not(.dark) .text-white:not(.home-hero-card *):not(.btn-primary *):not(button.bg-brand-600 *):not(button.bg-brand-500 *):not(#btn-generate-ugc *):not(#btn-generate-drama *):not(#btn-generate-character *):not(.nav-tab.active *):not(.bottom-fab-button *):not([class*="bg-gradient-to-tr"] *):not(.badge-hot):not(.badge-new):not(.squircle-icon *):not([class*="from-brand-600"] *):not([class*="from-brand-500"] *):not(#pwa-splash *) {
+    color: #1E1B4B !important;
+}
+
+/* Logo "kawan" in header */
 html:not(.dark) .logo-kawan,
 html:not(.dark) .kd-title-white {
     color: #1E1B4B !important;
 }
 
+/* Fix "Pengaturan AI Key" Button in Drawer */
+html:not(.dark) #drawer-btn-api-key {
+    background: #E0E7FF !important;
+    border: 1px solid #6366F1 !important;
+    color: #3B38D4 !important;
+}
+
+html:not(.dark) #drawer-btn-api-key * {
+    color: #3B38D4 !important;
+}
+
+html.dark #drawer-btn-api-key {
+    background: rgba(45, 42, 112, 0.45) !important;
+    border: 1px solid rgba(119, 116, 255, 0.35) !important;
+    color: #F3F4F6 !important;
+}
+
+html.dark #drawer-btn-api-key * {
+    color: #F3F4F6 !important;
+}
+
+/* Fix Form Inputs, Textareas, Selects & Prompt Boxes */
+html:not(.dark) input,
+html:not(.dark) select,
+html:not(.dark) textarea,
+html:not(.dark) input.bg-slate-950,
+html:not(.dark) textarea.bg-slate-950,
+html:not(.dark) select.bg-slate-950,
+html:not(.dark) .bg-slate-950,
+html:not(.dark) .prompt-box,
+html:not(.dark) pre {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(224, 231, 255, 0.95) !important;
+    color: #1E1B4B !important;
+    box-shadow: inset 0 1px 3px 0 rgba(30, 27, 75, 0.05) !important;
+}
+
+html:not(.dark) input:focus,
+html:not(.dark) select:focus,
+html:not(.dark) textarea:focus {
+    border-color: #5551FA !important;
+    box-shadow: 0 0 0 3px rgba(85, 81, 250, 0.22) !important;
+    outline: none !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+    color: #9CA3AF !important;
+}
+
+/* Dark Mode Inputs */
+html.dark input,
+html.dark select,
+html.dark textarea,
+html.dark input.bg-slate-950,
+html.dark textarea.bg-slate-950,
+html.dark select.bg-slate-950,
+html.dark .bg-slate-950,
+html.dark .prompt-box,
+html.dark pre {
+    background: rgba(15, 15, 35, 0.7) !important;
+    border: 1px solid rgba(45, 42, 112, 0.85) !important;
+    border-top: 1px solid rgba(119, 116, 255, 0.2) !important;
+    color: #F3F4F6 !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+    border-color: #7774FF !important;
+    box-shadow: 0 0 0 3px rgba(119, 116, 255, 0.28) !important;
+    outline: none !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+    color: #9CA3AF !important;
+}
+
+/* Secondary Badges, Chips & Duration Buttons */
+html:not(.dark) .bg-slate-800,
+html:not(.dark) .bg-slate-800\/80,
+html:not(.dark) .bg-slate-800\/60 {
+    background: rgba(224, 231, 255, 0.75) !important;
+    border: 1px solid rgba(224, 231, 255, 0.95) !important;
+    color: #3B38D4 !important;
+}
+
+html:not(.dark) .btn-duration:not(.active),
+html:not(.dark) .btn-drama-duration:not(.active) {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(224, 231, 255, 0.9) !important;
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) .btn-duration:not(.active):hover,
+html:not(.dark) .btn-drama-duration:not(.active):hover {
+    border-color: #5551FA !important;
+    color: #5551FA !important;
+    background: rgba(245, 247, 255, 0.95) !important;
+}
+
+html:not(.dark) .btn-duration.active,
+html:not(.dark) .btn-drama-duration.active {
+    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+html.dark .bg-slate-800,
+html.dark .bg-slate-800\/80,
+html.dark .bg-slate-800\/60,
+html.dark .btn-duration:not(.active),
+html.dark .btn-drama-duration:not(.active) {
+    background: rgba(45, 42, 112, 0.5) !important;
+    border: 1px solid rgba(119, 116, 255, 0.2) !important;
+    color: #F3F4F6 !important;
+}
+
+html.dark .btn-duration:not(.active):hover,
+html.dark .btn-drama-duration:not(.active):hover {
+    background: rgba(45, 42, 112, 0.8) !important;
+    border-color: #7774FF !important;
+    color: #FFFFFF !important;
+}
+
+html.dark .btn-duration.active,
+html.dark .btn-drama-duration.active {
+    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #FFFFFF !important;
+}
+
 /* ========================================================================= */
-/* TOAST NOTIFICATIONS (FROSTED GLASS)                                      */
+/* 8. UNIVERSAL PRIMARY ACTION BUTTONS & ACTIVE TABS                         */
+/* Selalu tampil solid, berani, dengan teks putih jernih                     */
 /* ========================================================================= */
-.kd-toast {
-    position: fixed;
-    bottom: 85px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    padding: 10px 16px;
-    border-radius: 14px;
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    backdrop-filter: blur(18px) saturate(180%);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    box-shadow: 0 16px 36px -5px rgba(15, 15, 35, 0.6);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: 90vw;
+
+button.bg-brand-600,
+button.bg-brand-500,
+button.bg-pink-600,
+button.bg-emerald-600,
+button.bg-indigo-600,
+button[class*="from-brand"],
+button[class*="from-indigo"],
+[class*="bg-gradient-to-r"][class*="from-brand-600"],
+[class*="bg-gradient-to-r"][class*="from-pink-600"],
+[class*="bg-gradient-to-r"][class*="from-emerald-600"],
+#btn-generate-ugc,
+#btn-generate-drama,
+#btn-generate-character {
+    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 8px 22px -2px rgba(85, 81, 250, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-html.dark .kd-toast-success,
-html.dark .kd-toast-error,
-html.dark .kd-toast-info {
-    background: rgba(27, 27, 58, 0.85);
-    border: 1px solid rgba(119, 116, 255, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    color: #F3F4F6;
+button.bg-brand-600:hover,
+button.bg-brand-500:hover,
+button[class*="from-brand"]:hover,
+button[class*="from-indigo"]:hover,
+#btn-generate-ugc:hover,
+#btn-generate-drama:hover,
+#btn-generate-character:hover {
+    background: linear-gradient(135deg, #6366F1 0%, #5551FA 100%) !important;
+    box-shadow: 0 10px 26px -2px rgba(85, 81, 250, 0.6) !important;
+    transform: translateY(-2px);
 }
 
-html:not(.dark) .kd-toast-success,
-html:not(.dark) .kd-toast-error,
-html:not(.dark) .kd-toast-info {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(224, 231, 255, 0.95);
-    border-top: 1px solid rgba(255, 255, 255, 1);
-    color: #1E1B4B;
-    box-shadow: 0 16px 36px -5px rgba(85, 81, 250, 0.15);
+button.bg-brand-600 *,
+button.bg-brand-500 *,
+button[class*="from-brand"] *,
+button[class*="from-indigo"] *,
+#btn-generate-ugc *,
+#btn-generate-drama *,
+#btn-generate-character * {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
 }
 
-/* ========================================================================= */
-/* MOBILE NATIVE BOTTOM DOCK & LAUNCHER (GAMBAR 2 GLASSMORPHISM)            */
-/* ========================================================================= */
-.bottom-dock {
-    height: 64px;
+/* Nav Tabs Active */
+.nav-tab.active,
+.drawer-menu-item.bg-brand-600 {
+    background: linear-gradient(135deg, #5551FA 0%, #3B38D4 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 6px 18px 0 rgba(85, 81, 250, 0.42) !important;
 }
 
-html.dark .bottom-dock {
-    background: rgba(27, 27, 58, 0.82) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border-top: 1px solid rgba(119, 116, 255, 0.22) !important;
-    box-shadow: 0 -8px 32px 0 rgba(15, 15, 35, 0.6) !important;
+.nav-tab.active *,
+.drawer-menu-item.bg-brand-600 * {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
 }
 
-html:not(.dark) .bottom-dock {
-    background: rgba(255, 255, 255, 0.88) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    border-top: 1px solid rgba(224, 231, 255, 0.9) !important;
-    box-shadow: 0 -4px 24px 0 rgba(85, 81, 250, 0.08) !important;
+/* Inactive Nav Tabs */
+html.dark .nav-tab:not(.active),
+html.dark .drawer-menu-item:not(.bg-brand-600) {
+    color: #9CA3AF !important;
+}
+html.dark .nav-tab:not(.active):hover,
+html.dark .drawer-menu-item:not(.bg-brand-600):hover {
+    color: #F3F4F6 !important;
+    background: rgba(45, 42, 112, 0.5) !important;
 }
 
+html:not(.dark) .nav-tab:not(.active),
+html:not(.dark) .drawer-menu-item:not(.bg-brand-600) {
+    color: #4B5563 !important;
+}
+html:not(.dark) .nav-tab:not(.active):hover,
+html:not(.dark) .drawer-menu-item:not(.bg-brand-600):hover {
+    color: #1E1B4B !important;
+    background: rgba(224, 231, 255, 0.7) !important;
+}
+
+.mobile-nav-btn.active {
+    color: #5551FA !important;
+}
+html.dark .mobile-nav-btn:not(.active) {
+    color: #9CA3AF !important;
+}
+html:not(.dark) .mobile-nav-btn:not(.active) {
+    color: #4B5563 !important;
+}
+
+/* Bottom FAB Button */
 .bottom-fab-button {
     position: relative;
     top: -14px;
@@ -708,7 +597,7 @@ html:not(.dark) .bottom-dock {
     background: linear-gradient(135deg, #5551FA 0%, #6366F1 50%, #3B38D4 100%);
     box-shadow: 0 8px 24px -2px rgba(85, 81, 250, 0.55), 0 0 0 4px #0F0F23;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html:not(.dark) .bottom-fab-button {
@@ -724,67 +613,93 @@ html:not(.dark) .bottom-fab-button {
     stroke: #FFFFFF !important;
 }
 
-/* App Circle Button Launcher with Glass Glow */
-.app-circle-btn {
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-    box-shadow: 0 8px 24px -4px rgba(85, 81, 250, 0.4) !important;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s !important;
+/* Generating Active Shimmer Button */
+@keyframes btn-generate-shimmer-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-.app-circle-btn:hover {
-    transform: translateY(-4px) scale(1.06) !important;
-    box-shadow: 0 12px 30px -4px rgba(85, 81, 250, 0.6), 0 0 20px rgba(119, 116, 255, 0.35) !important;
+.btn-generating-active {
+    background: linear-gradient(135deg, #5551FA 0%, #6366F1 25%, #7774FF 50%, #3B38D4 75%, #5551FA 100%) !important;
+    background-size: 300% 300% !important;
+    animation: btn-generate-shimmer-flow 2s infinite ease-in-out !important;
+    cursor: wait !important;
+    box-shadow: 0 0 24px rgba(85, 81, 250, 0.7) !important;
+    opacity: 0.95 !important;
+    pointer-events: none !important;
+    color: #FFFFFF !important;
 }
 
-.app-circle-btn:active {
-    transform: scale(0.95) !important;
-}
-
-/* Radial Ring Progress CSS */
-.radial-ring {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.radial-ring::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: conic-gradient(var(--ring-color, #5551FA) calc(var(--ring-pct, 80) * 1%), rgba(255, 255, 255, 0.1) 0);
-    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4.5px), #fff calc(100% - 4px));
-    mask: radial-gradient(farthest-side, transparent calc(100% - 4.5px), #fff calc(100% - 4px));
-}
-
-html:not(.dark) .radial-ring::before {
-    background: conic-gradient(var(--ring-color, #5551FA) calc(var(--ring-pct, 80) * 1%), rgba(30, 27, 75, 0.08) 0);
-}
-
-/* Floating Google Flow Glow Animation */
-@keyframes flow-glow-pulse {
-    0%, 100% {
-        box-shadow: 0 0 18px rgba(85, 81, 250, 0.6), 0 0 35px rgba(119, 116, 255, 0.35);
-        transform: scale(1);
-    }
-    50% {
-        box-shadow: 0 0 28px rgba(85, 81, 250, 0.95), 0 0 55px rgba(119, 116, 255, 0.65);
-        transform: scale(1.02);
-    }
-}
-.btn-floating-glow {
-    animation: flow-glow-pulse 2.2s infinite ease-in-out;
+.btn-generating-active * {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
 }
 
 /* ========================================================================= */
-/* PWA & APP ANIMATED SPLASH SCREEN                                          */
+/* 9. MODALS & TOAST NOTIFICATIONS                                           */
+/* ========================================================================= */
+
+/* Dark Mode Modals */
+html.dark div[id^="modal-"]:not(#pwa-splash) > div {
+    background: rgba(27, 27, 58, 0.94) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(119, 116, 255, 0.25) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 25px 60px -12px rgba(15, 15, 35, 0.8) !important;
+}
+
+/* Light Mode Modals */
+html:not(.dark) div[id^="modal-"]:not(#pwa-splash) > div {
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(224, 231, 255, 0.95) !important;
+    border-top: 1px solid rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 25px 60px -12px rgba(30, 27, 75, 0.15) !important;
+}
+
+/* Toast Notifications */
+.kd-toast {
+    position: fixed;
+    bottom: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 16px 36px -5px rgba(15, 15, 35, 0.6);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 90vw;
+}
+
+html.dark .kd-toast-success,
+html.dark .kd-toast-error,
+html.dark .kd-toast-info {
+    background: rgba(27, 27, 58, 0.9);
+    border: 1px solid rgba(119, 116, 255, 0.3);
+    color: #F3F4F6;
+}
+
+html:not(.dark) .kd-toast-success,
+html:not(.dark) .kd-toast-error,
+html:not(.dark) .kd-toast-info {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(224, 231, 255, 0.95);
+    color: #1E1B4B;
+    box-shadow: 0 16px 36px -5px rgba(85, 81, 250, 0.15);
+}
+
+/* ========================================================================= */
+/* 10. PWA & APP ANIMATED SPLASH SCREEN                                      */
 /* ========================================================================= */
 .kd-splash-overlay {
     position: fixed;
@@ -899,61 +814,46 @@ html:not(.dark) .radial-ring::before {
 }
 
 @keyframes kdSplashFadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(12px) scale(0.95);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    0% { opacity: 0; transform: translateY(12px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes kdSplashBounce {
-    0%, 100% {
-        transform: translateY(0) scale(1);
-    }
-    50% {
-        transform: translateY(-14px) scale(1.05);
-    }
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-14px) scale(1.05); }
 }
 
 @keyframes kdSplashShadow {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.6;
-    }
-    50% {
-        transform: scale(0.7);
-        opacity: 0.2;
-    }
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(0.7); opacity: 0.2; }
 }
 
 @keyframes kdSplashLoading {
-    0% {
-        left: -45%;
-    }
-    50% {
-        left: 28%;
-        width: 55%;
-    }
-    100% {
-        left: 100%;
-        width: 35%;
-    }
+    0% { left: -45%; }
+    50% { left: 28%; width: 55%; }
+    100% { left: 100%; width: 35%; }
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
     animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Floating Google Flow Glow Animation */
+@keyframes flow-glow-pulse {
+    0%, 100% {
+        box-shadow: 0 0 16px rgba(85, 81, 250, 0.6), 0 0 32px rgba(119, 116, 255, 0.35);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 26px rgba(85, 81, 250, 0.95), 0 0 50px rgba(119, 116, 255, 0.65);
+        transform: scale(1.02);
+    }
+}
+.btn-floating-glow {
+    animation: flow-glow-pulse 2.2s infinite ease-in-out;
 }

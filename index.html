@@ -470,11 +470,11 @@
             <!-- QUICK ACTION / ANNOUNCEMENT BANNER (MATCHES IMAGE 1) -->
             <div id="home-banner-flow" class="home-stat-card bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-500/30 flex items-center justify-center font-bold flex-shrink-0">
                         <i data-lucide="zap" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <span>Google Flow (Veo) & Video-FX Siap</span>
                         </h4>
                         <p class="text-xs text-slate-400 mt-0.5">Generator prompt naskah 9:16 vertikal siap pakai instan</p>
@@ -488,34 +488,34 @@
             <!-- MENU UTAMA: CIRCULAR APP ICONS (MATCHES IMAGE 1) -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between px-1">
-                    <h3 class="text-base font-black text-white tracking-tight">Menu Utama</h3>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white tracking-tight">Menu Utama</h3>
                     <button type="button" onclick="window.kdOpenDrawer()" class="text-brand-400 hover:text-brand-300 text-xs font-bold transition flex items-center gap-0.5">
                         <span>Menu Lengkap</span>
                         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
 
-                <!-- Circular App Buttons Grid -->
-                <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 sm:gap-4 py-1">
+                <!-- Squircle App Buttons Grid (No outer box, Apple-style squircle) -->
+                <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 sm:gap-4 py-2">
                     <!-- 1. UGC Affiliate (Brand) -->
-                    <button type="button" id="home-btn-ugc" onclick="window.kdSwitchTab('ugc')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
+                    <button type="button" id="home-btn-ugc" onclick="window.kdSwitchTab('ugc')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200">
                             <i data-lucide="sparkles" class="w-6 h-6"></i>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">UGC Affiliate</span>
                     </button>
 
                     <!-- 2. Google Flow (Brand) -->
-                    <button type="button" id="home-btn-flow" onclick="window.kdSwitchTab('flow')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
+                    <button type="button" id="home-btn-flow" onclick="window.kdSwitchTab('flow')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200">
                             <i data-lucide="film" class="w-6 h-6"></i>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Google Flow</span>
                     </button>
 
                     <!-- 3. AI Drama (Brand with Badge) -->
-                    <button type="button" id="home-btn-drama" onclick="window.kdSwitchTab('drama')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition relative">
+                    <button type="button" id="home-btn-drama" onclick="window.kdSwitchTab('drama')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition relative">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200 relative">
                             <i data-lucide="clapperboard" class="w-6 h-6"></i>
                             <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#5551FA] text-white text-[9px] font-black border border-[#2D2A70] shadow">HOT</span>
                         </div>
@@ -523,8 +523,8 @@
                     </button>
 
                     <!-- 4. AI Character Maker (Brand with Badge) -->
-                    <button type="button" id="home-btn-character" onclick="window.kdSwitchTab('character')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition relative">
+                    <button type="button" id="home-btn-character" onclick="window.kdSwitchTab('character')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition relative">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200 relative">
                             <i data-lucide="user-check" class="w-6 h-6"></i>
                             <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#5551FA] text-white text-[9px] font-black border border-[#2D2A70] shadow">NEW</span>
                         </div>
@@ -532,24 +532,24 @@
                     </button>
 
                     <!-- 5. Peringkat (Brand) -->
-                    <button type="button" onclick="window.kdSwitchTab('leaderboard')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
+                    <button type="button" onclick="window.kdSwitchTab('leaderboard')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200">
                             <i data-lucide="trophy" class="w-6 h-6"></i>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Peringkat</span>
                     </button>
 
                     <!-- 6. Tutorial Video (Brand) -->
-                    <button type="button" onclick="window.kdSwitchTab('tutorial')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
+                    <button type="button" onclick="window.kdSwitchTab('tutorial')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200">
                             <i data-lucide="play-circle" class="w-6 h-6"></i>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Tutorial</span>
                     </button>
 
                     <!-- 7. Toko Digital (Brand) -->
-                    <button type="button" onclick="window.kdSwitchTab('license')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
+                    <button type="button" onclick="window.kdSwitchTab('license')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition">
+                        <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200">
                             <i data-lucide="shopping-bag" class="w-6 h-6"></i>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Toko VIP</span>
@@ -559,12 +559,12 @@
 
             <!-- STATISTIK & AKTIVITAS: METRIC CARDS (MATCHES IMAGE 1) -->
             <div class="space-y-3">
-                <h3 class="text-base font-black text-white tracking-tight px-1">Statistik & Aktivitas</h3>
+                <h3 class="text-base font-black text-slate-900 dark:text-white tracking-tight px-1">Statistik & Aktivitas</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- Card 1: Total Video Dibuat -->
                     <div class="home-stat-card bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
                         <div class="space-y-1">
-                            <h4 id="stat-card-vids" class="text-3xl font-black text-white">0</h4>
+                            <h4 id="stat-card-vids" class="text-3xl font-black text-slate-900 dark:text-white">0</h4>
                             <p class="text-xs font-semibold text-slate-300">Total Video Dibuat</p>
                             <p class="text-[11px] text-slate-400">Total karya video AI Anda</p>
                         </div>
