@@ -901,10 +901,10 @@ html:not(.dark) #screenshot-dropzone {
     border-color: #E0E7FF !important;
 }
 
-html:not(.dark) [class*="bg-slate-950"] label,
-html:not(.dark) [class*="bg-slate-950"] span,
-html:not(.dark) [class*="bg-slate-950"] p,
-html:not(.dark) [class*="bg-slate-950"] .font-bold {
+html:not(.dark) [class*="bg-slate-950"] label:not(button *):not(a *),
+html:not(.dark) [class*="bg-slate-950"] span:not(button *):not(a *):not(.badge-new *):not(.badge-new-orange *),
+html:not(.dark) [class*="bg-slate-950"] p:not(button *):not(a *),
+html:not(.dark) [class*="bg-slate-950"] .font-bold:not(button *):not(a *) {
     color: #1E1B4B !important;
 }
 
@@ -974,4 +974,64 @@ html.dark #sticky-user-rank-bar #my-rank-level {
     background: rgba(45, 42, 112, 0.6) !important;
     color: #7774FF !important;
     border: 1px solid rgba(119, 116, 255, 0.3) !important;
+}
+
+/* ========================================================================= */
+/* FIX: WHITE FONT FOR ALL ACTION BUTTONS & LINKS IN LIGHT MODE              */
+/* (Studio Generator, Buka Flow, Analisa Info Produk, etc.)                  */
+/* ========================================================================= */
+
+button[class*="from-"],
+a[class*="from-"],
+button[class*="bg-gradient-"],
+a[class*="bg-gradient-"],
+button[class*="bg-brand"],
+button[class*="bg-pink"],
+button[class*="bg-indigo"],
+button[class*="bg-blue"],
+button.bg-brand-600,
+button.bg-brand-500,
+button.bg-pink-600,
+#btn-analyze-unified,
+#char-subtab-generator,
+.btn-primary,
+.nav-tab.active,
+.bottom-fab-button {
+    color: #FFFFFF !important;
+}
+
+button[class*="from-"] *,
+a[class*="from-"] *,
+button[class*="bg-gradient-"] *,
+a[class*="bg-gradient-"] *,
+button[class*="bg-brand"] *,
+button[class*="bg-pink"] *,
+button[class*="bg-indigo"] *,
+button[class*="bg-blue"] *,
+button.bg-brand-600 *,
+button.bg-brand-500 *,
+button.bg-pink-600 *,
+#btn-analyze-unified *,
+#char-subtab-generator *,
+.btn-primary *,
+.nav-tab.active *,
+.bottom-fab-button * {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+/* Explicit high-specificity overrides for the 3 user-reported buttons */
+html:not(.dark) #btn-analyze-unified,
+html:not(.dark) #btn-analyze-unified *,
+html:not(.dark) #btn-analyze-unified-text,
+html:not(.dark) #char-subtab-generator,
+html:not(.dark) #char-subtab-generator *,
+html:not(.dark) #char-subtab-generator span,
+html:not(.dark) #char-subtab-generator svg,
+html:not(.dark) a[href*="aitestkitchen"],
+html:not(.dark) a[href*="aitestkitchen"] *,
+html:not(.dark) a[href*="aitestkitchen"] span,
+html:not(.dark) a[href*="aitestkitchen"] svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
 }
