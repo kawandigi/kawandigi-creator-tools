@@ -1035,3 +1035,113 @@ html:not(.dark) a[href*="aitestkitchen"] svg {
     color: #FFFFFF !important;
     stroke: #FFFFFF !important;
 }
+
+
+/* ==========================================================================
+   AI CHARACTER MAKER 3-STEP UI - LIGHT & DARK THEME ENHANCEMENTS
+   ========================================================================== */
+
+/* Cards: Gender & Type */
+.char-gender-card,
+.char-type-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+.char-gender-card:hover,
+.char-type-card:hover {
+    transform: translateY(-1px);
+}
+.char-gender-card.active,
+.char-type-card.active {
+    border-color: #5551FA !important;
+    box-shadow: 0 4px 14px rgba(85, 81, 250, 0.2) !important;
+}
+
+/* Light Mode Overrides for Character Maker */
+html:not(.dark) #char-view-generator .bg-slate-900 {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    box-shadow: 0 4px 20px rgba(85, 81, 250, 0.04) !important;
+}
+html:not(.dark) #char-view-generator .bg-slate-950,
+html:not(.dark) #char-view-generator .bg-slate-950\/70 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+/* Character Inputs & Selects in Light Mode */
+html:not(.dark) #char-view-generator input,
+html:not(.dark) #char-view-generator textarea,
+html:not(.dark) #char-view-generator select {
+    background-color: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+    color: #1E1B4B !important;
+}
+html:not(.dark) #char-view-generator input:focus,
+html:not(.dark) #char-view-generator textarea:focus,
+html:not(.dark) #char-view-generator select:focus {
+    border-color: #5551FA !important;
+    box-shadow: 0 0 0 3px rgba(85, 81, 250, 0.15) !important;
+}
+
+/* Inactive Cards in Light Mode */
+html:not(.dark) .char-gender-card:not(.active),
+html:not(.dark) .char-type-card:not(.active) {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+html:not(.dark) .char-gender-card.active,
+html:not(.dark) .char-type-card.active {
+    background-color: #EEF2FF !important;
+    border-color: #5551FA !important;
+}
+
+/* Option Chips & Trait Tags */
+.char-opt-chip,
+.char-trait-tag {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+.char-opt-chip:hover,
+.char-trait-tag:hover {
+    transform: scale(1.02);
+}
+
+/* Inactive State in Light Mode */
+html:not(.dark) .char-opt-chip:not(.active),
+html:not(.dark) .char-trait-tag:not(.active):not(.bg-\[\#5551FA\]) {
+    background-color: #F1F5F9 !important;
+    border-color: #E2E8F0 !important;
+    color: #334155 !important;
+}
+html:not(.dark) .char-opt-chip:not(.active):hover,
+html:not(.dark) .char-trait-tag:not(.active):hover {
+    background-color: #E2E8F0 !important;
+    color: #0F0F23 !important;
+}
+
+/* Active State (Both Light & Dark) */
+.char-opt-chip.active,
+.char-trait-tag.active,
+.char-trait-tag.bg-\[\#5551FA\] {
+    background-color: #5551FA !important;
+    border-color: #5551FA !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(85, 81, 250, 0.25) !important;
+}
+
+/* Ensure Button Text is Pure White */
+#btn-generate-character,
+#btn-generate-character span,
+#btn-generate-character svg,
+#btn-char-random-all,
+#btn-char-random-all span,
+#btn-char-random-all svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+#btn-char-random-all {
+    background-color: #5551FA !important;
+    border-color: #5551FA !important;
+}

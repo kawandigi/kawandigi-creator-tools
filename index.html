@@ -1457,136 +1457,292 @@
             </div>
 
             <!-- VIEW 1: STUDIO GENERATOR -->
-            <div id="char-view-generator" class="space-y-5">
-                <!-- Preset Quick-Pick Chips -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-2.5">
+                        <!-- VIEW 1: STUDIO GENERATOR -->
+            <div id="char-view-generator" class="space-y-4">
+                
+                <!-- LANGKAH 1: PILIH GENDER MODEL (PRIA / WANITA) -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2 text-xs font-bold text-slate-200">
-                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-pink-400"></i>
-                            <span>Pilih Cepat Karakter Populer (Preset):</span>
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 font-black text-xs flex items-center justify-center border border-brand-500/30">1</span>
+                            <h4 class="text-sm font-black text-slate-900 dark:text-white">Pilih Gender Model Karakter</h4>
                         </div>
-                        <span class="text-[11px] text-slate-400">1-Klik langsung siap</span>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Langkah 1 dari 3</span>
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <button type="button" id="btn-char-preset-maya" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
-                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Maya Putri</div>
-                            <div class="text-[10px] text-slate-400">Beauty & Lifestyle KOL</div>
+
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                        <!-- Pilihan: Wanita -->
+                        <button type="button" id="btn-char-gender-female" data-gender="female" class="char-gender-card active relative p-4 rounded-2xl border-2 border-[#5551FA] bg-[#5551FA]/10 dark:bg-[#5551FA]/20 text-center transition flex flex-col items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#5551FA]/20 group">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center shadow-lg shadow-pink-500/30 group-hover:scale-105 transition">
+                                <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-black text-slate-900 dark:text-white">Wanita (Female)</span>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400">Model Karakter Perempuan</span>
+                            </div>
+                            <span class="char-gender-check absolute top-2 right-2 w-5 h-5 rounded-full bg-[#5551FA] text-white flex items-center justify-center text-xs font-black shadow">✓</span>
                         </button>
-                        <button type="button" id="btn-char-preset-alya" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
-                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Alya Melody</div>
-                            <div class="text-[10px] text-slate-400">Virtual Singer & Indie Pop</div>
-                        </button>
-                        <button type="button" id="btn-char-preset-rian" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
-                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Rian Pratama</div>
-                            <div class="text-[10px] text-slate-400">Tech & Streetwear Reviewer</div>
-                        </button>
-                        <button type="button" id="btn-char-preset-kenzo" class="p-2.5 rounded-xl bg-slate-950 hover:bg-pink-950/40 border border-slate-800 hover:border-pink-500/40 text-left transition group">
-                            <div class="text-xs font-bold text-white group-hover:text-pink-300 transition">Kenzo Daiki</div>
-                            <div class="text-[10px] text-slate-400">Cyberpunk Virtual DJ</div>
+
+                        <!-- Pilihan: Pria -->
+                        <button type="button" id="btn-char-gender-male" data-gender="male" class="char-gender-card relative p-4 rounded-2xl border border-slate-700 bg-slate-950/70 text-center transition flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#5551FA]/60 group">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-105 transition">
+                                <i data-lucide="user" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <span class="block text-sm font-black text-slate-900 dark:text-white">Pria (Male)</span>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400">Model Karakter Laki-laki</span>
+                            </div>
+                            <span class="char-gender-check hidden absolute top-2 right-2 w-5 h-5 rounded-full bg-[#5551FA] text-white flex items-center justify-center text-xs font-black shadow">✓</span>
                         </button>
                     </div>
+                    <input type="hidden" id="char-input-gender" value="female">
                 </div>
 
-                <!-- Main Form Grid -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4">
-                    <!-- Type Selection (Influencer vs Artist) -->
+                <!-- LANGKAH 2: MEMILIH TIPE KARAKTER (INFLUENCER VS ARTIST / VIRTUAL SINGER) -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 font-black text-xs flex items-center justify-center border border-brand-500/30">2</span>
+                            <h4 class="text-sm font-black text-slate-900 dark:text-white">Pilih Tipe & Peran Karakter</h4>
+                        </div>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Tentukan Persona</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Tipe 1: AI Influencer -->
+                        <button type="button" id="btn-char-type-influencer" data-type="influencer" class="char-type-card active relative p-3.5 rounded-2xl border-2 border-[#5551FA] bg-[#5551FA]/10 dark:bg-[#5551FA]/20 text-left transition flex items-start gap-3 cursor-pointer shadow-md shadow-[#5551FA]/15 group">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#5551FA] to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                                <i data-lucide="instagram" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1 pr-4">
+                                <div class="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span>AI Influencer / KOL Medsos</span>
+                                </div>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                                    Konten gaya hidup, OOTD kafe/kamar, endorse produk, review skincare/gadget, dan selfie mirror estetik.
+                                </p>
+                            </div>
+                            <span class="char-type-check absolute top-2 right-2 w-4 h-4 rounded-full bg-[#5551FA] text-white flex items-center justify-center text-[10px] font-black shadow">✓</span>
+                        </button>
+
+                        <!-- Tipe 2: AI Artist / Virtual Singer -->
+                        <button type="button" id="btn-char-type-artist" data-type="artist" class="char-type-card relative p-3.5 rounded-2xl border border-slate-700 bg-slate-950/70 text-left transition flex items-start gap-3 cursor-pointer hover:border-[#5551FA]/60 group">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                                <i data-lucide="music" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="flex-1 pr-4">
+                                <div class="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                                    <span>AI Artist / Virtual Singer</span>
+                                </div>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                                    Penyanyi virtual, visual sampul album/single, panggung konser, pegang mic/gitar + <strong class="text-purple-400">Prompt Lagu Suno AI</strong> otomatis!
+                                </p>
+                            </div>
+                            <span class="char-type-check hidden absolute top-2 right-2 w-4 h-4 rounded-full bg-[#5551FA] text-white flex items-center justify-center text-[10px] font-black shadow">✓</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="char-input-type" value="influencer">
+                </div>
+
+                <!-- LANGKAH 3: DETAIL LENGKAP (PILIHAN CHIPS + INPUT MANUAL) -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 font-black text-xs flex items-center justify-center border border-brand-500/30">3</span>
+                            <div>
+                                <h4 class="text-sm font-black text-slate-900 dark:text-white">Detail Atribut & DNA Konsistensi</h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Klik chip untuk memilih cepat atau ketik sendiri di kotak input</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btn-char-random-all" class="px-3 py-1.5 rounded-xl bg-brand-500/15 hover:bg-brand-500/25 text-brand-600 dark:text-brand-300 border border-brand-500/30 text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                                <span>🎲 Acak Semua Persona</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- a. Nama Karakter -->
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-bold text-slate-300">Tipe Karakter:</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="relative flex items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-950 cursor-pointer hover:border-pink-500 transition has-[:checked]:border-pink-500 has-[:checked]:bg-pink-950/20">
-                                <input type="radio" name="char_type" id="char-type-influencer" value="influencer" checked class="sr-only">
-                                <div class="text-center">
-                                    <div class="text-xs font-bold text-white flex items-center justify-center gap-1.5">
-                                        <i data-lucide="instagram" class="w-3.5 h-3.5 text-pink-400"></i>
-                                        <span>AI Influencer / KOL</span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400 mt-0.5">Endorsement, OOTD & Konten Medsos</p>
-                                </div>
+                        <div class="flex items-center justify-between">
+                            <label for="char-input-name" class="block text-xs font-bold text-slate-900 dark:text-slate-200">a. Nama Karakter:</label>
+                            <button type="button" id="btn-char-random-name" class="text-[11px] font-bold text-brand-500 hover:text-brand-400 flex items-center gap-1 transition">
+                                <i data-lucide="shuffle" class="w-3 h-3"></i>
+                                <span>Acak Nama</span>
+                            </button>
+                        </div>
+                        <input type="text" id="char-input-name" placeholder="Contoh: Maya Putri / Rian Pratama" value="Maya Putri" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- b. Usia -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">b. Usia (Tahun):</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-age">
+                            <button type="button" data-val="19" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">19 Tahun (Gen-Z)</button>
+                            <button type="button" data-val="22" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">22 Tahun (Dewasa Muda)</button>
+                            <button type="button" data-val="25" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">25 Tahun (Kolega/Karier)</button>
+                            <button type="button" data-val="28" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">28 Tahun (Matang)</button>
+                        </div>
+                        <input type="text" id="char-input-age" placeholder="Ketik usia angka..." value="22" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- c. Etnisitas -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">c. Etnisitas & Ciri Wajah:</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-ethnicity">
+                            <button type="button" data-val="indonesian_natural" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">🇮🇩 Indonesia / Melayu Alami</button>
+                            <button type="button" data-val="eurasian" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">✨ Blasteran Indo-Eropa (Eurasian)</button>
+                            <button type="button" data-val="east_asian" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🇰🇷 East Asian (K-Pop Idol Look)</button>
+                            <button type="button" data-val="caucasian" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🇺🇸 Kaukasia / Western</button>
+                            <button type="button" data-val="middle_eastern" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🇦🇪 Timur Tengah / Arab</button>
+                        </div>
+                        <input type="text" id="char-input-ethnicity" placeholder="Ketik etnisitas / karakteristik wajah kustom..." value="Indonesia Asli (Wajah Ramah & Lembut)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- d. Warna Kulit -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">d. Warna Kulit (Skin Tone):</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-skin">
+                            <button type="button" data-val="Sawo matang alami khas Indonesia dengan rona sehat glowing" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Sawo Matang Alami</button>
+                            <button type="button" data-val="Kuning langsat cerah merona bercahaya" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Kuning Langsat Glowing</button>
+                            <button type="button" data-val="Putih porselen mulus glass skin khas idol" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Putih Porselen Glass Skin</button>
+                            <button type="button" data-val="Warm golden-tan eksotis sun-kissed" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Warm Golden Tan</button>
+                            <button type="button" data-val="Deep rich cocoa eksotis elegan" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Dark Cocoa</button>
+                        </div>
+                        <input type="text" id="char-input-skin" placeholder="Pilih chip di atas atau ketik deskripsi kulit kustom..." value="Sawo matang alami khas Indonesia dengan rona sehat glowing" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- e. Gaya Rambut (Dinamis sesuai Gender) -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">e. Gaya Rambut:</label>
+                        <!-- Container chips rambut wanita -->
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-hair-female">
+                            <button type="button" data-val="Sebahu bergelombang alami dengan soft curtain bangs" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Sebahu Wavy Curtain Bangs</button>
+                            <button type="button" data-val="Panjang lurus terurai belah tengah berkilau" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Panjang Lurus Belah Tengah</button>
+                            <button type="button" data-val="Bob pendek modern chic sedikit messy" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Bob Pendek Modern</button>
+                            <button type="button" data-val="Ponytail kuncir kuda sporty rapi" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Ponytail Sporty</button>
+                            <button type="button" data-val="Berhijab pashmina stylish modern rapi dan anggun" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🧕 Berhijab Stylish Modern</button>
+                        </div>
+                        <!-- Container chips rambut pria (hidden jika wanita) -->
+                        <div class="flex flex-wrap gap-1.5 mb-1 hidden" id="chips-hair-male">
+                            <button type="button" data-val="Modern two-block cut dengan tekstur natural" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Two-Block Cut Textured</button>
+                            <button type="button" data-val="Korean comma hair rapi berkarisma" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Comma Hair Korea</button>
+                            <button type="button" data-val="Messy textured crop dengan fade samping rapi" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Messy Textured Crop</button>
+                            <button type="button" data-val="Undercut slicked back maskulin elegan" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Undercut Slicked Back</button>
+                            <button type="button" data-val="Classic pompadour fade rapi eksekutif" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Pompadour Fade Klasik</button>
+                        </div>
+                        <input type="text" id="char-input-hair" placeholder="Pilih chip di atas atau ketik gaya rambut..." value="Sebahu bergelombang alami dengan soft curtain bangs" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- f. Warna Rambut -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">f. Warna Rambut:</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-haircolor">
+                            <button type="button" data-val="Hitam alami berkilau sehat" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Hitam Alami (Natural Black)</button>
+                            <button type="button" data-val="Cokelat gelap espresso (Dark Espresso Brown)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Cokelat Espresso</button>
+                            <button type="button" data-val="Ash brown dengan highlight silver halus" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Ash Grey / Silver</button>
+                            <button type="button" data-val="Pirang madu hangat (Honey Blonde)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Pirang Madu</button>
+                            <button type="button" data-val="Burgundy maroon gelap berani" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Burgundy / Dark Maroon</button>
+                        </div>
+                        <input type="text" id="char-input-haircolor" placeholder="Ketik warna rambut kustom..." value="Hitam alami berkilau sehat" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- g. Bentuk Tubuh / Postur -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">g. Bentuk Tubuh / Postur:</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-body">
+                            <button type="button" data-val="Petite fit, ramping alami dan proporsional" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Petite Fit & Proporsional</button>
+                            <button type="button" data-val="Slim athletic, bugar dan tinggi semampai" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Slim Athletic</button>
+                            <button type="button" data-val="Curvy jam pasir elegan dan fotogenik" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Curvy Jam Pasir</button>
+                            <button type="button" data-val="Lean muscular, dada bidang dan berotot atletis" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Lean Muscular (Bugar Atletis)</button>
+                            <button type="button" data-val="Tinggi jenjang ala model runway internasional" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Tinggi Model Runway</button>
+                        </div>
+                        <input type="text" id="char-input-body" placeholder="Ketik bentuk tubuh kustom..." value="Petite fit, ramping alami dan proporsional" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- h. Niche / Industri -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">h. Niche / Industri Fokus:</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-niche">
+                            <button type="button" data-val="Fashion & OOTD Gaya Hidup Estetik" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Fashion & OOTD</button>
+                            <button type="button" data-val="Skincare, Beauty & Make-up Clean Look" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Beauty & Skincare</button>
+                            <button type="button" data-val="Tech, Gadget & Smartphone Reviewer" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Tech & Gadget</button>
+                            <button type="button" data-val="Fitness, Gym & Healthy Food Lifestyle" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Fitness & Health</button>
+                            <button type="button" data-val="Kuliner, Cafe Hopping & Travel Vlogger" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Kuliner & Travel</button>
+                            <button type="button" data-val="Gaming Streamer, Pop-Culture & Anime" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Gaming Streamer</button>
+                            <button type="button" data-val="Musik Indie Pop, Akustik & Virtual Singer" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Musik & Singer</button>
+                        </div>
+                        <input type="text" id="char-input-niche" placeholder="Ketik niche kustom..." value="Fashion & OOTD Gaya Hidup Estetik" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- i. Vibe / Kepribadian -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">i. Vibe & Kepribadian:</label>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-vibe">
+                            <button type="button" data-val="Ceria, ramah, hangat, bersahabat (Girl/Boy Next Door)" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Ceria & Sahabat</button>
+                            <button type="button" data-val="Anggun, tenang, misterius dan karismatik" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Anggun & Misterius</button>
+                            <button type="button" data-val="Edgy, berani, trendsetter dan penuh percaya diri" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Edgy & Berani</button>
+                            <button type="button" data-val="Mewah, elegan, glamour dan berkelas tinggi" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Mewah & Glamour</button>
+                            <button type="button" data-val="Profesional, cerdas, berwibawa dan inspiratif" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Profesional & Cerdas</button>
+                        </div>
+                        <input type="text" id="char-input-vibe" placeholder="Ketik vibe kustom..." value="Ceria, ramah, hangat, bersahabat (Girl/Boy Next Door)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
+                    <!-- j. Ciri Khas & Ciri Unik (Untuk Konsistensi Karakter) -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="char-input-traits" class="block text-xs font-bold text-slate-900 dark:text-slate-200">
+                                j. Ciri Khas & Ciri Unik <span class="text-brand-500 font-extrabold">(Kunci Konsistensi Wajah AI)</span>:
                             </label>
-                            <label class="relative flex items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-950 cursor-pointer hover:border-pink-500 transition has-[:checked]:border-pink-500 has-[:checked]:bg-pink-950/20">
-                                <input type="radio" name="char_type" id="char-type-artist" value="artist" class="sr-only">
-                                <div class="text-center">
-                                    <div class="text-xs font-bold text-white flex items-center justify-center gap-1.5">
-                                        <i data-lucide="music" class="w-3.5 h-3.5 text-purple-400"></i>
-                                        <span>AI Artist / Virtual Singer</span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400 mt-0.5">Musisi, Lagu Suno AI & Stage Visual</p>
-                                </div>
-                            </label>
+                            <span class="text-[10px] text-slate-400">Klik chip untuk menambahkan</span>
                         </div>
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-traits">
+                            <button type="button" data-val="tahi lalat manis kecil di bawah mata kiri" class="char-trait-tag px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">+ Tahi lalat di bawah mata</button>
+                            <button type="button" data-val="lesung pipi manis di pipi kanan saat tersenyum" class="char-trait-tag px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">+ Lesung pipi manis</button>
+                            <button type="button" data-val="garis rahang tegas dan simetris sangat fotogenik" class="char-trait-tag px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">+ Rahang tegas simetris</button>
+                            <button type="button" data-val="mata almond cokelat hazel tajam ekspresif" class="char-trait-tag px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">+ Mata almond hazel</button>
+                            <button type="button" data-val="kacamata berbingkai bulat tipis estetik" class="char-trait-tag px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">+ Kacamata bulat tipis</button>
+                            <button type="button" data-val="gaya riasan clean girl glowing look alami" class="char-trait-tag px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">+ Clean girl glow makeup</button>
+                        </div>
+                        <textarea id="char-input-traits" rows="2" placeholder="Ciri unik wajah/tubuh agar karakter 100% konsisten di setiap gambar..." class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">Lesung pipi manis di pipi kanan saat tersenyum, kulit glowing alami, riasan clean girl look.</textarea>
                     </div>
 
-                    <!-- Row 1: Name & Gender & Age -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="space-y-1">
-                            <label for="char-input-name" class="block text-xs font-bold text-slate-300">Nama Karakter:</label>
-                            <input type="text" id="char-input-name" placeholder="Contoh: Maya Putri" value="Maya Putri" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
+                    <!-- FITUR IMPROVEMENT POWERFUL: TARGET ENGINE & LIGHTING PRESETS -->
+                    <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-brand-500 dark:text-brand-300 flex items-center gap-1.5">
+                                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                                Optimasi AI Engine & Lensa Studio (Improvement):
+                            </span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-500 font-extrabold uppercase">Presisi Tinggi</span>
                         </div>
-                        <div class="space-y-1">
-                            <label for="char-input-gender" class="block text-xs font-bold text-slate-300">Gender:</label>
-                            <select id="char-input-gender" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
-                                <option value="female" selected>Wanita (Female)</option>
-                                <option value="male">Pria (Male)</option>
-                            </select>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label for="char-input-engine" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300">Format Target AI Generator:</label>
+                                <select id="char-input-engine" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500">
+                                    <option value="gemini" selected>Google Gemini / Imagen 3 (Prompt Deskriptif Alami)</option>
+                                    <option value="midjourney">Midjourney v6.1 (Format --ar 9:16 --v 6.1 --style raw)</option>
+                                    <option value="flux">Flux.1 Schnell / Dev (Hyper-Realistic Skin & Lighting)</option>
+                                    <option value="sdxl">Stable Diffusion XL / ComfyUI</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="char-input-lighting" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300">Gaya Pencahayaan & Lensa Kamera:</label>
+                                <select id="char-input-lighting" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500">
+                                    <option value="studio" selected>Studio Model Sheet (Pencahayaan Rata & Latar Netral)</option>
+                                    <option value="golden_hour">Golden Hour Natural (Sinar Matahari Sore & Rim Light)</option>
+                                    <option value="moody_stage">Moody Stage & Neon (Lampu Panggung & Kafe Malam)</option>
+                                    <option value="candid_flash">Candid Flash Mirror (Gaya Paparazzi / iPhone Natural)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="space-y-1">
-                            <label for="char-input-age" class="block text-xs font-bold text-slate-300">Rentang Usia (Tahun):</label>
-                            <input type="text" id="char-input-age" placeholder="Contoh: 22" value="22" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Ethnicity & Hair -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label for="char-input-ethnicity" class="block text-xs font-bold text-slate-300">Etnisitas & Ciri Wajah:</label>
-                            <select id="char-input-ethnicity" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
-                                <option value="indonesian_natural" selected>Indonesian Natural (Sawo Matang & Soft Features)</option>
-                                <option value="eurasian">Eurasian / Blasteran (Mata Hazel & Sharp Features)</option>
-                                <option value="east_asian">East Asian / K-Pop Idol (Porcelain Skin & Glass Glow)</option>
-                                <option value="caucasian">Caucasian / Western (Defined & Striking)</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1">
-                            <label for="char-input-hair" class="block text-xs font-bold text-slate-300">Gaya Rambut & Warna:</label>
-                            <input type="text" id="char-input-hair" placeholder="Contoh: Sebahu bergelombang warna dark brown dengan soft curtain bangs" value="Sebahu bergelombang warna dark brown dengan soft curtain bangs" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
-                        </div>
-                    </div>
-
-                    <!-- Row 3: Body & Fashion -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label for="char-input-body" class="block text-xs font-bold text-slate-300">Bentuk Tubuh / Postur:</label>
-                            <input type="text" id="char-input-body" placeholder="Contoh: Petite fit & natural" value="Petite fit & natural" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
-                        </div>
-                        <div class="space-y-1">
-                            <label for="char-input-fashion" class="block text-xs font-bold text-slate-300">Signature Fashion / OOTD:</label>
-                            <input type="text" id="char-input-fashion" placeholder="Contoh: Korean Minimalist Cafe OOTD (cardigan krem & high-waist pants)" value="Korean Minimalist Cafe OOTD (cardigan krem & high-waist pants)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
-                        </div>
-                    </div>
-
-                    <!-- Row 4: Niche & Vibe -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label for="char-input-niche" class="block text-xs font-bold text-slate-300">Niche / Industri Fokus:</label>
-                            <input type="text" id="char-input-niche" placeholder="Contoh: Skincare, Beauty & Lifestyle" value="Skincare, Beauty & Lifestyle" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
-                        </div>
-                        <div class="space-y-1">
-                            <label for="char-input-vibe" class="block text-xs font-bold text-slate-300">Vibe & Kepribadian:</label>
-                            <input type="text" id="char-input-vibe" placeholder="Contoh: Ceria, ramah, hangat, dan estetik" value="Ceria, ramah, hangat, dan estetik" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">
-                        </div>
-                    </div>
-
-                    <!-- Row 5: Custom Traits -->
-                    <div class="space-y-1">
-                        <label for="char-input-traits" class="block text-xs font-bold text-slate-300">Ciri Khas & Ciri Unik (Untuk Konsistensi):</label>
-                        <textarea id="char-input-traits" rows="2" placeholder="Contoh: Lesung pipi manis di pipi kanan, kulit sawo matang glowing alami, riasan clean girl look." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500">Lesung pipi manis di pipi kanan, kulit sawo matang glowing alami, riasan wajah clean girl look.</textarea>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="pt-2">
-                        <button type="button" id="btn-generate-character" class="w-full py-3.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transition active:scale-[0.99]">
-                            <i data-lucide="wand-2" class="w-4 h-4"></i>
-                            <span id="btn-generate-character-label">✨ Generate Profil Karakter & Turnaround Sheet</span>
+                        <button type="button" id="btn-generate-character" class="w-full py-3.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-[#5551FA]/30 flex items-center justify-center gap-2 transition active:scale-[0.99]">
+                            <i data-lucide="wand-2" class="w-4 h-4 text-white"></i>
+                            <span id="btn-generate-character-label" class="text-white">✨ Generate Profil Karakter & Turnaround Sheet</span>
                         </button>
                     </div>
                 </div>

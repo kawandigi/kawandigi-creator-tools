@@ -2796,60 +2796,208 @@ async function openCharacterDetailModal(id) {
 }
 
 function initCharacterMaker() {
-    function applyPresetToForm(preset) {
-        if (!preset) return;
-        if (preset.type === 'artist') {
-            const radio = document.getElementById('char-type-artist');
-            if (radio) radio.checked = true;
-        } else {
-            const radio = document.getElementById('char-type-influencer');
-            if (radio) radio.checked = true;
-        }
-        const nameInput = document.getElementById('char-input-name');
-        const genderSelect = document.getElementById('char-input-gender');
-        const ageInput = document.getElementById('char-input-age');
-        const ethnicitySelect = document.getElementById('char-input-ethnicity');
-        const hairInput = document.getElementById('char-input-hair');
-        const bodyInput = document.getElementById('char-input-body');
-        const fashionInput = document.getElementById('char-input-fashion');
-        const nicheInput = document.getElementById('char-input-niche');
-        const vibeInput = document.getElementById('char-input-vibe');
-        const traitsInput = document.getElementById('char-input-traits');
+    // 1. Gender Selection Controls
+    const btnFemale = document.getElementById('btn-char-gender-female');
+    const btnMale = document.getElementById('btn-char-gender-male');
+    const inputGender = document.getElementById('char-input-gender');
+    const chipsHairFemale = document.getElementById('chips-hair-female');
+    const chipsHairMale = document.getElementById('chips-hair-male');
+    const nameInput = document.getElementById('char-input-name');
 
-        if (nameInput) nameInput.value = preset.name || '';
-        if (genderSelect) genderSelect.value = preset.gender || 'female';
-        if (ageInput) ageInput.value = preset.ageGroup || '22';
-        if (ethnicitySelect) ethnicitySelect.value = preset.ethnicity || 'indonesian_natural';
-        if (hairInput) hairInput.value = preset.hairStyle || '';
-        if (bodyInput) bodyInput.value = preset.bodyType || '';
-        if (fashionInput) fashionInput.value = preset.fashionStyle || '';
-        if (nicheInput) nicheInput.value = preset.niche || '';
-        if (vibeInput) vibeInput.value = preset.vibe || '';
-        if (traitsInput) traitsInput.value = preset.customTraits || '';
-        showToast(`Preset "${preset.name}" diterapkan!`, 'info');
+    function setGender(gender) {
+        if (!inputGender) return;
+        inputGender.value = gender;
+        if (gender === 'female') {
+            btnFemale?.classList.add('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnFemale?.classList.remove('border-slate-700', 'bg-slate-950/70');
+            btnFemale?.querySelector('.char-gender-check')?.classList.remove('hidden');
+
+            btnMale?.classList.remove('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnMale?.classList.add('border-slate-700', 'bg-slate-950/70');
+            btnMale?.querySelector('.char-gender-check')?.classList.add('hidden');
+
+            chipsHairFemale?.classList.remove('hidden');
+            chipsHairMale?.classList.add('hidden');
+
+            if (nameInput && (nameInput.value === 'Rian Pratama' || nameInput.value === 'Kenzo Daiki' || !nameInput.value)) {
+                nameInput.value = 'Maya Putri';
+            }
+        } else {
+            btnMale?.classList.add('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnMale?.classList.remove('border-slate-700', 'bg-slate-950/70');
+            btnMale?.querySelector('.char-gender-check')?.classList.remove('hidden');
+
+            btnFemale?.classList.remove('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnFemale?.classList.add('border-slate-700', 'bg-slate-950/70');
+            btnFemale?.querySelector('.char-gender-check')?.classList.add('hidden');
+
+            chipsHairMale?.classList.remove('hidden');
+            chipsHairFemale?.classList.add('hidden');
+
+            if (nameInput && (nameInput.value === 'Maya Putri' || nameInput.value === 'Alya Melody' || !nameInput.value)) {
+                nameInput.value = 'Rian Pratama';
+            }
+        }
     }
 
-    // Preset Buttons
-    document.getElementById('btn-char-preset-maya')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[0]));
-    document.getElementById('btn-char-preset-alya')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[1]));
-    document.getElementById('btn-char-preset-rian')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[2]));
-    document.getElementById('btn-char-preset-kenzo')?.addEventListener('click', () => applyPresetToForm(CHARACTER_PRESETS[3]));
+    btnFemale?.addEventListener('click', () => setGender('female'));
+    btnMale?.addEventListener('click', () => setGender('male'));
 
-    // Subtab Switching
+    // 2. Character Type Selection Controls
+    const btnTypeInfluencer = document.getElementById('btn-char-type-influencer');
+    const btnTypeArtist = document.getElementById('btn-char-type-artist');
+    const inputType = document.getElementById('char-input-type');
+
+    function setCharType(type) {
+        if (!inputType) return;
+        inputType.value = type;
+        if (type === 'influencer') {
+            btnTypeInfluencer?.classList.add('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnTypeInfluencer?.classList.remove('border-slate-700', 'bg-slate-950/70');
+            btnTypeInfluencer?.querySelector('.char-type-check')?.classList.remove('hidden');
+
+            btnTypeArtist?.classList.remove('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnTypeArtist?.classList.add('border-slate-700', 'bg-slate-950/70');
+            btnTypeArtist?.querySelector('.char-type-check')?.classList.add('hidden');
+        } else {
+            btnTypeArtist?.classList.add('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnTypeArtist?.classList.remove('border-slate-700', 'bg-slate-950/70');
+            btnTypeArtist?.querySelector('.char-type-check')?.classList.remove('hidden');
+
+            btnTypeInfluencer?.classList.remove('active', 'border-2', 'border-[#5551FA]', 'bg-[#5551FA]/10', 'dark:bg-[#5551FA]/20', 'shadow-md');
+            btnTypeInfluencer?.classList.add('border-slate-700', 'bg-slate-950/70');
+            btnTypeInfluencer?.querySelector('.char-type-check')?.classList.add('hidden');
+        }
+    }
+
+    btnTypeInfluencer?.addEventListener('click', () => setCharType('influencer'));
+    btnTypeArtist?.addEventListener('click', () => setCharType('artist'));
+
+    // 3. Clickable Chips for instant attribute population
+    document.querySelectorAll('.char-opt-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const parent = chip.parentElement;
+            if (!parent) return;
+
+            // Highlight chip
+            parent.querySelectorAll('.char-opt-chip').forEach(c => {
+                c.classList.remove('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                c.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            chip.classList.add('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+            chip.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+
+            // Find target input immediately following container
+            const val = chip.dataset.val || chip.textContent.trim();
+            const targetInput = parent.nextElementSibling?.tagName === 'INPUT' ? parent.nextElementSibling : parent.parentElement?.querySelector('input');
+            if (targetInput) {
+                targetInput.value = val;
+                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+    });
+
+    // 4. Trait Tags for Multi-Select Consistency DNA
+    const traitsTextarea = document.getElementById('char-input-traits');
+    document.querySelectorAll('.char-trait-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+            if (!traitsTextarea) return;
+            const val = tag.dataset.val || tag.textContent.replace('+', '').trim();
+            const current = traitsTextarea.value.trim();
+            if (current.includes(val)) {
+                // Remove if already included
+                traitsTextarea.value = current.split(',').map(s => s.trim()).filter(s => s && !s.includes(val)).join(', ');
+                tag.classList.remove('bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                tag.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            } else {
+                // Append
+                traitsTextarea.value = current ? `${current}, ${val}` : val;
+                tag.classList.add('bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                tag.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            }
+        });
+    });
+
+    // 5. Random Name Generator
+    const femaleNames = [
+        'Maya Putri', 'Alya Rahma', 'Clarissa Dewanti', 'Nadira Salsabila',
+        'Elena Vance', 'Chloe Lin', 'Syifa Maharani', 'Zara Amira',
+        'Michelle Tan', 'Freya Angeline', 'Diva Anindya', 'Keisha Lovata'
+    ];
+    const maleNames = [
+        'Rian Pratama', 'Kenzo Daiki', 'Arga Bagaskara', 'Dimas Satria',
+        'Leo Alexander', 'Kevin Wijaya', 'Nathan Alvaro', 'Rio Dewantara',
+        'Farhan Malik', 'Adrian Chen', 'Vino Aditya', 'Christian Ray'
+    ];
+
+    document.getElementById('btn-char-random-name')?.addEventListener('click', () => {
+        const isMale = inputGender?.value === 'male';
+        const list = isMale ? maleNames : femaleNames;
+        const randomName = list[Math.floor(Math.random() * list.length)];
+        if (nameInput) nameInput.value = randomName;
+        showToast(`Nama baru: "${randomName}"`, 'info');
+    });
+
+    // 6. Random All Persona
+    document.getElementById('btn-char-random-all')?.addEventListener('click', () => {
+        const isMale = Math.random() > 0.5;
+        setGender(isMale ? 'male' : 'female');
+
+        const isArtist = Math.random() > 0.5;
+        setCharType(isArtist ? 'artist' : 'influencer');
+
+        // Pick random name
+        const nameList = isMale ? maleNames : femaleNames;
+        if (nameInput) nameInput.value = nameList[Math.floor(Math.random() * nameList.length)];
+
+        // Pick random chips
+        const chipGroups = [
+            'chips-char-age',
+            'chips-char-ethnicity',
+            'chips-char-skin',
+            isMale ? 'chips-hair-male' : 'chips-hair-female',
+            'chips-char-haircolor',
+            'chips-char-body',
+            'chips-char-niche',
+            'chips-char-vibe'
+        ];
+
+        chipGroups.forEach(groupId => {
+            const container = document.getElementById(groupId);
+            if (!container) return;
+            const chips = container.querySelectorAll('.char-opt-chip');
+            if (chips.length > 0) {
+                const picked = chips[Math.floor(Math.random() * chips.length)];
+                picked.click();
+            }
+        });
+
+        // Pick 2 random traits
+        const traitTags = document.querySelectorAll('.char-trait-tag');
+        if (traitsTextarea && traitTags.length > 0) {
+            const picked1 = traitTags[Math.floor(Math.random() * traitTags.length)];
+            const picked2 = traitTags[Math.floor(Math.random() * traitTags.length)];
+            traitsTextarea.value = `${picked1.dataset.val}, ${picked2.dataset.val}`;
+        }
+
+        showToast('Persona karakter baru berhasil diacak secara lengkap!', 'success');
+    });
+
+    // Subtab Switching (Generator vs Gallery)
     const subtabGen = document.getElementById('char-subtab-generator');
     const subtabGal = document.getElementById('char-subtab-gallery');
     const viewGen = document.getElementById('char-view-generator');
     const viewGal = document.getElementById('char-view-gallery');
 
     subtabGen?.addEventListener('click', () => {
-        subtabGen.className = 'px-4 py-2 rounded-xl bg-pink-600 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-pink-500/25 transition';
+        subtabGen.className = 'px-4 py-2 rounded-xl bg-gradient-to-r from-[#5551FA] to-[#3B38D4] text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-[#5551FA]/25 transition';
         subtabGal.className = 'px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-2 border border-slate-800 transition';
         viewGen?.classList.remove('hidden');
         viewGal?.classList.add('hidden');
     });
 
     subtabGal?.addEventListener('click', () => {
-        subtabGal.className = 'px-4 py-2 rounded-xl bg-pink-600 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-pink-500/25 transition';
+        subtabGal.className = 'px-4 py-2 rounded-xl bg-gradient-to-r from-[#5551FA] to-[#3B38D4] text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-[#5551FA]/25 transition';
         subtabGen.className = 'px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-2 border border-slate-800 transition';
         viewGal?.classList.remove('hidden');
         viewGen?.classList.add('hidden');
@@ -2868,20 +3016,23 @@ function initCharacterMaker() {
     const btnGen = document.getElementById('btn-generate-character');
     btnGen?.addEventListener('click', async () => {
         const name = document.getElementById('char-input-name')?.value.trim() || 'Maya Putri';
-        const type = document.querySelector('input[name="char_type"]:checked')?.value || 'influencer';
+        const type = document.getElementById('char-input-type')?.value || 'influencer';
         const gender = document.getElementById('char-input-gender')?.value || 'female';
         const ageGroup = document.getElementById('char-input-age')?.value.trim() || '22';
         const ethnicity = document.getElementById('char-input-ethnicity')?.value || 'indonesian_natural';
+        const skinTone = document.getElementById('char-input-skin')?.value.trim() || 'Sawo matang alami';
         const hairStyle = document.getElementById('char-input-hair')?.value.trim();
+        const hairColor = document.getElementById('char-input-haircolor')?.value.trim() || 'Hitam alami';
         const bodyType = document.getElementById('char-input-body')?.value.trim();
-        const fashionStyle = document.getElementById('char-input-fashion')?.value.trim();
         const niche = document.getElementById('char-input-niche')?.value.trim();
         const vibe = document.getElementById('char-input-vibe')?.value.trim();
         const customTraits = document.getElementById('char-input-traits')?.value.trim();
+        const targetEngine = document.getElementById('char-input-engine')?.value || 'gemini';
+        const lightingStyle = document.getElementById('char-input-lighting')?.value || 'studio';
 
         btnGen.disabled = true;
         const oldHtml = btnGen.innerHTML;
-        btnGen.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Merancang Profil Karakter & Turnaround Sheet...</span>`;
+        btnGen.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-white"></i><span class="text-white">Merancang DNA Karakter & Turnaround Sheet...</span>`;
         lucide.createIcons();
 
         try {
@@ -2891,12 +3042,15 @@ function initCharacterMaker() {
                 gender,
                 ageGroup,
                 ethnicity,
+                skinTone,
                 hairStyle,
+                hairColor,
                 bodyType,
-                fashionStyle,
                 niche,
                 vibe,
-                customTraits
+                customTraits,
+                targetEngine,
+                lightingStyle
             });
 
             activeCharacter = char;
@@ -2926,7 +3080,8 @@ function initCharacterMaker() {
         }
     });
 
-    // Upload Render Sheet from Results
+
+        // Upload Render Sheet from Results
     const fileInput = document.getElementById('char-file-input');
     fileInput?.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
