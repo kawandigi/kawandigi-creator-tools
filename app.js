@@ -27,7 +27,7 @@ import {
 } from './modules/gemini_api.js';
 import { hasToolAccess, activateLicenseKey, getLicenses, getTrialUsage, resetTrialUsage, FREE_TRIAL_LIMIT, getDeviceId, getDeviceName, fetchUserLicenseStatus } from './modules/license_manager.js';
 import { extractProductDetails, extractDetailsFromImage, extractDetailsFromMultipleImages, extractProductSimultaneous, generateUgcCampaign } from './modules/ugc_creator.js';
-import { generateDramaEpisode } from './modules/drama_creator.js';
+import { analyzeProductForDrama, generateDramaSketch, PLACEMENT_TYPES } from './modules/drama_creator.js';
 import { renderInAppSceneVideo } from './modules/video_renderer.js';
 import { 
     getHistory, 
@@ -1820,101 +1820,275 @@ function renderUgcResults(campaign) {
 // =========================================================================
 // AI DRAMA & MICRO-SERIES CREATOR CONTROLLER
 // =========================================================================
+let dramaUploadedImages = [];
+let currentDramaSketch = null;
+
 function initDramaCreator() {
-    // Preset Demo Button
-    const btnDramaPreset = document.getElementById('btn-drama-preset-demo');
-    btnDramaPreset?.addEventListener('click', () => {
-        const preset = DRAMA_PRESETS[currentDramaPresetIndex % DRAMA_PRESETS.length];
-        currentDramaPresetIndex++;
+    // 1. Image Upload & Dropzone Handling
+    const dropzone = document.getElementById('drama-dropzone');
+    const fileInput = document.getElementById('drama-file-input');
+    const previewContainer = document.getElementById('drama-img-preview');
+    const previewImg = document.getElementById('drama-preview-tag');
+    const btnRemoveImg = document.getElementById('btn-drama-remove-img');
 
-        const titleInput = document.getElementById('drama-title');
-        const epInput = document.getElementById('drama-episode-num');
-        const genreSelect = document.getElementById('drama-genre');
-        const premiseInput = document.getElementById('drama-premise');
-        const heroNameInput = document.getElementById('drama-hero-name');
-        const heroDescInput = document.getElementById('drama-hero-desc');
-        const villainNameInput = document.getElementById('drama-villain-name');
-        const villainDescInput = document.getElementById('drama-villain-desc');
-
-        if (titleInput) titleInput.value = preset.title;
-        if (epInput) epInput.value = preset.episode;
-        if (genreSelect) genreSelect.value = preset.genre;
-        if (premiseInput) premiseInput.value = preset.premise;
-        if (heroNameInput) heroNameInput.value = preset.heroName;
-        if (heroDescInput) heroDescInput.value = preset.heroDesc;
-        if (villainNameInput) villainNameInput.value = preset.villainName;
-        if (villainDescInput) villainDescInput.value = preset.villainDesc;
-        setDramaScenes(preset.scenes);
-
-        showToast(`Contoh dimuat: ${preset.title}`, 'info');
+    dropzone?.addEventListener('click', (e) => {
+        if (e.target !== btnRemoveImg && !btnRemoveImg?.contains(e.target)) {
+            fileInput?.click();
+        }
     });
 
-    // Drama Duration Buttons
-    const durationButtons = document.querySelectorAll('.btn-drama-duration');
-    durationButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const scenes = parseInt(btn.dataset.dramaScenes, 10);
-            setDramaScenes(scenes);
+    fileInput?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) handleDramaFile(file);
+    });
+
+    // Drag & Drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone?.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-brand-500', 'bg-slate-900');
+        }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone?.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-brand-500', 'bg-slate-900');
+        }, false);
+    });
+    dropzone?.addEventListener('drop', (e) => {
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleDramaFile(file);
+    });
+
+    // Paste Image from Clipboard (Ctrl + V)
+    window.addEventListener('paste', (e) => {
+        // Only if drama tab is active
+        const dramaSection = document.getElementById('section-drama');
+        if (!dramaSection || dramaSection.classList.contains('hidden')) return;
+
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                if (blob) {
+                    handleDramaFile(blob);
+                    showToast('Foto produk berhasil ditempel dari Clipboard!', 'success');
+                    break;
+                }
+            }
+        }
+    });
+
+    function handleDramaFile(file) {
+        if (!file.type.startsWith('image/')) {
+            showToast('Harap pilih file gambar (JPG/PNG/WebP).', 'error');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const dataUrl = evt.target.result;
+            dramaUploadedImages = [dataUrl];
+            if (previewImg) previewImg.src = dataUrl;
+            previewContainer?.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    btnRemoveImg?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dramaUploadedImages = [];
+        if (fileInput) fileInput.value = '';
+        previewContainer?.classList.add('hidden');
+        if (previewImg) previewImg.src = '';
+    });
+
+    // 2. Analisa Produk & Rekomendasikan Konsep Sketsa
+    const btnAnalyze = document.getElementById('btn-drama-analyze');
+    btnAnalyze?.addEventListener('click', async () => {
+        const prodName = document.getElementById('drama-product-name')?.value.trim();
+        const prodCategory = document.getElementById('drama-product-category')?.value;
+        const prodUrl = document.getElementById('drama-product-url')?.value.trim();
+
+        if (!prodName && !prodUrl && dramaUploadedImages.length === 0) {
+            showToast('Masukkan nama produk, link marketplace, atau unggah foto produk terlebih dahulu.', 'error');
+            return;
+        }
+
+        btnAnalyze.disabled = true;
+        const oldHtml = btnAnalyze.innerHTML;
+        btnAnalyze.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menganalisa Produk & Merancang 3 Konsep...</span>`;
+        if (window.lucide) window.lucide.createIcons();
+
+        try {
+            const analysis = await analyzeProductForDrama({
+                productName: prodName,
+                productCategory: prodCategory,
+                productUrl: prodUrl,
+                productImages: dramaUploadedImages
+            });
+
+            renderDramaRecommendations(analysis.recommendations);
+            showToast('3 Konsep sketsa drama berhasil dirancang oleh AI!', 'success');
+        } catch (err) {
+            console.error('[DramaAnalysis] Error:', err);
+            showToast('Gagal menganalisa produk: ' + err.message, 'error');
+        } finally {
+            btnAnalyze.disabled = false;
+            btnAnalyze.innerHTML = oldHtml;
+            if (window.lucide) window.lucide.createIcons();
+        }
+    });
+
+    // 3. Click handler for Recommendation Concept Cards
+    function wireRecCards() {
+        document.querySelectorAll('.drama-rec-card').forEach(card => {
+            card.onclick = () => {
+                const type = card.dataset.type;
+                const title = card.dataset.title;
+                const premise = card.dataset.premise;
+
+                const inputTitle = document.getElementById('drama-input-title');
+                const inputPremise = document.getElementById('drama-input-premise');
+                const inputPlacement = document.getElementById('drama-input-placement');
+
+                if (inputTitle && title) inputTitle.value = title;
+                if (inputPremise && premise) inputPremise.value = premise;
+                if (inputPlacement && type) inputPlacement.value = type;
+
+                // Update active placement chip
+                document.querySelectorAll('#chips-drama-placement .drama-placement-chip').forEach(chip => {
+                    if (chip.dataset.val === type) {
+                        chip.classList.add('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                        chip.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                    } else {
+                        chip.classList.remove('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                        chip.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                    }
+                });
+
+                // Highlight chosen card
+                document.querySelectorAll('.drama-rec-card').forEach(c => c.classList.remove('border-brand-500', 'bg-brand-500/10'));
+                card.classList.add('border-brand-500', 'bg-brand-500/10');
+
+                showToast(`Konsep "${title}" diterapkan ke form!`, 'info');
+            };
+        });
+    }
+    wireRecCards();
+
+    function renderDramaRecommendations(recs) {
+        const list = document.getElementById('drama-rec-list');
+        if (!list || !Array.isArray(recs)) return;
+
+        const badgeColors = {
+            'plot_twist': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+            'hero_solver': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+            'casual_in_use': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+            'contrast': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+            'comic_prop': 'bg-pink-500/20 text-pink-300 border-pink-500/30'
+        };
+
+        list.innerHTML = recs.map(rec => {
+            const badgeClass = badgeColors[rec.placement_type] || 'bg-brand-500/20 text-brand-300 border-brand-500/30';
+            return `
+                <div class="drama-rec-card p-3 rounded-xl border border-slate-700 bg-slate-950/70 hover:border-brand-500/70 transition space-y-2 cursor-pointer group"
+                     data-type="${rec.placement_type}"
+                     data-title="${rec.title}"
+                     data-premise="${rec.hook_premise}">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeClass}">${rec.placement_name}</span>
+                        <span class="text-[10px] text-brand-400 font-bold group-hover:underline">Gunakan Konsep Ini ✨</span>
+                    </div>
+                    <h5 class="text-xs font-bold text-slate-900 dark:text-white">${rec.title}</h5>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">${rec.hook_premise}</p>
+                    ${rec.why_it_works ? `<p class="text-[10px] text-brand-500 dark:text-brand-300 font-medium">💡 ${rec.why_it_works}</p>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        wireRecCards();
+    }
+
+    // 4. Placement Type Chips
+    document.querySelectorAll('#chips-drama-placement .drama-placement-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#chips-drama-placement .drama-placement-chip').forEach(c => {
+                c.classList.remove('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                c.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            chip.classList.add('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+            chip.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+
+            const hiddenInput = document.getElementById('drama-input-placement');
+            if (hiddenInput) hiddenInput.value = chip.dataset.val;
         });
     });
 
-    // Generate Drama Episode Button
-    const btnGenerateDrama = document.getElementById('btn-generate-drama');
-    btnGenerateDrama?.addEventListener('click', handleGenerateDrama);
+    // 5. Duration Toggles (30s vs 60s)
+    document.querySelectorAll('#drama-duration-toggles .btn-drama-duration-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#drama-duration-toggles .btn-drama-duration-toggle').forEach(b => {
+                b.classList.remove('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+                b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            btn.classList.add('active', 'bg-[#5551FA]', 'text-white', 'border-[#5551FA]');
+            btn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
 
-    // Copy All Drama Prompts
-    const btnCopyAllDrama = document.getElementById('btn-copy-all-drama-prompts');
-    btnCopyAllDrama?.addEventListener('click', () => {
-        if (!currentDramaEpisode || !currentDramaEpisode.scenes) return;
-        const ep = currentDramaEpisode.episode_info || {};
-        let text = `NASKAH DRAMA PRODUKSI — ${ep.series_title || 'Serial'} (Episode ${ep.episode_number || 1}: ${ep.episode_title || '-'})\n`;
-        text += `Genre: ${ep.genre || 'Drama'} | Logline: ${ep.logline || '-'}\n\n`;
+            const durInput = document.getElementById('drama-input-duration');
+            if (durInput) durInput.value = btn.dataset.duration;
+        });
+    });
 
-        (currentDramaEpisode.scenes || []).forEach(s => {
-            text += `ADEGAN ${s.scene_number} (${s.duration_seconds || 10}s) — ${s.scene_title || 'SCENE'}\n`;
-            text += `- Visual & Karakter: ${s.visual_direction || '-'}\n`;
+    // 6. Generate Drama Sketch Button
+    const btnGenerate = document.getElementById('btn-generate-drama');
+    btnGenerate?.addEventListener('click', handleGenerateDramaSketch);
+
+    // 7. Copy All Prompts Button
+    const btnCopyAll = document.getElementById('btn-copy-all-drama-prompts');
+    btnCopyAll?.addEventListener('click', () => {
+        if (!currentDramaSketch || !currentDramaSketch.scenes) return;
+        const info = currentDramaSketch.sketch_info || {};
+        const cue = currentDramaSketch.placement_guide || {};
+
+        let text = `NASKAH SKETSA DRAMA PRODUCT PLACEMENT — ${info.title || 'Sketsa Drama'}\n`;
+        text += `Produk: ${info.product_name || '-'} | Tipe: ${info.placement_name || '-'} | Durasi: ${info.duration_seconds || 30}s\n`;
+        text += `Logline: "${info.logline || '-'}"\n\n`;
+
+        text += `PANDUAN PENEMPATAN PRODUK (PRODUCT PLACEMENT CUE):\n`;
+        text += `- Waktu Masuk: ${cue.entry_second_cue || '-'}\n`;
+        text += `- Teknik Memegang: ${cue.holding_technique || '-'}\n`;
+        text += `- Framing Kamera: ${cue.camera_framing || '-'}\n`;
+        text += `- Reaksi Aktor: ${cue.actor_reaction || '-'}\n\n`;
+
+        (currentDramaSketch.scenes || []).forEach(s => {
+            text += `ADEGAN ${s.scene_number} (${s.timestamp || ''}) — ${s.scene_title || 'Scene'}\n`;
+            text += `- Visual & Aksi: ${s.visual_action || '-'}\n`;
             text += `- Dialog: "${s.dialogue || '-'}"\n`;
-            if (s.sound_fx) text += `- Sound FX / Musik: ${s.sound_fx}\n`;
-            if (s.google_flow_prompt) text += `- Prompt Google Flow (Konsisten Tokoh): ${s.google_flow_prompt}\n`;
+            if (s.audio_sfx) text += `- Sound FX: ${s.audio_sfx}\n`;
+            if (s.google_flow_prompt) text += `- Prompt Google Flow (Veo AI): ${s.google_flow_prompt}\n`;
             text += `\n`;
         });
 
-        if (currentDramaEpisode.cliffhanger_hook) {
-            text += `🔥 CLIFFHANGER HOOK AKHIR: "${currentDramaEpisode.cliffhanger_hook}"\n`;
+        if (currentDramaSketch.call_to_action) {
+            text += `CALL TO ACTION PENUTUP: "${currentDramaSketch.call_to_action}"\n`;
         }
 
-        copyToClipboard(text.trim(), 'Seluruh naskah & prompt drama berhasil disalin!');
+        copyToClipboard(text.trim(), 'Seluruh naskah sketsa & panduan placement disalin!');
     });
 }
 
-async function handleGenerateDrama() {
-    const apiKey = getSavedApiKey();
-    const provider = getActiveProvider();
-    if (!apiKey && provider !== 'custom') {
-        const pName = AI_PROVIDERS[provider]?.name || 'AI';
-        showToast(`Masukkan API Key ${pName} Anda terlebih dahulu di Pengaturan API.`, 'error');
-        openApiKeyModal();
-        return;
-    }
+async function handleGenerateDramaSketch() {
+    const prodName = document.getElementById('drama-product-name')?.value.trim() || 'Produk Unggulan';
+    const prodCategory = document.getElementById('drama-product-category')?.value;
+    const placementType = document.getElementById('drama-input-placement')?.value || 'plot_twist';
+    const sketchTitle = document.getElementById('drama-input-title')?.value.trim();
+    const sketchPremise = document.getElementById('drama-input-premise')?.value.trim();
+    const charsCount = parseInt(document.getElementById('drama-input-chars')?.value, 10) || 2;
+    const dialogueTone = document.getElementById('drama-input-tone')?.value || 'santai_jakarta';
+    const durationSeconds = parseInt(document.getElementById('drama-input-duration')?.value, 10) || 30;
+    const includeDoodle = document.getElementById('drama-input-doodle')?.checked || false;
 
-    const access = hasToolAccess('drama');
-    if (!access.allowed) {
-        showToast('Batas trial AI Drama habis. Silakan aktivasi lisensi di tab Lisensi.', 'error');
-        switchTab('license');
-        return;
-    }
-
-    const seriesTitle = document.getElementById('drama-title').value.trim();
-    const episodeNumber = parseInt(document.getElementById('drama-episode-num').value, 10) || 1;
-    const genre = document.getElementById('drama-genre').value;
-    const storyPremise = document.getElementById('drama-premise').value.trim();
-
-    const heroName = document.getElementById('drama-hero-name').value.trim();
-    const heroDesc = document.getElementById('drama-hero-desc').value.trim();
-    const villainName = document.getElementById('drama-villain-name').value.trim();
-    const villainDesc = document.getElementById('drama-villain-desc').value.trim();
-
-    // UI state switch: show loading
     const emptyState = document.getElementById('drama-empty-state');
     const loadingState = document.getElementById('drama-loading-state');
     const resultsContainer = document.getElementById('drama-results');
@@ -1927,338 +2101,229 @@ async function handleGenerateDrama() {
     loadingState?.classList.remove('hidden');
 
     const originalBtnContent = btnGenerate ? btnGenerate.innerHTML : '';
-    let progressInterval = null;
-
     if (btnGenerate) {
         btnGenerate.disabled = true;
-        btnGenerate.classList.add('btn-generating-active');
-        btnGenerate.innerHTML = `
-            <svg class="animate-spin w-4 h-4 text-white flex-shrink-0 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-            <span id="btn-generate-ugc-text" class="text-xs sm:text-sm font-bold tracking-wide">AI Menganalisis Formula Hook Viral...</span>
-        `;
-
-        const progressSteps = [
-            'AI Menganalisis Formula Hook Viral...',
-            'AI Merancang Prompt Google Flow 10s...',
-            'AI Menyiapkan Naskah & Audio Natural...',
-            'AI Menyusun Template Caption Shopee...',
-            'AI Menyelesaikan Storyboard Produksi...'
-        ];
-        let stepIdx = 0;
-        progressInterval = setInterval(() => {
-            stepIdx = (stepIdx + 1) % progressSteps.length;
-            const textEl = document.getElementById('btn-generate-ugc-text');
-            if (textEl) textEl.textContent = progressSteps[stepIdx];
-        }, 2000);
+        btnGenerate.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-white"></i><span class="text-white">AI Menyusun Naskah Sketsa & Cue Placement...</span>`;
+        if (window.lucide) window.lucide.createIcons();
     }
 
     try {
-        const drama = await generateDramaEpisode({
-            seriesTitle,
-            genre,
-            episodeNumber,
-            storyPremise,
-            protagonist: {
-                name: heroName,
-                role: 'Tokoh Utama Protagonis',
-                visual: heroDesc
-            },
-            antagonist: {
-                name: villainName,
-                role: 'Tokoh Lawan Antagonis',
-                visual: villainDesc
-            },
-            sceneCount: selectedDramaScenes
+        const sketch = await generateDramaSketch({
+            productName: prodName,
+            productCategory: prodCategory,
+            placementType,
+            sketchTitle,
+            sketchPremise,
+            charactersCount: charsCount,
+            dialogueTone,
+            durationSeconds,
+            includeDoodle
         });
 
-        currentDramaEpisode = drama;
-        renderDramaResults(drama);
+        currentDramaSketch = sketch;
+        renderDramaResults(sketch);
         actionsHeader?.classList.remove('hidden');
-        updateLicenseCards();
 
-        // Save to History (Max 20 projects, persists across refresh)
+        // Save to History
         saveProjectToHistory({
-            type: 'drama',
-            title: drama.series_title ? `${drama.series_title} (Ep. ${drama.episode_number || episodeNumber})` : seriesTitle,
-            category: genre,
-            duration: (drama.scenes?.length || selectedDramaScenes) * 15,
-            tone: genre,
-            previewText: drama.logline || drama.scenes?.[0]?.voiceover || '',
-            inputs: {
-                seriesTitle,
-                genre,
-                episodeNumber,
-                storyPremise,
-                heroName,
-                heroDesc,
-                villainName,
-                villainDesc,
-                sceneCount: selectedDramaScenes
-            },
-            data: drama
+            type: 'drama_sketch',
+            title: sketch.sketch_info?.title || sketchTitle || prodName,
+            category: prodCategory,
+            duration: durationSeconds,
+            tone: dialogueTone,
+            previewText: sketch.sketch_info?.logline || sketchPremise || '',
+            data: sketch
         });
-        recordGenerationActivity('AI Drama', drama.series_title || 'Drama Script', 15);
 
-        showToast(`Episode ${episodeNumber} berhasil ditulis & disimpan ke Riwayat!`, 'success');
+        if (typeof recordGenerationActivity === 'function') {
+            recordGenerationActivity('Sketsa Drama', sketch.sketch_info?.title || prodName, 15);
+        }
+
+        showToast(`Naskah sketsa drama "${sketch.sketch_info?.title || prodName}" berhasil dibuat!`, 'success');
+
+        // Scroll smoothly to results
+        resultsContainer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-        showToast(err.message, 'error');
+        console.error('[DramaSketch] Generate error:', err);
+        showToast('Gagal menghasilkan sketsa drama: ' + err.message, 'error');
         emptyState?.classList.remove('hidden');
     } finally {
-        if (progressInterval) clearInterval(progressInterval);
         loadingState?.classList.add('hidden');
         if (btnGenerate) {
             btnGenerate.disabled = false;
-            btnGenerate.classList.remove('btn-generating-active');
             btnGenerate.innerHTML = originalBtnContent;
-        }
-        if (window.innerWidth < 1024 && resultsContainer && !resultsContainer.classList.contains('hidden')) {
-            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         if (window.lucide) window.lucide.createIcons();
     }
 }
 
-function renderDramaResults(drama) {
+function renderDramaResults(sketch) {
     const resultsContainer = document.getElementById('drama-results');
     const summaryCard = document.getElementById('drama-summary-card');
+    const cueBox = document.getElementById('drama-placement-cue-box');
     const sceneList = document.getElementById('drama-scene-list');
+    const ctaBox = document.getElementById('drama-cta-box');
 
+    if (!resultsContainer) return;
     resultsContainer.classList.remove('hidden');
 
-    const ep = drama.episode_info || {};
-    summaryCard.innerHTML = `
-        <div class="flex items-center justify-between font-bold text-accent-300 text-xs pb-1 border-b border-accent-500/20">
-            <span class="flex items-center gap-1.5"><i data-lucide="clapperboard" class="w-4 h-4 text-accent-400"></i> ${ep.series_title || 'Serial'} • Episode ${ep.episode_number || 1}</span>
-            <span class="px-2 py-0.5 rounded-full bg-accent-500/20 text-[10px] font-extrabold uppercase">${ep.genre || 'Drama'}</span>
-        </div>
-        <div class="pt-1.5 text-slate-300 space-y-1 text-[11px]">
-            <p><strong class="text-white">Judul Episode:</strong> ${ep.episode_title || '-'}</p>
-            <p><strong class="text-white">Logline:</strong> ${ep.logline || '-'}</p>
-            <div class="p-2 bg-accent-950/40 border border-accent-500/30 rounded-lg text-accent-200 mt-2">
-                <span class="font-bold text-white text-[10px] uppercase block mb-0.5">🔥 Cliffhanger Hook Akhir:</span>
-                "${drama.cliffhanger_hook || 'Saksikan kelanjutannya di Episode berikutnya!'}"
-            </div>
-        </div>
-    `;
+    const info = sketch.sketch_info || {};
+    const cue = sketch.placement_guide || {};
 
-    // Render Scene Cards
-    sceneList.innerHTML = '';
-    const scenes = drama.scenes || [];
-
-    scenes.forEach((scene, index) => {
-        const sceneCard = document.createElement('div');
-        sceneCard.className = 'bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3 fade-in hover:border-accent-500/40 transition';
-
-        sceneCard.innerHTML = `
-            <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+    // 1. Summary Card
+    if (summaryCard) {
+        summaryCard.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-brand-500/20 gap-1.5">
                 <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-lg bg-accent-600/30 text-accent-400 font-bold text-xs flex items-center justify-center border border-accent-500/30">
-                        ${scene.scene_number || (index + 1)}
+                    <span class="w-6 h-6 rounded-lg bg-brand-500/20 text-brand-600 dark:text-brand-300 font-bold flex items-center justify-center">
+                        <i data-lucide="clapperboard" class="w-3.5 h-3.5"></i>
                     </span>
-                    <h4 class="text-xs font-bold text-white tracking-wide uppercase">${scene.scene_name || `Scene ${index + 1}`}</h4>
+                    <h4 class="text-sm font-black text-slate-900 dark:text-white">${info.title || 'Sketsa Drama'}</h4>
                 </div>
-                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-semibold border border-slate-700">
-                    ⏱️ ${scene.duration_seconds || 10} Detik
-                </span>
-            </div>
-
-            <!-- Action Description -->
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Aksi & Situasi Adegan:</label>
-                <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
-                    ${scene.action_description || '-'}
-                </p>
-            </div>
-
-            <!-- Dialogue -->
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dialog Karakter:</label>
-                    <div class="flex items-center gap-2">
-                        <button class="btn-play-dialogue text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold">
-                            <i data-lucide="volume-2" class="w-3 h-3"></i> Putar Dialog
-                        </button>
-                        <button class="btn-copy-dialogue text-[10px] text-accent-400 hover:text-accent-300 flex items-center gap-1 font-semibold">
-                            <i data-lucide="copy" class="w-3 h-3"></i> Salin Dialog
-                        </button>
-                    </div>
-                </div>
-                <p class="text-xs text-white font-medium bg-slate-900/80 border border-slate-800 p-2.5 rounded-lg leading-relaxed">
-                    ${scene.dialogue || '-'}
-                </p>
-            </div>
-
-            ${scene.sound_fx ? `
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Sound FX / Music Cue:</label>
-                <div class="text-[11px] text-slate-400 italic">
-                    🎵 ${scene.sound_fx}
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 text-[10px] font-bold border border-brand-500/30">${info.placement_name || 'Product Placement'}</span>
+                    <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-bold border border-slate-700">⏱️ ${info.duration_seconds || 30}s</span>
                 </div>
             </div>
-            ` : ''}
+            <p class="text-xs text-slate-600 dark:text-slate-300 pt-1 leading-relaxed"><strong class="text-slate-900 dark:text-white">Logline:</strong> "${info.logline || '-'}"</p>
+        `;
+    }
 
-            <!-- 1-Click Google Flow Bridge (Character Consistency) -->
-            <div class="mt-2 p-3 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2.5 shadow-lg">
-                <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-emerald-300">Google Flow (Veo Drama Scene)</span>
-                                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded-full font-bold">100% Gratis</span>
-                            </div>
-                            <p class="text-[10px] text-slate-400">Konsistensi karakter & sinematik drama 9:16 vertikal</p>
-                        </div>
-                    </div>
-                    <button class="btn-flow-render px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition transform active:scale-95 flex-shrink-0">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                        <span>Buka di Google Flow</span>
-                    </button>
-                </div>
-
-                <!-- Prompt box with Copy button -->
-                <div class="bg-slate-950/80 border border-emerald-500/20 rounded-lg p-2.5 flex items-start justify-between gap-2">
-                    <p class="prompt-text text-[11px] text-slate-300 font-mono leading-relaxed select-all">
-                        ${scene.google_flow_prompt}
-                    </p>
-                    <button class="btn-copy-prompt text-emerald-400 hover:text-emerald-300 text-[10px] font-bold flex items-center gap-1 flex-shrink-0 bg-emerald-950/60 border border-emerald-500/30 px-2 py-1 rounded">
-                        <i data-lucide="copy" class="w-3 h-3"></i> Salin
-                    </button>
-                </div>
-                <div class="flow-status-msg hidden text-[11px] text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 p-2 rounded-lg flex items-center gap-1.5">
-                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
-                    <span>Prompt tersalin di clipboard! Di tab Google Flow, tinggal tekan Ctrl+V (Paste) lalu klik Generate.</span>
-                </div>
+    // 2. Product Placement Cue Box
+    if (cueBox) {
+        cueBox.innerHTML = `
+            <div class="flex items-center gap-2 font-black text-amber-500 dark:text-amber-400 text-xs pb-1.5 border-b border-amber-500/20">
+                <i data-lucide="crosshair" class="w-4 h-4"></i>
+                <span>PANDUAN PENEMPATAN PRODUK (PRODUCT PLACEMENT CUE)</span>
             </div>
-
-            <!-- Video & Visual Generator Controls -->
-            <div class="pt-2 border-t border-slate-900 space-y-2">
-                <button class="btn-render-inapp w-full py-2 bg-gradient-to-r from-accent-600 to-brand-600 hover:from-accent-500 hover:to-brand-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-md shadow-accent-500/20 transition">
-                    <i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i>
-                    <span>Buat Video In-App (Tanpa Pindah Tab)</span>
-                </button>
-
-                <!-- Secondary Link: Google Gemini Omni Video API -->
-                <button class="btn-generate-video text-[10px] text-slate-500 hover:text-slate-300 underline text-center block w-full py-0.5">
-                    Coba Generate via Google Gemini Omni Video API (.mp4)
-                </button>
-
-                <!-- Video Player Container -->
-                <div class="video-container hidden text-center space-y-2 pt-2 bg-slate-900/60 p-3 rounded-xl border border-accent-500/30">
-                    <video class="scene-video-player mx-auto rounded-xl border border-accent-500/50 max-h-80 w-auto shadow-2xl" controls autoplay loop playsinline></video>
-                    <div class="flex items-center justify-center gap-2 pt-1">
-                        <a class="btn-download-video text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" download="drama-scene.webm">
-                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Video (.webm)
-                        </a>
-                    </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-[11px] text-slate-700 dark:text-slate-300">
+                <div class="p-2 rounded-lg bg-slate-900 border border-slate-800 space-y-0.5">
+                    <span class="text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase block">⏱️ Waktu Masuk Produk (Cue):</span>
+                    <p class="font-medium text-slate-900 dark:text-white">${cue.entry_second_cue || 'Detik ke-15'}</p>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900 border border-slate-800 space-y-0.5">
+                    <span class="text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase block">📷 Sudut & Framing Kamera:</span>
+                    <p class="font-medium text-slate-900 dark:text-white">${cue.camera_framing || 'Close-up shot tajam ke produk'}</p>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900 border border-slate-800 space-y-0.5 sm:col-span-2">
+                    <span class="text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase block">🖐️ Cara Memegang Produk (Holding Technique):</span>
+                    <p class="font-medium text-slate-900 dark:text-white">${cue.holding_technique || 'Pegang produk setinggi dada menghadap kamera'}</p>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900 border border-slate-800 space-y-0.5 sm:col-span-2">
+                    <span class="text-[10px] font-bold text-amber-500 dark:text-amber-400 uppercase block">😃 Reaksi & Gestur Aktor:</span>
+                    <p class="font-medium text-slate-900 dark:text-white">${cue.actor_reaction || 'Ekspresi kagum dan puas'}</p>
                 </div>
             </div>
         `;
+    }
 
-        // Wire Copy Dialogue
-        sceneCard.querySelector('.btn-copy-dialogue')?.addEventListener('click', () => {
-            copyToClipboard(scene.dialogue, `Dialog Scene ${scene.scene_number} disalin!`);
+    // 3. Scene Breakdown Cards
+    if (sceneList) {
+        sceneList.innerHTML = '';
+        const scenes = sketch.scenes || [];
+
+        scenes.forEach((scene, index) => {
+            const card = document.createElement('div');
+            card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3';
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-500/20 text-brand-500 font-bold text-xs flex items-center justify-center border border-brand-500/30">
+                            ${scene.scene_number || (index + 1)}
+                        </span>
+                        <h5 class="text-xs font-bold text-slate-900 dark:text-white">${scene.scene_title || `Adegan ${index + 1}`}</h5>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 text-[10px] font-semibold border border-slate-800">
+                        ⏱️ ${scene.timestamp || '00:00 - 00:10'}
+                    </span>
+                </div>
+
+                <!-- Visual Action -->
+                <div class="space-y-1">
+                    <span class="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 block">Aksi & Visual Scene:</span>
+                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                        ${scene.visual_action || '-'}
+                    </p>
+                </div>
+
+                <!-- Dialogue -->
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">Naskah Dialog:</span>
+                        <button type="button" class="btn-copy-scene-dialogue text-[10px] text-brand-500 hover:text-brand-400 font-bold flex items-center gap-1 transition">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>Salin Dialog</span>
+                        </button>
+                    </div>
+                    <div class="text-xs font-medium text-slate-900 dark:text-white bg-slate-900 p-2.5 rounded-lg border border-slate-800 leading-relaxed whitespace-pre-wrap">
+                        ${scene.dialogue || '-'}
+                    </div>
+                </div>
+
+                ${scene.audio_sfx ? `
+                <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                    <span>🎵</span>
+                    <strong class="text-slate-300">Sound FX:</strong>
+                    <span>${scene.audio_sfx}</span>
+                </div>
+                ` : ''}
+
+                <!-- Google Flow Veo Prompt Box -->
+                <div class="mt-2 p-3 bg-slate-900 border border-brand-500/30 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-brand-500 dark:text-brand-300 flex items-center gap-1.5">
+                            <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                            Prompt Video Google Flow (Veo AI 9:16):
+                        </span>
+                        <button type="button" class="btn-copy-flow-prompt px-2.5 py-1 rounded bg-brand-500/15 hover:bg-brand-500/25 text-brand-500 dark:text-brand-300 text-[10px] font-bold border border-brand-500/30 flex items-center gap-1 transition">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span>Salin Prompt</span>
+                        </button>
+                    </div>
+                    <pre class="text-[11px] text-slate-300 font-mono bg-slate-950 p-2.5 rounded-lg leading-relaxed whitespace-pre-wrap select-all">${scene.google_flow_prompt || ''}</pre>
+                </div>
+            `;
+
+            // Wire dialogue copy
+            card.querySelector('.btn-copy-scene-dialogue')?.addEventListener('click', () => {
+                copyToClipboard(scene.dialogue, `Dialog Adegan ${index + 1} disalin!`);
+            });
+
+            // Wire Flow prompt copy
+            card.querySelector('.btn-copy-flow-prompt')?.addEventListener('click', () => {
+                copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Adegan ${index + 1} disalin!`);
+            });
+
+            sceneList.appendChild(card);
         });
+    }
 
-        // Wire Play Dialogue (Web Speech Audio)
-        sceneCard.querySelector('.btn-play-dialogue')?.addEventListener('click', () => {
-            speakVoiceover(scene.dialogue);
+    // 4. CTA Box
+    if (ctaBox) {
+        ctaBox.innerHTML = `
+            <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+                <span class="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    Ajakan Checkout Penutup (Call To Action):
+                </span>
+                <button type="button" id="btn-copy-drama-cta" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1">
+                    <i data-lucide="copy" class="w-3 h-3"></i> Salin CTA
+                </button>
+            </div>
+            <p class="text-xs font-medium text-slate-200 pt-1 leading-relaxed">
+                "${sketch.call_to_action || 'Klik keranjang kuning di bawah sekarang juga!'}"
+            </p>
+        `;
+
+        ctaBox.querySelector('#btn-copy-drama-cta')?.addEventListener('click', () => {
+            copyToClipboard(sketch.call_to_action, 'Teks Call to Action disalin!');
         });
-
-        // Wire Copy Prompt
-        sceneCard.querySelector('.btn-copy-prompt')?.addEventListener('click', () => {
-            copyToClipboard(scene.google_flow_prompt, `Prompt Google Flow Scene ${scene.scene_number} disalin!`);
-        });
-
-        // Wire Google Flow 1-Click Bridge
-        const btnFlow = sceneCard.querySelector('.btn-flow-render');
-        const flowStatusMsg = sceneCard.querySelector('.flow-status-msg');
-        btnFlow?.addEventListener('click', async () => {
-            await copyToClipboard(scene.google_flow_prompt, `Prompt Adegan ${scene.scene_number || (index + 1)} disalin! Beralih ke Studio Google Flow...`);
-            switchTab('flow');
-            if (flowStatusMsg) flowStatusMsg.classList.remove('hidden');
-            btnFlow.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Buka di Studio Flow`;
-            if (window.lucide) window.lucide.createIcons();
-        });
-
-        // Wire In-App Video Renderer (Canvas + Pollinations + MediaRecorder)
-        const btnInApp = sceneCard.querySelector('.btn-render-inapp');
-        const videoContainer = sceneCard.querySelector('.video-container');
-        const videoPlayer = sceneCard.querySelector('.scene-video-player');
-        const btnDownloadVideo = sceneCard.querySelector('.btn-download-video');
-
-        btnInApp?.addEventListener('click', async () => {
-            btnInApp.disabled = true;
-            btnInApp.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Merender Video...`;
-
-            try {
-                // 1. Get visual artwork
-                const imageUrl = await generateImagen3(scene.google_flow_prompt, '9:16');
-
-                // 2. Play speech audio in sync
-                speakVoiceover(scene.dialogue);
-
-                // 3. Render animated video canvas
-                const videoBlobUrl = await renderInAppSceneVideo({
-                    imageUrl,
-                    durationSeconds: scene.duration_seconds || 5,
-                    captionText: scene.dialogue,
-                    voiceoverText: scene.dialogue,
-                    sceneNumber: scene.scene_number || (index + 1)
-                });
-
-                videoPlayer.src = videoBlobUrl;
-                btnDownloadVideo.href = videoBlobUrl;
-                btnDownloadVideo.download = `kawandigi-drama-ep${drama.episode_info?.episode_number || 1}-sc${scene.scene_number || (index + 1)}.webm`;
-                videoContainer.classList.remove('hidden');
-                btnInApp.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white"></i> Render Ulang Video`;
-                showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} berhasil dibuat!`, 'success');
-            } catch (err) {
-                showToast('Gagal merender video: ' + err.message, 'error');
-                btnInApp.innerHTML = `<i data-lucide="play-circle" class="w-3.5 h-3.5 text-white"></i> Buat Video In-App`;
-            } finally {
-                btnInApp.disabled = false;
-                if (window.lucide) window.lucide.createIcons();
-            }
-        });
-
-        // Wire Gemini Omni Video API (for accounts with Cloud billing)
-        const btnVideo = sceneCard.querySelector('.btn-generate-video');
-        btnVideo?.addEventListener('click', async () => {
-            btnVideo.disabled = true;
-            btnVideo.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin inline-block mr-1"></div> Menghubungi Gemini Omni API...`;
-            try {
-                const videoDataUrl = await generateOmniVideo(scene.google_flow_prompt, '9:16');
-                videoPlayer.src = videoDataUrl;
-                btnDownloadVideo.href = videoDataUrl;
-                btnDownloadVideo.download = `kawandigi-drama-ep${drama.episode_info?.episode_number || 1}-sc${scene.scene_number || (index + 1)}.mp4`;
-                videoContainer.classList.remove('hidden');
-                showToast(`Video Episode ${drama.episode_info?.episode_number || 1} Scene ${scene.scene_number || (index + 1)} siap ditonton!`, 'success');
-            } catch (err) {
-                if (err.message === 'FREE_TIER_VIDEO_LIMIT') {
-                    openVideoTierModal(scene.google_flow_prompt);
-                } else {
-                    showToast(err.message, 'error');
-                }
-            } finally {
-                btnVideo.disabled = false;
-                btnVideo.textContent = 'Coba Generate via Google Gemini Omni Video API (.mp4)';
-                if (window.lucide) window.lucide.createIcons();
-            }
-        });
-
-// Preview Imagen button removed for clean premium flow
-
-        sceneList.appendChild(sceneCard);
-    });
+    }
 
     if (window.lucide) window.lucide.createIcons();
 }
+
 
 // =========================================================================
 // LICENSE & ACCESS CONTROLLER

@@ -1145,3 +1145,93 @@ html:not(.dark) .char-trait-tag:not(.active):hover {
     background-color: #5551FA !important;
     border-color: #5551FA !important;
 }
+
+
+/* ==========================================================================
+   AI SKETSA DRAMA & PRODUCT PLACEMENT STUDIO - LIGHT & DARK THEME ENHANCEMENTS
+   ========================================================================== */
+
+/* Drama Recommendation Cards */
+.drama-rec-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+.drama-rec-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(85, 81, 250, 0.12);
+}
+
+/* Light Mode Overrides for Drama Section */
+html:not(.dark) #section-drama .bg-slate-900 {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    box-shadow: 0 4px 20px rgba(85, 81, 250, 0.04) !important;
+}
+html:not(.dark) #section-drama .bg-slate-950,
+html:not(.dark) #section-drama .bg-slate-950\/70 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+/* Inputs, Selects, Textareas in Light Mode */
+html:not(.dark) #section-drama input,
+html:not(.dark) #section-drama textarea,
+html:not(.dark) #section-drama select {
+    background-color: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+    color: #1E1B4B !important;
+}
+html:not(.dark) #section-drama input:focus,
+html:not(.dark) #section-drama textarea:focus,
+html:not(.dark) #section-drama select:focus {
+    border-color: #5551FA !important;
+    box-shadow: 0 0 0 3px rgba(85, 81, 250, 0.15) !important;
+}
+
+/* Placement Chips & Duration Toggles */
+.drama-placement-chip,
+.btn-drama-duration-toggle {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+.drama-placement-chip:hover,
+.btn-drama-duration-toggle:hover {
+    transform: scale(1.02);
+}
+
+/* Inactive State in Light Mode */
+html:not(.dark) .drama-placement-chip:not(.active),
+html:not(.dark) .btn-drama-duration-toggle:not(.active) {
+    background-color: #F1F5F9 !important;
+    border-color: #E2E8F0 !important;
+    color: #334155 !important;
+}
+html:not(.dark) .drama-placement-chip:not(.active):hover,
+html:not(.dark) .btn-drama-duration-toggle:not(.active):hover {
+    background-color: #E2E8F0 !important;
+    color: #0F0F23 !important;
+}
+
+/* Active State (Both Light & Dark) */
+.drama-placement-chip.active,
+.btn-drama-duration-toggle.active {
+    background-color: #5551FA !important;
+    border-color: #5551FA !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(85, 81, 250, 0.25) !important;
+}
+
+/* Inactive Cards in Light Mode */
+html:not(.dark) .drama-rec-card:not(.border-brand-500) {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+/* Ensure Button Text is Pure White */
+#btn-generate-drama,
+#btn-generate-drama span,
+#btn-generate-drama svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}

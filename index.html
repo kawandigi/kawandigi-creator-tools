@@ -1246,168 +1246,291 @@
         <!-- ========================================== -->
         <section id="section-drama" class="tab-content hidden space-y-4 sm:space-y-6">
             <!-- Mobile Collapsible Bar for Tool Info -->
-            <div class="md:hidden flex justify-between items-center bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-300">
-                <div class="flex items-center gap-2 font-bold text-white text-xs">
-                    <i data-lucide="clapperboard" class="w-4 h-4 text-accent-400"></i>
-                    AI Drama & Series Creator
+            <div class="md:hidden flex justify-between items-center bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-300">
+                <div class="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
+                    <i data-lucide="clapperboard" class="w-4 h-4 text-brand-500"></i>
+                    AI Sketsa Drama & Product Placement
                 </div>
-                <button type="button" id="btn-toggle-drama-banner" class="text-[11px] text-accent-400 hover:text-accent-300 font-semibold flex items-center gap-1 bg-accent-500/10 px-2.5 py-1 rounded-lg border border-accent-500/30">
+                <button type="button" id="btn-toggle-drama-banner" class="text-[11px] text-brand-500 hover:text-brand-400 font-semibold flex items-center gap-1 bg-brand-500/10 px-2.5 py-1 rounded-lg border border-brand-500/30">
                     <span id="btn-toggle-drama-text">Panduan Tool ▾</span>
                 </button>
             </div>
 
-            <!-- Hero Banner (Hidden by default on mobile) -->
-            <div id="drama-hero-banner" class="hidden md:block bg-gradient-to-r from-accent-900/40 via-purple-900/30 to-slate-900 border border-accent-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden transition-all duration-300">
-                <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent-500/20 text-accent-300 text-[10px] sm:text-xs font-bold mb-2 sm:mb-3 border border-accent-500/30">
-                        <i data-lucide="film" class="w-3.5 h-3.5"></i>
-                        Micro-Drama & Sinetron Pendek TikTok / ReelShort
+            <!-- Hero Banner -->
+            <div id="drama-hero-banner" class="hidden md:block bg-gradient-to-r from-brand-900/40 via-purple-900/30 to-slate-900 border border-brand-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden transition-all duration-300">
+                <div class="max-w-3xl">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 text-[10px] sm:text-xs font-bold mb-2 border border-brand-500/30">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                        Micro-Drama & Sketsa Penempatan Produk (Product Placement)
                     </div>
-                    <h2 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
-                        AI Drama & Series Creator
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
+                        AI Sketsa Drama & Product Placement Studio
                     </h2>
-                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                        Hasilkan naskah drama pendek bersambung dengan <strong>Kunci Konsistensi Karakter (*Character Lock*)</strong> dan cliffhanger dramatis di akhir episode.
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Rancang sketsa drama pendek viral 30–60 detik dengan <strong>Penempatan Produk Alami (*Soft Selling*)</strong>, plot twist komedi, dan naskah adegan siap syuting atau siap dimasukkan ke Google Flow.
                     </p>
                 </div>
             </div>
 
             <!-- 2-Column Work Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Form Input (5 Cols) -->
-                <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                            <i data-lucide="book-open" class="w-4 h-4 text-accent-500"></i>
-                            Plot & Karakter Episode
-                        </h3>
-                        <button type="button" id="btn-drama-preset-demo" class="text-[11px] font-semibold text-accent-400 hover:text-accent-300 bg-accent-500/10 hover:bg-accent-500/20 border border-accent-500/30 px-2.5 py-1 rounded-lg flex items-center gap-1 transition" title="Isi form otomatis dengan contoh cerita drama viral">
-                            <i data-lucide="wand-2" class="w-3 h-3 text-accent-400"></i>
-                            Contoh Demo
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+                <!-- Left Column: Input Produk & Konfigurasi Sketsa (5 Cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                    
+                    <!-- KARTU 1: SUMBER REFERENSI PRODUK (FOTO / URL) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="package" class="w-4 h-4 text-brand-500"></i>
+                                <span>1. Sumber Referensi Produk</span>
+                            </h3>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-500 font-extrabold uppercase">Foto / URL</span>
+                        </div>
+
+                        <!-- Dropzone Foto Produk -->
+                        <div id="drama-dropzone" class="border-2 border-dashed border-slate-700 hover:border-brand-500/80 rounded-xl p-4 text-center cursor-pointer transition bg-slate-950/70 hover:bg-slate-950 flex flex-col items-center justify-center gap-2 group relative overflow-hidden">
+                            <input type="file" id="drama-file-input" accept="image/*" class="hidden">
+                            <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center group-hover:scale-105 transition">
+                                <i data-lucide="image-plus" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-900 dark:text-white">Klik Unggah Foto Produk atau Tekan <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 border border-slate-700">Ctrl + V</kbd></p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Bisa foto botol/kemasan, etalase Shopee, atau tangkapan layar</p>
+                            </div>
+                            <!-- Image Preview Container -->
+                            <div id="drama-img-preview" class="hidden w-full mt-2 relative">
+                                <img id="drama-preview-tag" src="" alt="Preview Produk" class="max-h-36 mx-auto rounded-lg object-contain border border-slate-700">
+                                <button type="button" id="btn-drama-remove-img" class="absolute top-1 right-2 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-bold shadow hover:bg-rose-500 transition">Hapus</button>
+                            </div>
+                        </div>
+
+                        <!-- Link URL Marketplace -->
+                        <div class="space-y-1">
+                            <label for="drama-product-url" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Link Produk Marketplace (Opsional jika pakai foto):</label>
+                            <div class="relative">
+                                <i data-lucide="link" class="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3"></i>
+                                <input type="url" id="drama-product-url" placeholder="https://shopee.co.id/... atau TikTok Shop" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- Nama & Kategori Produk -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div class="space-y-1">
+                                <label for="drama-product-name" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Nama Produk:</label>
+                                <input type="text" id="drama-product-name" placeholder="Contoh: Brightening Glow Serum" value="Brightening Glow Serum 10x Niacinamide" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                            </div>
+                            <div class="space-y-1">
+                                <label for="drama-product-category" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Kategori / Niche:</label>
+                                <select id="drama-product-category" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                                    <option value="Skincare & Beauty" selected>💄 Skincare & Beauty</option>
+                                    <option value="Fashion & OOTD">👗 Fashion & OOTD</option>
+                                    <option value="Makanan & Minuman Viral">🍔 Makanan & Minuman Viral</option>
+                                    <option value="Gadget & Elektronik Unik">📱 Gadget & Aksesoris Unik</option>
+                                    <option value="Perlengkapan Rumah Tangga">🏠 Perlengkapan Rumah Tangga</option>
+                                    <option value="Kesehatan & Kebugaran">💪 Kesehatan & Diet</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Analisa Produk -->
+                        <button type="button" id="btn-drama-analyze" class="w-full py-2.5 bg-brand-500/15 hover:bg-brand-500/25 text-brand-600 dark:text-brand-300 border border-brand-500/40 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition active:scale-[0.99]">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                            <span id="btn-drama-analyze-text">🔍 Analisa Produk & Rekomendasikan Konsep Sketsa</span>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Judul Serial Drama:</label>
-                            <input type="text" id="drama-title" placeholder="Contoh: Rahasia Bos Menyamar" value="" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500">
+                    <!-- KARTU 2: REKOMENDASI CERDAS AI (SMART CONCEPT CARDS) -->
+                    <div id="drama-rec-container" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 font-black text-xs flex items-center justify-center border border-brand-500/30">2</span>
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Rekomendasi Konsep Sketsa AI</h4>
+                            </div>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400">Pilih 1 konsep cepat</span>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Episode Ke:</label>
-                            <input type="number" id="drama-episode-num" value="1" min="1" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500">
+
+                        <!-- Container Kartu-Kartu Rekomendasi (Dinamis dari AI) -->
+                        <div id="drama-rec-list" class="space-y-2.5">
+                            <!-- Rekomendasi Default 1: Plot Twist -->
+                            <div class="drama-rec-card p-3 rounded-xl border border-slate-700 bg-slate-950/70 hover:border-brand-500/70 transition space-y-2 cursor-pointer group" data-type="plot_twist" data-title="Tuduhan Rahasia di Balik Tas" data-premise="Dituduh menyembunyikan sesuatu yang wangi dan mencurigakan oleh temannya, ternyata cuma rahasia pakai serum ini sendiri tanpa mau berbagi.">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[10px] font-bold border border-purple-500/30">🎭 The Plot Twist Reveal</span>
+                                    <span class="text-[10px] text-brand-400 font-bold group-hover:underline">Gunakan Konsep Ini ✨</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900 dark:text-white">Tuduhan Rahasia di Balik Tas</h5>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                    Dituduh menyembunyikan sesuatu yang wangi dan mencurigakan, ternyata berebut skincare rahasia yang gak mau dibagi-bagi.
+                                </p>
+                            </div>
+
+                            <!-- Rekomendasi Default 2: Hero Solver -->
+                            <div class="drama-rec-card p-3 rounded-xl border border-slate-700 bg-slate-950/70 hover:border-brand-500/70 transition space-y-2 cursor-pointer group" data-type="hero_solver" data-title="5 Menit Menuju Bencana" data-premise="Karakter panik karena harus berangkat kencan atau interview darurat dalam waktu 5 menit, diselamatkan oleh keajaiban instan produk ini.">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">🦸 The Hero Problem Solver</span>
+                                    <span class="text-[10px] text-brand-400 font-bold group-hover:underline">Gunakan Konsep Ini ✨</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900 dark:text-white">5 Menit Menuju Bencana</h5>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                    Kepanikan kencan darurat tertuntaskan dalam 10 detik saat sang sahabat menyodorkan produk penyelamat instan.
+                                </p>
+                            </div>
+
+                            <!-- Rekomendasi Default 3: Casual In-Use -->
+                            <div class="drama-rec-card p-3 rounded-xl border border-slate-700 bg-slate-950/70 hover:border-brand-500/70 transition space-y-2 cursor-pointer group" data-type="casual_in_use" data-title="Salah Fokus Pas Lagi Gibah" data-premise="Dua sahabat sedang asyik membicarakan gosip terpanas di kafe, tapi lawan bicara malah salah fokus mengagumi hasil produk yang sedang dipakai santai.">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">☕ Casual Natural In-Use</span>
+                                    <span class="text-[10px] text-brand-400 font-bold group-hover:underline">Gunakan Konsep Ini ✨</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900 dark:text-white">Salah Fokus Pas Lagi Gibah</h5>
+                                <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                    Curhat gosip mantan di kafe, tapi lawan bicara tiba-tiba salah fokus mengagumi kulit glowing natural Tokoh A.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Genre Drama:</label>
-                        <select id="drama-genre" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500">
-                            <option value="👑 CEO Konglomerat Menyamar">👑 CEO Konglomerat Menyamar</option>
-                            <option value="⚔️ Balas Dendam Menantu / Underdog">⚔️ Balas Dendam Menantu / Underdog</option>
-                            <option value="💖 Romansa Kantor & Cinta Segitiga">💖 Romansa Kantor & Cinta Segitiga</option>
-                            <option value="👻 Misteri & Horor Supranatural">👻 Misteri & Horor Supranatural</option>
-                            <option value="🏰 Fantasi Kerajaan / Reinkarnasi">🏰 Fantasi Kerajaan & Reinkarnasi</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Premis Masalah Episode Ini:</label>
-                        <textarea id="drama-premise" rows="2" placeholder="Contoh: Adrian dituduh mencuri dokumen tender penting oleh manager cabang yang korup di depan staf kantor..." class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent-500">Adrian difitnah mencuri dokumen rahasia perusahaan oleh Pak Hendra, padahal dokumen itu palsu.</textarea>
-                    </div>
-
-                    <!-- Character Lock Section -->
-                    <div class="border-t border-slate-800 pt-3 space-y-3">
-                        <div class="text-xs font-bold text-accent-400 flex items-center gap-1.5">
-                            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
-                            Kunci Konsistensi Tokoh (Character Lock)
+                    <!-- KARTU 3: KONFIGURASI NASKAH & PENEMPATAN PRODUK -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-300 font-black text-xs flex items-center justify-center border border-brand-500/30">3</span>
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Detail Naskah & Tipe Penempatan</h4>
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">Tokoh Utama (Protagonis):</label>
-                            <input type="text" id="drama-hero-name" value="Adrian (27 thn)" placeholder="Nama & Usia" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white mb-1">
-                            <textarea id="drama-hero-desc" rows="2" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-slate-300" placeholder="Deskripsi fisik & pakaian khas">Pria Asia 27 tahun, wajah tampan berkarisma, rambut hitam belah samping, seragam OB abu-abu sederhana, tatapan tajam berwibawa.</textarea>
+                        <!-- Tipe Penempatan Produk (Chips) -->
+                        <div class="space-y-1.5">
+                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Tipe Penempatan Produk (*Product Placement*):</label>
+                            <div class="flex flex-wrap gap-1.5" id="chips-drama-placement">
+                                <button type="button" data-val="plot_twist" class="drama-placement-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">🎭 Plot Twist Reveal</button>
+                                <button type="button" data-val="hero_solver" class="drama-placement-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🦸 Hero Problem Solver</button>
+                                <button type="button" data-val="casual_in_use" class="drama-placement-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">☕ Casual Natural In-Use</button>
+                                <button type="button" data-val="contrast" class="drama-placement-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">⚖️ Situasi Kontras (Ribet vs Praktis)</button>
+                                <button type="button" data-val="comic_prop" class="drama-placement-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🤪 Comic Prop / Salah Paham</button>
+                            </div>
+                            <input type="hidden" id="drama-input-placement" value="plot_twist">
                         </div>
 
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-300 mb-1">Tokoh Lawan (Antagonis):</label>
-                            <input type="text" id="drama-villain-name" value="Pak Hendra (45 thn)" placeholder="Nama & Usia" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white mb-1">
-                            <textarea id="drama-villain-desc" rows="2" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-[11px] text-slate-300" placeholder="Deskripsi fisik & pakaian khas">Pria 45 tahun, gemuk, jas necis abu-abu mencolok, cincin emas besar, senyum sinis meremehkan.</textarea>
+                        <!-- Judul Sketsa & Premis Cerita -->
+                        <div class="space-y-2">
+                            <div class="space-y-1">
+                                <label for="drama-input-title" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Judul Sketsa Drama:</label>
+                                <input type="text" id="drama-input-title" placeholder="Ketik judul sketsa..." value="Tuduhan Rahasia di Balik Tas" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                            </div>
+                            <div class="space-y-1">
+                                <label for="drama-input-premise" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Premis Cerita & Alur Singkat:</label>
+                                <textarea id="drama-input-premise" rows="2" placeholder="Jelaskan konflik singkat yang terjadi..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">Dituduh menyembunyikan sesuatu yang wangi dan mencurigakan oleh temannya, ternyata cuma rahasia pakai serum ini sendiri tanpa mau berbagi.</textarea>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Duration -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Durasi Episode:</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" data-drama-scenes="3" class="btn-drama-duration active bg-accent-500/20 border-accent-500 text-accent-300 rounded-xl py-2 text-xs font-bold transition">
-                                30 Detik (3 Scene)
+                        <!-- Jumlah Karakter & Gaya Bahasa -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div class="space-y-1">
+                                <label for="drama-input-chars" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Jumlah Tokoh:</label>
+                                <select id="drama-input-chars" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                                    <option value="1">1 Orang (POV / Akting 2 Peran)</option>
+                                    <option value="2" selected>2 Orang (Dialog Pasangan/Teman)</option>
+                                    <option value="3">3+ Orang (Situasi Grup / Teman Kos)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="drama-input-tone" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Gaya Bahasa / Tone:</label>
+                                <select id="drama-input-tone" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+                                    <option value="santai_jakarta" selected>Santai Gaul Jakarta (Lu-Gue Akrab)</option>
+                                    <option value="kocak_humor">Kocak & Humor Segar (Komedi)</option>
+                                    <option value="sinetron_lebay">Parodi Sinetron Dramatis Lebay</option>
+                                    <option value="baper_romantis">Romantis Manis & Baper</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Durasi & Opsi Doodle -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            <div class="space-y-1">
+                                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Durasi Video Sketsa:</label>
+                                <div class="grid grid-cols-2 gap-1.5" id="drama-duration-toggles">
+                                    <button type="button" data-duration="30" class="btn-drama-duration-toggle active py-2 rounded-xl text-xs font-bold bg-[#5551FA] text-white border border-[#5551FA] transition">30s (3 Scene)</button>
+                                    <button type="button" data-duration="60" class="btn-drama-duration-toggle py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">60s (6 Scene)</button>
+                                </div>
+                                <input type="hidden" id="drama-input-duration" value="30">
+                            </div>
+
+                            <div class="space-y-1 flex flex-col justify-end">
+                                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Animasi Doodle Google Flow:</label>
+                                <label class="flex items-center gap-2 px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl cursor-pointer hover:border-brand-500/60 transition">
+                                    <input type="checkbox" id="drama-input-doodle" class="rounded text-brand-500 focus:ring-brand-500 bg-slate-900 border-slate-700">
+                                    <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Sertakan Doodle Lucu di Veo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="pt-2">
+                            <button type="button" id="btn-generate-drama" class="w-full py-3.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-[#5551FA]/30 flex items-center justify-center gap-2 transition active:scale-[0.99]">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                                <span id="btn-generate-drama-label" class="text-white">🎬 Generate Naskah Sketsa Drama & Cue Placement</span>
                             </button>
-                            <button type="button" data-drama-scenes="6" class="btn-drama-duration bg-slate-950 border border-slate-800 text-slate-300 rounded-xl py-2 text-xs font-bold hover:border-accent-500 transition">
-                                60 Detik (6 Scene)
-                            </button>
                         </div>
                     </div>
-
-                    <!-- Submit Button -->
-                    <button id="btn-generate-drama" class="w-full py-3 bg-gradient-to-r from-accent-600 to-brand-600 hover:from-accent-500 hover:to-brand-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-500/20 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Generate Episode & Cliffhanger</span>
-                    </button>
                 </div>
 
-                <!-- Drama Storyboard Output (7 Cols) -->
+                <!-- Right Column: Output Storyboard & Naskah Produksi (7 Cols) -->
                 <div class="lg:col-span-7 space-y-4">
-                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 min-h-[500px] flex flex-col">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 min-h-[550px] flex flex-col">
                         <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
                             <div>
-                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                                    <i data-lucide="tv" class="w-4 h-4 text-accent-500"></i>
-                                    Naskah Produksi Drama Episode
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i data-lucide="tv" class="w-4 h-4 text-brand-500"></i>
+                                    <span>Naskah Produksi Sketsa Drama</span>
                                 </h3>
-                                <p class="text-[11px] text-slate-400">Scene 10s beruntun siap dimasukkan ke Google Flow</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Panduan penempatan produk & naskah scene siap syuting / Google Flow</p>
                             </div>
                             <div id="drama-actions" class="hidden flex items-center gap-2">
-                                <button id="btn-copy-all-drama-prompts" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold flex items-center gap-1.5 transition">
+                                <button type="button" id="btn-copy-all-drama-prompts" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold flex items-center gap-1.5 transition">
                                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                    Salin Semua
+                                    <span>Salin Semua</span>
                                 </button>
                                 <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition" title="Buka studio Google Flow (Veo)">
                                     <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                                    Buka Google Flow (Veo)
+                                    <span>Buka Flow (Veo)</span>
                                 </a>
                             </div>
                         </div>
 
                         <!-- Empty State -->
                         <div id="drama-empty-state" class="flex-1 flex flex-col items-center justify-center text-center p-8 text-slate-500">
-                            <div class="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-400 mb-3">
+                            <div class="w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mb-3">
                                 <i data-lucide="clapperboard" class="w-8 h-8"></i>
                             </div>
-                            <h4 class="text-sm font-bold text-slate-300 mb-1">Belum Ada Naskah Drama</h4>
-                            <p class="text-xs max-w-sm">Tentukan premis cerita dan profil karakter di samping, lalu klik Generate Episode.</p>
+                            <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Belum Ada Naskah Sketsa</h4>
+                            <p class="text-xs max-w-sm text-slate-500">Unggah foto produk atau masukkan URL di samping, pilih rekomendasi konsep, lalu klik Generate Naskah Sketsa Drama.</p>
                         </div>
 
                         <!-- Loading State -->
                         <div id="drama-loading-state" class="hidden flex-1 flex flex-col items-center justify-center text-center p-8">
-                            <div class="w-12 h-12 border-3 border-accent-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <h4 class="text-sm font-bold text-white mb-1">Menulis Naskah & Merancang Dialog Emosional...</h4>
-                            <p class="text-xs text-slate-400">Menyusun konsistensi karakter dan membuat cliffhanger gantung.</p>
+                            <div class="w-12 h-12 border-3 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-1">AI Sedang Merancang Sketsa Komedi & Penempatan Produk...</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Menyusun dialog alami, menentukan timing cue produk, dan menulis prompt Google Flow.</p>
                         </div>
 
                         <!-- Results Container -->
                         <div id="drama-results" class="hidden space-y-4">
-                            <!-- Episode Header Card -->
-                            <div id="drama-summary-card" class="bg-accent-950/30 border border-accent-500/30 rounded-xl p-3.5 text-xs space-y-1"></div>
+                            <!-- Summary Header Card -->
+                            <div id="drama-summary-card" class="bg-brand-500/10 border border-brand-500/30 rounded-xl p-4 text-xs space-y-2"></div>
+
+                            <!-- Box Panduan Penempatan Produk (Product Placement Cue) -->
+                            <div id="drama-placement-cue-box" class="bg-slate-950 border border-amber-500/40 rounded-xl p-4 text-xs space-y-2"></div>
 
                             <!-- Scene Cards List -->
                             <div id="drama-scene-list" class="space-y-3"></div>
+
+                            <!-- Call To Action Card -->
+                            <div id="drama-cta-box" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-300 space-y-1"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- ========================================== -->
-        <!-- TAB: AI INFLUENCER & CHARACTER MAKER       -->
         <!-- ========================================== -->
         <section id="section-character" class="tab-content hidden space-y-4 sm:space-y-6">
             <!-- Mobile Compact Header -->
