@@ -17,6 +17,51 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap");
 
+
+/* ========================================================================= */
+/* KAWANDIGI OFFICIAL 2-COLOR BRAND IDENTITY (HEADER & DRAWER)               */
+/* ========================================================================= */
+.logo-kawan,
+.brand-text-kawan,
+span.logo-kawan {
+    color: #1E1B4B !important;
+}
+html.dark .logo-kawan,
+html.dark .brand-text-kawan,
+html.dark span.logo-kawan {
+    color: #FFFFFF !important;
+}
+
+.logo-digi,
+.brand-text-digi,
+span.logo-digi,
+header .logo-digi,
+#sidebar-drawer .logo-digi {
+    color: #5551FA !important;
+}
+html.dark .logo-digi,
+html.dark .brand-text-digi,
+html.dark span.logo-digi,
+html.dark header .logo-digi,
+html.dark #sidebar-drawer .logo-digi {
+    color: #7E75FB !important;
+}
+
+.logo-subtag,
+.brand-text-subtag,
+span.logo-subtag,
+header .logo-subtag,
+#sidebar-drawer .logo-subtag {
+    color: #5551FA !important;
+}
+html.dark .logo-subtag,
+html.dark .brand-text-subtag,
+html.dark span.logo-subtag,
+html.dark header .logo-subtag,
+html.dark #sidebar-drawer .logo-subtag {
+    color: #A6A1FD !important;
+}
+
 :root {
     --brand-primary: #5551FA;
     --brand-primary-dark: #3B38D4;
@@ -576,56 +621,88 @@ html:not(.dark) .drawer-menu-item:not(.bg-brand-600):hover {
     background: rgba(224, 231, 255, 0.7) !important;
 }
 
-/* Mobile Bottom Dock Nav Buttons (Active Purple Glow & Inactive States) */
+/* Mobile Bottom Dock Tabs - Active State */
 .mobile-nav-btn.active,
-html:not(.dark) .mobile-nav-btn.active,
-html.dark .mobile-nav-btn.active {
+#m-nav-catalog.active,
+#m-nav-leaderboard.active,
+#m-nav-tutorial.active,
+#m-nav-flow.active {
     color: #5551FA !important;
 }
 
 .mobile-nav-btn.active *,
 .mobile-nav-btn.active svg,
+.mobile-nav-btn.active rect,
+.mobile-nav-btn.active path,
+.mobile-nav-btn.active circle,
+.mobile-nav-btn.active polygon,
+.mobile-nav-btn.active line,
 .mobile-nav-btn.active span,
-.mobile-nav-btn.active i,
 html:not(.dark) .mobile-nav-btn.active *,
 html:not(.dark) .mobile-nav-btn.active svg,
-html:not(.dark) .mobile-nav-btn.active span,
-html:not(.dark) .mobile-nav-btn.active i,
-html.dark .mobile-nav-btn.active *,
-html.dark .mobile-nav-btn.active svg,
-html.dark .mobile-nav-btn.active span,
-html.dark .mobile-nav-btn.active i {
+html:not(.dark) .mobile-nav-btn.active rect,
+html:not(.dark) .mobile-nav-btn.active path,
+html:not(.dark) .mobile-nav-btn.active circle,
+html:not(.dark) .mobile-nav-btn.active polygon,
+html:not(.dark) .mobile-nav-btn.active line,
+html:not(.dark) .mobile-nav-btn.active span {
     color: #5551FA !important;
     stroke: #5551FA !important;
     font-weight: 800 !important;
 }
 
-/* Glowing purple aura when active (Menyala Ungu) */
-.mobile-nav-btn.active svg,
-html:not(.dark) .mobile-nav-btn.active svg,
-html.dark .mobile-nav-btn.active svg {
-    filter: drop-shadow(0 2px 8px rgba(85, 81, 250, 0.55)) !important;
-    transform: scale(1.08);
-    transition: transform 0.2s ease, filter 0.2s ease;
+html.dark .mobile-nav-btn.active,
+html.dark .mobile-nav-btn.active *,
+html.dark .mobile-nav-btn.active svg,
+html.dark .mobile-nav-btn.active rect,
+html.dark .mobile-nav-btn.active path,
+html.dark .mobile-nav-btn.active circle,
+html.dark .mobile-nav-btn.active polygon,
+html.dark .mobile-nav-btn.active line,
+html.dark .mobile-nav-btn.active span {
+    color: #7E75FB !important;
+    stroke: #7E75FB !important;
+    font-weight: 800 !important;
 }
 
+/* Luminous Glowing Purple Aura when active (Menyala Ungu) */
+.mobile-nav-btn.active svg,
+html:not(.dark) .mobile-nav-btn.active svg {
+    filter: drop-shadow(0 2px 8px rgba(85, 81, 250, 0.7)) !important;
+    transform: scale(1.12);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+}
+html.dark .mobile-nav-btn.active svg {
+    filter: drop-shadow(0 2px 10px rgba(126, 117, 251, 0.8)) !important;
+    transform: scale(1.12);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+}
+
+/* Inactive Mobile Nav Buttons */
 html.dark .mobile-nav-btn:not(.active),
 html.dark .mobile-nav-btn:not(.active) *,
 html.dark .mobile-nav-btn:not(.active) svg,
+html.dark .mobile-nav-btn:not(.active) rect,
+html.dark .mobile-nav-btn:not(.active) path,
 html.dark .mobile-nav-btn:not(.active) span {
     color: #9CA3AF !important;
     stroke: #9CA3AF !important;
     filter: none !important;
+    transform: scale(1);
 }
 
 html:not(.dark) .mobile-nav-btn:not(.active),
 html:not(.dark) .mobile-nav-btn:not(.active) *,
 html:not(.dark) .mobile-nav-btn:not(.active) svg,
+html:not(.dark) .mobile-nav-btn:not(.active) rect,
+html:not(.dark) .mobile-nav-btn:not(.active) path,
 html:not(.dark) .mobile-nav-btn:not(.active) span {
     color: #64748B !important;
     stroke: #64748B !important;
     filter: none !important;
+    transform: scale(1);
 }
+
 
 /* Bottom FAB Button */
 .bottom-fab-button {
@@ -932,13 +1009,18 @@ html:not(.dark) .kd-toast-info {
     color: #FFFFFF !important;
 }
 
-/* Light Mode Recessed Wells & Option Boxes in UGC & other tools (Image 4 & 5) */
-html:not(.dark) [class*="bg-slate-950"],
-html:not(.dark) .bg-slate-950,
-html:not(.dark) .bg-slate-950\/60,
-html:not(.dark) .bg-slate-950\/70,
-html:not(.dark) .bg-slate-950\/80,
-html:not(.dark) .bg-slate-950\/90 {
+/* Light Mode Recessed Wells & Option Boxes in UGC, Drama & Character tools */
+html:not(.dark) #section-ugc .bg-slate-950,
+html:not(.dark) #section-ugc .bg-slate-950\/70,
+html:not(.dark) #section-ugc .bg-slate-950\/80,
+html:not(.dark) #section-drama .bg-slate-950,
+html:not(.dark) #section-drama .bg-slate-950\/70,
+html:not(.dark) #section-drama .bg-slate-950\/80,
+html:not(.dark) #section-character .bg-slate-950,
+html:not(.dark) #section-character .bg-slate-950\/70,
+html:not(.dark) #section-character .bg-slate-950\/80,
+html:not(.dark) .ugc-option-well,
+html:not(.dark) .drama-option-well {
     background-color: #F5F7FF !important;
     border-color: #E0E7FF !important;
     color: #1E1B4B !important;
@@ -949,25 +1031,40 @@ html:not(.dark) #screenshot-dropzone {
     border-color: #E0E7FF !important;
 }
 
-html:not(.dark) [class*="bg-slate-950"] label:not(button *):not(a *),
-html:not(.dark) [class*="bg-slate-950"] span:not(button *):not(a *):not(.badge-new *):not(.badge-new-orange *),
-html:not(.dark) [class*="bg-slate-950"] p:not(button *):not(a *),
-html:not(.dark) [class*="bg-slate-950"] .font-bold:not(button *):not(a *) {
+html:not(.dark) #section-ugc .bg-slate-950 label,
+html:not(.dark) #section-ugc .bg-slate-950 span:not(.badge-new *):not(.badge-new-orange *):not([class*="logo-"]):not(button *),
+html:not(.dark) #section-ugc .bg-slate-950 p:not(button *),
+html:not(.dark) #section-drama .bg-slate-950 label,
+html:not(.dark) #section-drama .bg-slate-950 span:not(.badge-new *):not(.badge-new-orange *):not([class*="logo-"]):not(button *),
+html:not(.dark) #section-drama .bg-slate-950 p:not(button *),
+html:not(.dark) #section-character .bg-slate-950 label,
+html:not(.dark) #section-character .bg-slate-950 span:not(.badge-new *):not(.badge-new-orange *):not([class*="logo-"]):not(button *),
+html:not(.dark) #section-character .bg-slate-950 p:not(button *) {
     color: #1E1B4B !important;
 }
 
-html:not(.dark) [class*="bg-slate-950"] .text-slate-300,
-html:not(.dark) [class*="bg-slate-950"] .text-slate-400,
-html:not(.dark) [class*="bg-slate-950"] .text-slate-500 {
+html:not(.dark) #section-ugc .bg-slate-950 .text-slate-300,
+html:not(.dark) #section-ugc .bg-slate-950 .text-slate-400,
+html:not(.dark) #section-ugc .bg-slate-950 .text-slate-500,
+html:not(.dark) #section-drama .bg-slate-950 .text-slate-300,
+html:not(.dark) #section-drama .bg-slate-950 .text-slate-400,
+html:not(.dark) #section-drama .bg-slate-950 .text-slate-500 {
     color: #4B5563 !important;
 }
 
-html:not(.dark) [class*="bg-slate-950"] input[type="text"],
-html:not(.dark) [class*="bg-slate-950"] textarea {
+html:not(.dark) #section-ugc .bg-slate-950 input[type="text"],
+html:not(.dark) #section-ugc .bg-slate-950 input[type="url"],
+html:not(.dark) #section-ugc .bg-slate-950 select,
+html:not(.dark) #section-ugc .bg-slate-950 textarea,
+html:not(.dark) #section-drama .bg-slate-950 input[type="text"],
+html:not(.dark) #section-drama .bg-slate-950 input[type="url"],
+html:not(.dark) #section-drama .bg-slate-950 select,
+html:not(.dark) #section-drama .bg-slate-950 textarea {
     background-color: #FFFFFF !important;
-    border-color: #E0E7FF !important;
+    border-color: #CBD5E1 !important;
     color: #1E1B4B !important;
 }
+
 
 /* Light Mode Leaderboard Sticky Bottom Bar (Image 3) */
 html:not(.dark) #sticky-user-rank-bar {

@@ -229,7 +229,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Google Identity Services (GIS) for Google OAuth Sign-in -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=74">
 </head>
 <body class="bg-[#FFFFFF] dark:bg-[#0F0F23] text-[#1E1B4B] dark:text-[#F3F4F6] min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-[#5551FA] selection:text-white">
 
@@ -262,8 +262,8 @@
             <div class="flex items-center gap-2.5 cursor-pointer" onclick="window.kdSwitchTab('catalog')">
                 <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 rounded-xl object-cover shadow-sm flex-shrink-0">
                 <div class="flex flex-col justify-center leading-none">
-                    <span class="text-sm font-black text-slate-900 dark:text-white"><span class="logo-kawan">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                    <span class="text-[7.5px] font-black text-[#544ce7] dark:text-[#a6a1fd] tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
+                    <span class="text-sm font-black text-slate-900 dark:text-white"><span class="logo-kawan">kawan</span><span class="logo-digi">digi</span></span>
+                    <span class="logo-subtag text-[7.5px] sm:text-[9px] font-black tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
                 </div>
             </div>
             <!-- Mobile Close Button (Hidden on Desktop) -->
@@ -357,8 +357,8 @@
             <div class="flex items-center gap-2 cursor-pointer min-w-0 flex-shrink-0 lg:hidden" id="btn-brand-home" title="Kembali ke Beranda">
                 <img src="assets/icons/logo.png" alt="kawandigi logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shadow-sm flex-shrink-0">
                 <div class="flex flex-col justify-center leading-none min-w-0">
-                    <span class="text-sm sm:text-base font-black tracking-tight"><span class="logo-kawan text-slate-900 dark:text-white">kawan</span><span class="text-[#544ce7] dark:text-[#7e75fb]">digi</span></span>
-                    <span class="text-[7.5px] sm:text-[9px] font-black text-[#544ce7] dark:text-[#a6a1fd] tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
+                    <span class="text-sm sm:text-base font-black tracking-tight"><span class="logo-kawan">kawan</span><span class="logo-digi">digi</span></span>
+                    <span class="logo-subtag text-[7.5px] sm:text-[9px] font-black tracking-widest uppercase mt-0.5">CREATOR TOOLS</span>
                 </div>
             </div>
 
@@ -3524,7 +3524,7 @@
         });
         setTimeout(dismissKdSplash, 2200); // Fail-safe
     </script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=74"></script>
     <script>
         lucide.createIcons();
         if ('serviceWorker' in navigator) {
