@@ -1380,3 +1380,276 @@ html:not(.dark) .drama-rec-card:not(.border-brand-500) {
     color: #FFFFFF !important;
     stroke: #FFFFFF !important;
 }
+
+
+/* ========================================================================= */
+/* COMPLETE LIGHT MODE REFINEMENTS FOR ALL SECTIONS (LICENSE, FLOW, ETC.)    */
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+/* 1. SECTION LICENSE / VIP STORE (LIGHT MODE)                               */
+/* ------------------------------------------------------------------------- */
+
+/* Header Banner */
+html:not(.dark) #section-license .bg-gradient-to-r.from-slate-900 {
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 50%, #F5F7FF 100%) !important;
+    border-color: #C7D2FE !important;
+}
+
+html:not(.dark) #section-license .bg-gradient-to-r.from-slate-900 h2 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #section-license .bg-gradient-to-r.from-slate-900 p {
+    color: #4B5563 !important;
+}
+
+/* Login Google for License Box */
+html:not(.dark) #section-license .max-w-xl.bg-slate-900\/90 {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+    box-shadow: 0 4px 20px -2px rgba(85, 81, 250, 0.08) !important;
+}
+
+html:not(.dark) #section-license .max-w-xl.bg-slate-900\/90 h3 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #section-license .max-w-xl.bg-slate-900\/90 p {
+    color: #4B5563 !important;
+}
+
+/* Masukkan Kunci Lisensi Anda Container */
+html:not(.dark) #section-license .bg-slate-900\/90:not(.max-w-xl) {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+}
+
+html:not(.dark) #section-license h3,
+html:not(.dark) #section-license h4 {
+    color: #1E1B4B !important;
+}
+
+/* Device Info Recessed Well */
+html:not(.dark) #section-license .bg-slate-950\/80 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+html:not(.dark) #section-license .bg-slate-950\/80 span,
+html:not(.dark) #section-license .bg-slate-950\/80 div {
+    color: #334155 !important;
+}
+
+html:not(.dark) #section-license #current-device-id {
+    background-color: #EEF2FF !important;
+    border-color: #C7D2FE !important;
+    color: #3B38D4 !important;
+}
+
+html:not(.dark) #section-license #current-device-name,
+html:not(.dark) #section-license #current-license-status {
+    color: #1E1B4B !important;
+    font-weight: 700;
+}
+
+html:not(.dark) #section-license #license-key-input {
+    background-color: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #section-license #license-key-input::placeholder {
+    color: #94A3B8 !important;
+}
+
+/* Pricing Card 1: 1 Device (#card-pricing-1dev) */
+html:not(.dark) #card-pricing-1dev {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+    box-shadow: 0 4px 20px -2px rgba(85, 81, 250, 0.08) !important;
+}
+
+html:not(.dark) #card-pricing-1dev h4 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #card-pricing-1dev p {
+    color: #4B5563 !important;
+}
+
+/* Price Box 1 Device */
+html:not(.dark) #card-pricing-1dev .bg-slate-950\/70 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+html:not(.dark) #card-pricing-1dev .text-slate-500 {
+    color: #94A3B8 !important;
+}
+
+html:not(.dark) #card-pricing-1dev #price-display-1dev {
+    color: #5551FA !important;
+}
+
+html:not(.dark) #card-pricing-1dev .bg-slate-950\/70 p {
+    color: #4B5563 !important;
+}
+
+/* Checklist Well 1 Device */
+html:not(.dark) #card-pricing-1dev .bg-slate-950\/40 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+html:not(.dark) #card-pricing-1dev .bg-slate-950\/40 span {
+    color: #334155 !important;
+}
+
+/* Pricing Card 2: All Device (#card-pricing-alldev) - Recommended Card */
+html:not(.dark) #card-pricing-alldev {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF7 50%, #FFFBEB 100%) !important;
+    border: 2px solid #F59E0B !important;
+    box-shadow: 0 12px 36px -4px rgba(245, 158, 11, 0.22) !important;
+}
+
+html:not(.dark) #card-pricing-alldev h4 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #card-pricing-alldev p {
+    color: #4B5563 !important;
+}
+
+/* Price Box All Device */
+html:not(.dark) #card-pricing-alldev .bg-slate-950\/80 {
+    background-color: #FEF3C7 !important;
+    border-color: #FDE68A !important;
+}
+
+html:not(.dark) #card-pricing-alldev #price-display-alldev {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #card-pricing-alldev .bg-slate-950\/80 p {
+    color: #78350F !important;
+}
+
+/* Checklist Well All Device */
+html:not(.dark) #card-pricing-alldev .bg-slate-950\/50 {
+    background-color: #FFFDF5 !important;
+    border-color: #FDE68A !important;
+}
+
+html:not(.dark) #card-pricing-alldev .bg-slate-950\/50 span {
+    color: #334155 !important;
+}
+
+
+/* ------------------------------------------------------------------------- */
+/* 2. SECTION FLOW / GOOGLE FLOW STUDIO (LIGHT MODE)                         */
+/* ------------------------------------------------------------------------- */
+
+/* Header Card in Flow */
+html:not(.dark) #section-flow .bg-gradient-to-r.from-\[\#1B1B3A\] {
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 50%, #F5F7FF 100%) !important;
+    border-color: #C7D2FE !important;
+}
+
+html:not(.dark) #section-flow .bg-gradient-to-r.from-\[\#1B1B3A\] h3 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #section-flow .bg-gradient-to-r.from-\[\#1B1B3A\] p {
+    color: #4B5563 !important;
+}
+
+/* Alternative AI Video Engines Cards (Kling, Hailuo, Runway, Luma, Pika, Vidu) */
+html:not(.dark) #section-flow .bg-slate-900 {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+    box-shadow: 0 4px 16px -2px rgba(85, 81, 250, 0.06) !important;
+}
+
+html:not(.dark) #section-flow .bg-slate-900:hover {
+    border-color: #5551FA !important;
+    box-shadow: 0 8px 24px -2px rgba(85, 81, 250, 0.15) !important;
+}
+
+html:not(.dark) #section-flow .bg-slate-900 h4 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #section-flow .bg-slate-900 p {
+    color: #4B5563 !important;
+}
+
+html:not(.dark) #section-flow .bg-slate-900 a.bg-slate-800 {
+    background-color: #F1F5F9 !important;
+    color: #334155 !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+html:not(.dark) #section-flow .bg-slate-900 a.bg-slate-800:hover {
+    background-color: #5551FA !important;
+    color: #FFFFFF !important;
+    border-color: #5551FA !important;
+}
+
+
+/* ------------------------------------------------------------------------- */
+/* 3. SECTION LEADERBOARD (LIGHT MODE)                                       */
+/* ------------------------------------------------------------------------- */
+
+html:not(.dark) #section-leaderboard .bg-slate-900 {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+}
+
+html:not(.dark) #section-leaderboard thead.bg-slate-950 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    color: #64748B !important;
+}
+
+html:not(.dark) #section-leaderboard tbody tr {
+    border-color: #F1F5F9 !important;
+}
+
+html:not(.dark) #section-leaderboard tbody tr:hover {
+    background-color: #F8FAFC !important;
+}
+
+
+/* ------------------------------------------------------------------------- */
+/* 4. MODALS & POPUPS (LIGHT MODE)                                           */
+/* ------------------------------------------------------------------------- */
+
+html:not(.dark) div[id^="modal-"]:not(#pwa-splash) > div,
+html:not(.dark) #drawer-history-panel {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+    box-shadow: 0 20px 40px -8px rgba(85, 81, 250, 0.15) !important;
+}
+
+html:not(.dark) div[id^="modal-"] h3,
+html:not(.dark) div[id^="modal-"] h4,
+html:not(.dark) #drawer-history-panel h3 {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) div[id^="modal-"] p,
+html:not(.dark) #drawer-history-panel p {
+    color: #4B5563 !important;
+}
+
+html:not(.dark) div[id^="modal-"] .bg-slate-950,
+html:not(.dark) div[id^="modal-"] .bg-slate-900 {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+html:not(.dark) div[id^="modal-"] .bg-slate-950 *,
+html:not(.dark) div[id^="modal-"] .bg-slate-900 * {
+    color: #334155 !important;
+}
