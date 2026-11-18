@@ -857,3 +857,121 @@ html:not(.dark) .kd-toast-info {
 .btn-floating-glow {
     animation: flow-glow-pulse 2.2s infinite ease-in-out;
 }
+
+/* ========================================================================= */
+/* TARGETED REFINEMENTS (LIGHT MODE READABILITY, WHITE ICONS, ORANGE ACCENT) */
+/* ========================================================================= */
+
+.squircle-icon,
+.squircle-icon *,
+.squircle-icon svg,
+.squircle-icon i {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    fill: none;
+}
+
+.badge-new,
+.badge-new-orange {
+    background: linear-gradient(135deg, #FF7A00 0%, #F59E0B 100%) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(255, 122, 0, 0.45) !important;
+    font-weight: 900 !important;
+}
+.badge-new *,
+.badge-new-orange * {
+    color: #FFFFFF !important;
+}
+
+/* Light Mode Recessed Wells & Option Boxes in UGC & other tools (Image 4 & 5) */
+html:not(.dark) [class*="bg-slate-950"],
+html:not(.dark) .bg-slate-950,
+html:not(.dark) .bg-slate-950\/60,
+html:not(.dark) .bg-slate-950\/70,
+html:not(.dark) .bg-slate-950\/80,
+html:not(.dark) .bg-slate-950\/90 {
+    background-color: #F5F7FF !important;
+    border-color: #E0E7FF !important;
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #screenshot-dropzone {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+}
+
+html:not(.dark) [class*="bg-slate-950"] label,
+html:not(.dark) [class*="bg-slate-950"] span,
+html:not(.dark) [class*="bg-slate-950"] p,
+html:not(.dark) [class*="bg-slate-950"] .font-bold {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) [class*="bg-slate-950"] .text-slate-300,
+html:not(.dark) [class*="bg-slate-950"] .text-slate-400,
+html:not(.dark) [class*="bg-slate-950"] .text-slate-500 {
+    color: #4B5563 !important;
+}
+
+html:not(.dark) [class*="bg-slate-950"] input[type="text"],
+html:not(.dark) [class*="bg-slate-950"] textarea {
+    background-color: #FFFFFF !important;
+    border-color: #E0E7FF !important;
+    color: #1E1B4B !important;
+}
+
+/* Light Mode Leaderboard Sticky Bottom Bar (Image 3) */
+html:not(.dark) #sticky-user-rank-bar {
+    background: #FFFFFF !important;
+    border: 1.5px solid #E0E7FF !important;
+    box-shadow: 0 10px 30px -5px rgba(85, 81, 250, 0.1) !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar span,
+html:not(.dark) #sticky-user-rank-bar div,
+html:not(.dark) #sticky-user-rank-bar strong {
+    color: #1E1B4B !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar #my-rank-position {
+    color: #5551FA !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar #my-rank-level {
+    background: #E0E7FF !important;
+    color: #3B38D4 !important;
+    border: 1px solid #6366F1 !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar p,
+html:not(.dark) #sticky-user-rank-bar .text-slate-400 {
+    color: #4B5563 !important;
+}
+
+html:not(.dark) #sticky-user-rank-bar #my-rank-xp {
+    color: #5551FA !important;
+}
+
+/* Dark Mode Leaderboard Sticky Bottom Bar */
+html.dark #sticky-user-rank-bar {
+    background: rgba(27, 27, 58, 0.94) !important;
+    border: 1px solid rgba(119, 116, 255, 0.3) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 10px 30px -5px rgba(15, 15, 35, 0.7) !important;
+}
+
+html.dark #sticky-user-rank-bar span,
+html.dark #sticky-user-rank-bar strong {
+    color: #F3F4F6 !important;
+}
+
+html.dark #sticky-user-rank-bar #my-rank-position {
+    color: #7774FF !important;
+}
+
+html.dark #sticky-user-rank-bar #my-rank-level {
+    background: rgba(45, 42, 112, 0.6) !important;
+    color: #7774FF !important;
+    border: 1px solid rgba(119, 116, 255, 0.3) !important;
+}

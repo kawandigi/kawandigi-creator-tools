@@ -298,7 +298,7 @@
                     <i data-lucide="user-check" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                     <span>AI Influencer & Character Maker</span>
                 </div>
-                <span class="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 text-[10px] font-bold border border-brand-500/30">NEW</span>
+                <span class="badge-new-orange px-2 py-0.5 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#F59E0B] text-white text-[10px] font-black shadow-sm">NEW</span>
             </button>
             <button type="button" id="sidebar-tab-leaderboard" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
                 <i data-lucide="trophy" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
@@ -419,17 +419,18 @@
         <!-- ========================================== -->
         <section id="section-catalog" class="tab-content active space-y-5 sm:space-y-6">
             <!-- Greeting & Role Pill -->
-            <div class="space-y-1">
-                <span id="home-greeting-role" class="inline-block px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase">
-                    TRIAL PENGUNJUNG
-                </span>
-                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    HALO, <span id="home-greeting-name" class="uppercase">KREATOR KAWANDIGI</span>
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+                <h2 class="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                    <span>Halo,</span>
+                    <span id="home-greeting-name" class="uppercase">KREATOR KAWANDIGI</span>
                 </h2>
+                <span id="home-greeting-role" class="inline-flex items-center px-2 py-0.5 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#F59E0B] text-white text-[10px] font-black tracking-wide shadow-sm">
+                    VIP ALL AKSES
+                </span>
             </div>
 
             <!-- HERO DASHBOARD CARD (BLUE GRADIENT AS IN AMBILTIKETNYA.ONLINE) -->
-            <div class="home-hero-card bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-3xl p-5 sm:p-7 text-white shadow-xl shadow-blue-600/25 relative overflow-hidden">
+            <div class="home-hero-card bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-2xl p-3.5 sm:p-4 text-white shadow-lg shadow-blue-600/25 relative overflow-hidden">
                 <!-- Top Chips Row -->
                 <div class="flex items-center justify-between gap-2 relative z-10">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold border border-white/25 backdrop-blur-sm">
@@ -443,15 +444,15 @@
                 </div>
 
                 <!-- Metric Numbers & Progress -->
-                <div class="mt-4 sm:mt-5 space-y-2 relative z-10">
+                <div class="mt-2.5 space-y-1 relative z-10">
                     <p class="text-xs text-blue-100 font-semibold tracking-wide">Video Dibuat / Target Peringkat</p>
                     <div class="flex items-baseline gap-2">
-                        <span id="home-hero-xp" class="text-3xl sm:text-4xl font-black text-white">0</span>
+                        <span id="home-hero-xp" class="text-2xl sm:text-3xl font-black text-white">0</span>
                         <span class="text-sm sm:text-base font-bold text-blue-200">/ 1.500 XP (<span id="home-hero-pct">0%</span>)</span>
                     </div>
 
                     <!-- Sleek Progress Bar -->
-                    <div class="w-full h-3 bg-blue-950/60 rounded-full overflow-hidden p-0.5 mt-2 border border-blue-400/20">
+                    <div class="w-full h-2 bg-blue-950/60 rounded-full overflow-hidden p-0.5 mt-1.5 border border-blue-400/20">
                         <div id="home-hero-progress" class="h-full rounded-full bg-gradient-to-r from-[#5551FA] to-[#7774FF] transition-all duration-700 shadow-sm" style="width: 0%;"></div>
                     </div>
                 </div>
@@ -468,9 +469,9 @@
             </div>
 
             <!-- QUICK ACTION / ANNOUNCEMENT BANNER (MATCHES IMAGE 1) -->
-            <div id="home-banner-flow" class="home-stat-card bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            <div id="home-banner-flow" class="home-stat-card bg-slate-900/90 border border-slate-800 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2.5 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-500/30 flex items-center justify-center font-bold flex-shrink-0">
+                    <div class="w-8 h-8 rounded-lg bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-500/30 flex items-center justify-center font-bold flex-shrink-0">
                         <i data-lucide="zap" class="w-5 h-5"></i>
                     </div>
                     <div>
@@ -480,7 +481,7 @@
                         <p class="text-xs text-slate-400 mt-0.5">Generator prompt naskah 9:16 vertikal siap pakai instan</p>
                     </div>
                 </div>
-                <button type="button" onclick="window.kdSwitchTab('ugc')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition flex items-center justify-center gap-1.5 self-start sm:self-auto">
+                <button type="button" onclick="window.kdSwitchTab('ugc')" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-[11px] shadow-sm shadow-brand-500/20 transition flex items-center justify-center gap-1 flex-shrink-0">
                     <span>BUAT SEKARANG →</span>
                 </button>
             </div>
@@ -526,7 +527,7 @@
                     <button type="button" id="home-btn-character" onclick="window.kdSwitchTab('character')" class="app-squircle-btn flex flex-col items-center gap-1.5 group p-1 transition relative">
                         <div class="squircle-icon w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-md shadow-[#5551FA]/30 group-hover:scale-105 active:scale-95 transition-all duration-200 relative">
                             <i data-lucide="user-check" class="w-6 h-6"></i>
-                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#5551FA] text-white text-[9px] font-black border border-[#2D2A70] shadow">NEW</span>
+                            <span class="badge-new-orange absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#F59E0B] text-white text-[9px] font-black border border-white/30 shadow-sm">NEW</span>
                         </div>
                         <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Character</span>
                     </button>

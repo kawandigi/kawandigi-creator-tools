@@ -4220,14 +4220,14 @@ function updateHeaderAuthUI(shouldSync = true) {
         if (greetingName) greetingName.textContent = (user.name || 'KREATOR KAWANDIGI').toUpperCase();
         if (greetingRole) {
             if (isSuper) {
-                greetingRole.className = "inline-block px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
-                greetingRole.textContent = "SUPERADMIN OFFICIAL (UNLIMITED)";
+                greetingRole.className = "inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 text-[10px] font-bold tracking-wide uppercase";
+                greetingRole.textContent = "SUPERADMIN";
             } else if (isDeviceLicensed) {
-                greetingRole.className = "inline-block px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
-                greetingRole.textContent = `${user.subscription?.plan || 'MEMBER VIP'} (AKTIF)`;
+                greetingRole.className = "inline-flex items-center px-2 py-0.5 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#F59E0B] text-white text-[10px] font-black tracking-wide shadow-sm";
+                greetingRole.textContent = "VIP ALL AKSES";
             } else {
-                greetingRole.className = "inline-block px-3 py-1 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
-                greetingRole.textContent = "MEMBER KAWANDIGI";
+                greetingRole.className = "inline-flex items-center px-2 py-0.5 rounded-full bg-[#5551FA]/15 text-[#5551FA] dark:text-[#7774FF] border border-[#5551FA]/30 text-[10px] font-bold tracking-wide uppercase";
+                greetingRole.textContent = "MEMBER";
             }
         }
         if (drawerName) drawerName.textContent = user.name || 'Kreator KawanDigi';
@@ -4262,7 +4262,7 @@ function updateHeaderAuthUI(shouldSync = true) {
 
         if (greetingName) greetingName.textContent = 'KREATOR KAWANDIGI';
         if (greetingRole) {
-            greetingRole.className = "inline-block px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] sm:text-xs font-bold tracking-wider uppercase";
+            greetingRole.className = "inline-flex items-center px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] font-bold tracking-wide uppercase";
             greetingRole.textContent = 'TRIAL PENGUNJUNG';
         }
         if (drawerName) drawerName.textContent = 'Tamu / Belum Masuk';
