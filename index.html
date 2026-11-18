@@ -1660,9 +1660,35 @@
                         <input type="text" id="char-input-body" placeholder="Ketik bentuk tubuh kustom..." value="Petite fit, ramping alami dan proporsional" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
                     </div>
 
+                    <!-- h. Gaya Busana & Pakaian (Signature Outfit) -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">h. Pilihan Pakaian & Gaya Busana (Signature Outfit):</label>
+                        <!-- Container chips pakaian wanita -->
+                        <div class="flex flex-wrap gap-1.5 mb-1" id="chips-fashion-female">
+                            <button type="button" data-val="Minimalist Cafe OOTD (cardigan rajut krem hangat, kaos basic putih, dan celana high-waist jeans)" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Minimalist Cafe OOTD</button>
+                            <button type="button" data-val="Smart Casual Chic (blazer oversized warna sage/beige dengan celana kulot rapi)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Smart Casual Blazer</button>
+                            <button type="button" data-val="Streetwear Hypebeast (hoodie oversized warna abu-abu, ripped jeans, dan sneakers retro)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Streetwear Hypebeast</button>
+                            <button type="button" data-val="Berhijab Modern Modest (tunik minimalis elegan, celana palazzo, dan pashmina ceruti senada)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">🧕 Modest Hijab Chic</button>
+                            <button type="button" data-val="Sporty Athleisure (jaket parasut crop stylish, crop top, dan legging gym bugar)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Sporty Athleisure</button>
+                            <button type="button" data-val="Glamour Evening Dress (gaun satin malam elegan warna emerald/hitam berpotongan mewah)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Gaun Malam Glamour</button>
+                            <button type="button" data-val="Indie Pop Vintage / Stage (jaket denim vintage, kaos grafis band indie, dan aksesoris perak)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Indie Pop Stage</button>
+                        </div>
+                        <!-- Container chips pakaian pria (hidden jika wanita) -->
+                        <div class="flex flex-wrap gap-1.5 mb-1 hidden" id="chips-fashion-male">
+                            <button type="button" data-val="Korean Minimalist Casual (oversized knit sweater/kemeja linen longgar, celana ankle pants, dan sneakers putih)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Korean Minimalist Casual</button>
+                            <button type="button" data-val="Urban Streetwear (hoodie oversized abu-abu, utility cargo pants, dan sneakers hypebeast)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Urban Streetwear Cargo</button>
+                            <button type="button" data-val="Smart Casual Executive (blazer semi-formal modern, kaos polos hitam premium, dan celana chino rapi)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Smart Casual Blazer</button>
+                            <button type="button" data-val="Kemeja Kasual Flannel / Oxford (kemeja lengan panjang digulung rapi, kaos dalam putih, celana denim)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Kemeja Kasual Flannel</button>
+                            <button type="button" data-val="Sporty Gym Athleisure (t-shirt active wear atletis, celana jogger training, dan sepatu lari modern)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Sporty Gym Athleisure</button>
+                            <button type="button" data-val="Jas Formal Eksekutif (setelan jas tailoring modern warna navy/charcoal dengan kemeja putih rapi)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Jas Formal Eksekutif</button>
+                            <button type="button" data-val="Cyberpunk Techwear / J-Rock (jaket bomber beraksen futuristik, kaos grafis gelap, rantai celana perak)" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Techwear / Rockstar</button>
+                        </div>
+                        <input type="text" id="char-input-fashion" placeholder="Pilih chip di atas atau ketik gaya pakaian kustom..." value="Minimalist Cafe OOTD (cardigan rajut krem hangat, kaos basic putih, dan celana high-waist jeans)" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+
                     <!-- h. Niche / Industri -->
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">h. Niche / Industri Fokus:</label>
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">i. Niche / Industri Fokus:</label>
                         <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-niche">
                             <button type="button" data-val="Fashion & OOTD Gaya Hidup Estetik" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Fashion & OOTD</button>
                             <button type="button" data-val="Skincare, Beauty & Make-up Clean Look" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Beauty & Skincare</button>
@@ -1677,7 +1703,7 @@
 
                     <!-- i. Vibe / Kepribadian -->
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">i. Vibe & Kepribadian:</label>
+                        <label class="block text-xs font-bold text-slate-900 dark:text-slate-200">j. Vibe & Kepribadian:</label>
                         <div class="flex flex-wrap gap-1.5 mb-1" id="chips-char-vibe">
                             <button type="button" data-val="Ceria, ramah, hangat, bersahabat (Girl/Boy Next Door)" class="char-opt-chip active px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5551FA] text-white border border-[#5551FA] transition">Ceria & Sahabat</button>
                             <button type="button" data-val="Anggun, tenang, misterius dan karismatik" class="char-opt-chip px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition">Anggun & Misterius</button>
@@ -1692,7 +1718,7 @@
                     <div class="space-y-1.5">
                         <div class="flex items-center justify-between">
                             <label for="char-input-traits" class="block text-xs font-bold text-slate-900 dark:text-slate-200">
-                                j. Ciri Khas & Ciri Unik <span class="text-brand-500 font-extrabold">(Kunci Konsistensi Wajah AI)</span>:
+                                k. Ciri Khas & Ciri Unik <span class="text-brand-500 font-extrabold">(Kunci Konsistensi Wajah AI)</span>:
                             </label>
                             <span class="text-[10px] text-slate-400">Klik chip untuk menambahkan</span>
                         </div>

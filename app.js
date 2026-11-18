@@ -2802,6 +2802,8 @@ function initCharacterMaker() {
     const inputGender = document.getElementById('char-input-gender');
     const chipsHairFemale = document.getElementById('chips-hair-female');
     const chipsHairMale = document.getElementById('chips-hair-male');
+    const chipsFashionFemale = document.getElementById('chips-fashion-female');
+    const chipsFashionMale = document.getElementById('chips-fashion-male');
     const nameInput = document.getElementById('char-input-name');
 
     function setGender(gender) {
@@ -2818,6 +2820,8 @@ function initCharacterMaker() {
 
             chipsHairFemale?.classList.remove('hidden');
             chipsHairMale?.classList.add('hidden');
+            chipsFashionFemale?.classList.remove('hidden');
+            chipsFashionMale?.classList.add('hidden');
 
             if (nameInput && (nameInput.value === 'Rian Pratama' || nameInput.value === 'Kenzo Daiki' || !nameInput.value)) {
                 nameInput.value = 'Maya Putri';
@@ -2833,6 +2837,8 @@ function initCharacterMaker() {
 
             chipsHairMale?.classList.remove('hidden');
             chipsHairFemale?.classList.add('hidden');
+            chipsFashionMale?.classList.remove('hidden');
+            chipsFashionFemale?.classList.add('hidden');
 
             if (nameInput && (nameInput.value === 'Maya Putri' || nameInput.value === 'Alya Melody' || !nameInput.value)) {
                 nameInput.value = 'Rian Pratama';
@@ -2958,6 +2964,7 @@ function initCharacterMaker() {
             isMale ? 'chips-hair-male' : 'chips-hair-female',
             'chips-char-haircolor',
             'chips-char-body',
+            isMale ? 'chips-fashion-male' : 'chips-fashion-female',
             'chips-char-niche',
             'chips-char-vibe'
         ];
@@ -3024,6 +3031,7 @@ function initCharacterMaker() {
         const hairStyle = document.getElementById('char-input-hair')?.value.trim();
         const hairColor = document.getElementById('char-input-haircolor')?.value.trim() || 'Hitam alami';
         const bodyType = document.getElementById('char-input-body')?.value.trim();
+        const fashionStyle = document.getElementById('char-input-fashion')?.value.trim();
         const niche = document.getElementById('char-input-niche')?.value.trim();
         const vibe = document.getElementById('char-input-vibe')?.value.trim();
         const customTraits = document.getElementById('char-input-traits')?.value.trim();
@@ -3046,6 +3054,7 @@ function initCharacterMaker() {
                 hairStyle,
                 hairColor,
                 bodyType,
+                fashionStyle,
                 niche,
                 vibe,
                 customTraits,
