@@ -25,7 +25,7 @@
     <link rel="icon" type="image/png" href="assets/icons/favicon.png">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#544ce7">
+    <meta name="theme-color" content="#5551FA">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="kawandigi">
@@ -38,23 +38,186 @@
             theme: {
                 extend: {
                     colors: {
+                        // PALET WARNA RESMI IDENTITAS LOGO KAWANDIGI
+                        // TEMA TERANG:
+                        // Utama: #5551FA (Khas), #3B38D4 (Gelap)
+                        // Sekunder: #6366F1 (Indigo Lembut), #E0E7FF (Ungu Muda Sangat Terang)
+                        // Latar: #FFFFFF (Dasar), #F5F7FF (Abu-abu Sangat Terang)
+                        // Teks: #1E1B4B (Teks Utama), #4B5563 (Abu-abu)
+                        //
+                        // TEMA GELAP:
+                        // Utama: #5551FA (Khas), #7774FF (Terang)
+                        // Sekunder: #6366F1 (Indigo Terang), #2D2A70 (Indigo Redup)
+                        // Latar: #0F0F23 (Dasar Gelap), #1B1B3A (Biru Gelap Medium)
+                        // Teks: #F3F4F6 (Teks Salju), #9CA3AF (Abu-abu)
                         brand: {
-                            50: '#f0efff',
-                            100: '#e2e0ff',
-                            200: '#c7c4fe',
-                            300: '#a6a1fd',
-                            400: '#7e75fb',
-                            500: '#544ce7', // Warna Utama Sesuai Logo
-                            600: '#433acb',
-                            700: '#352cb2',
-                            800: '#2c2591',
-                            900: '#252174',
-                            950: '#151249',
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
                         },
                         accent: {
-                            400: '#a78bfa',
-                            500: '#8b5cf6',
-                            600: '#7c3aed',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        slate: {
+                            50: '#FFFFFF',
+                            100: '#F5F7FF',
+                            200: '#E0E7FF',
+                            300: '#CBD5E1',
+                            400: '#9CA3AF',
+                            500: '#4B5563',
+                            600: '#4B5563',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1B1B3A',
+                            950: '#0F0F23',
+                        },
+                        // Petakan seluruh aksen legacy ke palet resmi sehingga tidak ada warna di luar palet
+                        indigo: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        purple: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        pink: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        rose: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        cyan: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        blue: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        amber: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        orange: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        emerald: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
+                        },
+                        teal: {
+                            50: '#F5F7FF',
+                            100: '#E0E7FF',
+                            200: '#E0E7FF',
+                            300: '#7774FF',
+                            400: '#6366F1',
+                            500: '#5551FA',
+                            600: '#3B38D4',
+                            700: '#2D2A70',
+                            800: '#1B1B3A',
+                            900: '#1E1B4B',
+                            950: '#0F0F23',
                         }
                     }
                 }
@@ -68,7 +231,7 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#0b0f19] dark:bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-[#FFFFFF] dark:bg-[#0F0F23] text-[#1E1B4B] dark:text-[#F3F4F6] min-h-screen flex flex-col lg:flex-row font-sans antialiased selection:bg-[#5551FA] selection:text-white">
 
     <!-- PWA & App Animated Splash Screen (Bouncing KD Logo) -->
     <div id="pwa-splash" class="kd-splash-overlay">
@@ -115,52 +278,52 @@
                 <i data-lucide="layout-grid" class="w-4 h-4"></i>
                 <span>Overview & Beranda</span>
             </button>
-            <button type="button" id="sidebar-tab-ugc" onclick="window.kdSwitchTab('ugc'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+            <button type="button" id="sidebar-tab-ugc" onclick="window.kdSwitchTab('ugc'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
+                <i data-lucide="sparkles" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                 <span>AI UGC Affiliate Creator</span>
             </button>
-            <button type="button" id="sidebar-tab-flow" onclick="window.kdSwitchTab('flow'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="film" class="w-4 h-4 text-emerald-400"></i>
+            <button type="button" id="sidebar-tab-flow" onclick="window.kdSwitchTab('flow'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
+                <i data-lucide="film" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                 <span>Google Flow Studio</span>
             </button>
-            <button type="button" id="sidebar-tab-drama" onclick="window.kdSwitchTab('drama'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <button type="button" id="sidebar-tab-drama" onclick="window.kdSwitchTab('drama'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
                 <div class="flex items-center gap-3">
-                    <i data-lucide="clapperboard" class="w-4 h-4 text-amber-400"></i>
+                    <i data-lucide="clapperboard" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                     <span>AI Drama & Micro-Series</span>
                 </div>
-                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">HOT</span>
+                <span class="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 text-[10px] font-bold border border-brand-500/30">HOT</span>
             </button>
-            <button type="button" id="sidebar-tab-character" onclick="window.kdSwitchTab('character'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <button type="button" id="sidebar-tab-character" onclick="window.kdSwitchTab('character'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
                 <div class="flex items-center gap-3">
-                    <i data-lucide="user-check" class="w-4 h-4 text-pink-400"></i>
+                    <i data-lucide="user-check" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                     <span>AI Influencer & Character Maker</span>
                 </div>
-                <span class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold border border-pink-500/30">NEW</span>
+                <span class="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 text-[10px] font-bold border border-brand-500/30">NEW</span>
             </button>
-            <button type="button" id="sidebar-tab-leaderboard" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
+            <button type="button" id="sidebar-tab-leaderboard" onclick="window.kdSwitchTab('leaderboard'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
+                <i data-lucide="trophy" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                 <span>Peringkat & Gamifikasi</span>
             </button>
-            <button type="button" id="sidebar-tab-tutorial" onclick="window.kdSwitchTab('tutorial'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="play-circle" class="w-4 h-4 text-indigo-400"></i>
+            <button type="button" id="sidebar-tab-tutorial" onclick="window.kdSwitchTab('tutorial'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
+                <i data-lucide="play-circle" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                 <span>Tutorial & Panduan Video</span>
             </button>
-            <button type="button" id="sidebar-tab-history" onclick="window.kdOpenHistory(); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            <button type="button" id="sidebar-tab-history" onclick="window.kdOpenHistory(); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
                 <div class="flex items-center gap-3">
-                    <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+                    <i data-lucide="history" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                     <span>Riwayat Project Saya</span>
                 </div>
-                <span id="drawer-history-badge" class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/30">0</span>
+                <span id="drawer-history-badge" class="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-300 text-[10px] font-bold border border-brand-500/30">0</span>
             </button>
 
             <div class="py-2"><div class="border-t border-slate-200 dark:border-slate-800"></div></div>
 
-            <button type="button" id="drawer-admin-btn" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item hidden w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-amber-500 dark:text-amber-300 hover:bg-amber-500/10 transition">
-                <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+            <button type="button" id="drawer-admin-btn" onclick="window.kdOpenAdminConsole(); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item hidden w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-brand-600 dark:text-brand-300 hover:bg-brand-500/10 transition">
+                <i data-lucide="shield" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                 <span>Console Admin KawanDigi</span>
             </button>
-            <button type="button" id="sidebar-tab-license" onclick="window.kdSwitchTab('license'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition">
-                <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+            <button type="button" id="sidebar-tab-license" onclick="window.kdSwitchTab('license'); window.kdCloseDrawer();" class="drawer-menu-item nav-sidebar-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-600 dark:hover:text-white transition">
+                <i data-lucide="key" class="w-4 h-4 text-brand-500 dark:text-brand-300"></i>
                 <span>Paket Langganan & Lisensi</span>
             </button>
         </div>
@@ -289,7 +452,7 @@
 
                     <!-- Sleek Progress Bar -->
                     <div class="w-full h-3 bg-blue-950/60 rounded-full overflow-hidden p-0.5 mt-2 border border-blue-400/20">
-                        <div id="home-hero-progress" class="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-400 transition-all duration-700 shadow-sm" style="width: 0%;"></div>
+                        <div id="home-hero-progress" class="h-full rounded-full bg-gradient-to-r from-[#5551FA] to-[#7774FF] transition-all duration-700 shadow-sm" style="width: 0%;"></div>
                     </div>
                 </div>
 
@@ -334,62 +497,62 @@
 
                 <!-- Circular App Buttons Grid -->
                 <div class="grid grid-cols-4 sm:grid-cols-7 gap-3 sm:gap-4 py-1">
-                    <!-- 1. UGC Affiliate (Purple) -->
+                    <!-- 1. UGC Affiliate (Brand) -->
                     <button type="button" id="home-btn-ugc" onclick="window.kdSwitchTab('ugc')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
                             <i data-lucide="sparkles" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">UGC Affiliate</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">UGC Affiliate</span>
                     </button>
 
-                    <!-- 2. Google Flow (Blue) -->
+                    <!-- 2. Google Flow (Brand) -->
                     <button type="button" id="home-btn-flow" onclick="window.kdSwitchTab('flow')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 transition">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
                             <i data-lucide="film" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Google Flow</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Google Flow</span>
                     </button>
 
-                    <!-- 3. AI Drama (Orange/Amber with Badge) -->
+                    <!-- 3. AI Drama (Brand with Badge) -->
                     <button type="button" id="home-btn-drama" onclick="window.kdSwitchTab('drama')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:shadow-orange-500/40 transition relative">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition relative">
                             <i data-lucide="clapperboard" class="w-6 h-6"></i>
-                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[9px] font-black border border-slate-900 shadow">HOT</span>
+                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#5551FA] text-white text-[9px] font-black border border-[#2D2A70] shadow">HOT</span>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">AI Drama</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">AI Drama</span>
                     </button>
 
-                    <!-- 4. AI Character Maker (Pink/Rose with Badge) -->
+                    <!-- 4. AI Character Maker (Brand with Badge) -->
                     <button type="button" id="home-btn-character" onclick="window.kdSwitchTab('character')" class="app-circle-btn flex flex-col items-center gap-1.5 group relative">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-pink-500/20 group-hover:shadow-pink-500/40 transition relative">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition relative">
                             <i data-lucide="user-check" class="w-6 h-6"></i>
-                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-pink-600 text-white text-[9px] font-black border border-slate-900 shadow">NEW</span>
+                            <span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#5551FA] text-white text-[9px] font-black border border-[#2D2A70] shadow">NEW</span>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Character</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Character</span>
                     </button>
 
-                    <!-- 4. Peringkat (Pink/Rose) -->
+                    <!-- 5. Peringkat (Brand) -->
                     <button type="button" onclick="window.kdSwitchTab('leaderboard')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-pink-500/20 group-hover:shadow-pink-500/40 transition">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
                             <i data-lucide="trophy" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Peringkat</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Peringkat</span>
                     </button>
 
-                    <!-- 5. Tutorial Video (Violet) -->
+                    <!-- 6. Tutorial Video (Brand) -->
                     <button type="button" onclick="window.kdSwitchTab('tutorial')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
                             <i data-lucide="play-circle" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Tutorial</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Tutorial</span>
                     </button>
 
-                    <!-- 6. Toko Digital (Emerald) -->
+                    <!-- 7. Toko Digital (Brand) -->
                     <button type="button" onclick="window.kdSwitchTab('license')" class="app-circle-btn flex flex-col items-center gap-1.5 group">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#3B38D4] text-white flex items-center justify-center shadow-lg shadow-[#5551FA]/25 group-hover:shadow-[#5551FA]/45 transition">
                             <i data-lucide="shopping-bag" class="w-6 h-6"></i>
                         </div>
-                        <span class="text-[11px] sm:text-xs font-bold text-slate-200 text-center leading-tight">Toko VIP</span>
+                        <span class="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 text-center leading-tight">Toko VIP</span>
                     </button>
                 </div>
             </div>
@@ -405,7 +568,7 @@
                             <p class="text-xs font-semibold text-slate-300">Total Video Dibuat</p>
                             <p class="text-[11px] text-slate-400">Total karya video AI Anda</p>
                         </div>
-                        <div id="stat-ring-vids" class="radial-ring text-xs font-black text-cyan-400" style="--ring-color: #06b6d4; --ring-pct: 0;">
+                        <div id="stat-ring-vids" class="radial-ring text-xs font-black text-[#5551FA] dark:text-[#7774FF]" style="--ring-color: #5551FA; --ring-pct: 0;">
                             <span>0%</span>
                         </div>
                     </div>
@@ -413,11 +576,11 @@
                     <!-- Card 2: Skor XP & Level -->
                     <div class="home-stat-card bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
                         <div class="space-y-1">
-                            <h4 id="stat-card-xp" class="text-3xl font-black text-emerald-400">0</h4>
+                            <h4 id="stat-card-xp" class="text-3xl font-black text-[#5551FA] dark:text-[#7774FF]">0</h4>
                             <p class="text-xs font-semibold text-slate-300">Total Skor XP</p>
-                            <p class="text-[11px] text-slate-400">Status: <strong id="stat-rank-status" class="text-amber-400">Novice Creator</strong></p>
+                            <p class="text-[11px] text-slate-400">Status: <strong id="stat-rank-status" class="text-[#6366F1] dark:text-[#7774FF]">Novice Creator</strong></p>
                         </div>
-                        <div id="stat-ring-xp" class="radial-ring text-xs font-black text-emerald-400" style="--ring-color: #10b981; --ring-pct: 0;">
+                        <div id="stat-ring-xp" class="radial-ring text-xs font-black text-[#6366F1] dark:text-[#7774FF]" style="--ring-color: #6366F1; --ring-pct: 0;">
                             <span>0%</span>
                         </div>
                     </div>
@@ -453,7 +616,7 @@
             <!-- Mobile Compact Header (Identik dengan AI UGC Affiliate Creator) -->
             <div class="sm:hidden flex items-center justify-between pb-1">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center text-white shadow-sm flex-shrink-0" style="color: #ffffff !important;">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] flex items-center justify-center text-white shadow-sm flex-shrink-0" style="color: #ffffff !important;">
                         <i data-lucide="trophy" class="w-4 h-4" style="stroke: #ffffff !important; color: #ffffff !important;"></i>
                     </div>
                     <div>
@@ -461,7 +624,7 @@
                         <p class="text-[11px] text-slate-500 dark:text-slate-400">Hall of fame & gamifikasi XP produktivitas</p>
                     </div>
                 </div>
-                <span class="text-[10px] text-amber-600 dark:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
+                <span class="text-[10px] text-brand-600 dark:text-brand-300 bg-brand-500/10 border border-brand-500/30 px-2 py-0.5 rounded-full font-bold">
                     Real-Time
                 </span>
             </div>
@@ -651,17 +814,17 @@
                         </div>
 
                         <!-- SATU TOMBOL ANALISA CERDAS TERPADU -->
-                        <button type="button" id="btn-analyze-unified" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                        <button type="button" id="btn-analyze-unified" class="w-full py-2.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-bold text-xs rounded-xl shadow-md shadow-[#5551FA]/20 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
                             <span id="btn-analyze-unified-text">Analisa Info Produk dengan AI</span>
                         </button>
 
                         <!-- BANNER ANIMASI PROSES ANALISA (Tampil saat AI bekerja) -->
-                        <div id="ugc-analyze-progress-banner" class="hidden p-3 rounded-xl bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/40 text-emerald-200 text-xs flex items-center gap-3">
-                            <div class="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                        <div id="ugc-analyze-progress-banner" class="hidden p-3 rounded-xl bg-gradient-to-r from-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/40 text-[#F3F4F6] text-xs flex items-center gap-3">
+                            <div class="w-4 h-4 border-2 border-[#7774FF] border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
                             <div class="flex-1 min-w-0">
                                 <p id="ugc-analyze-progress-text" class="font-bold text-white text-xs">AI sedang menganalisis produk...</p>
-                                <p id="ugc-analyze-progress-subtext" class="text-[10px] text-emerald-300 truncate">Mengekstrak visual, nama, varian & keunggulan viral.</p>
+                                <p id="ugc-analyze-progress-subtext" class="text-[10px] text-slate-300 truncate">Mengekstrak visual, nama, varian & keunggulan viral.</p>
                             </div>
                         </div>
                     </div>
@@ -854,16 +1017,16 @@
                                 </div>
 
                                 <!-- Featured Shopee Caption Card (Max 150 chars) -->
-                                <div id="ugc-shopee-caption-card" class="bg-gradient-to-r from-orange-950/40 via-amber-950/30 to-slate-900 border border-orange-500/40 rounded-xl p-3.5 space-y-2 shopee-caption-card">
+                                <div id="ugc-shopee-caption-card" class="bg-gradient-to-r from-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/30 rounded-xl p-3.5 space-y-2 shopee-caption-card">
                                     <div class="flex items-center justify-between">
-                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[11px] font-black">
-                                            <i data-lucide="shopping-bag" class="w-3 h-3 text-orange-400"></i>
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#2D2A70] text-[#7774FF] border border-[#5551FA]/30 text-[11px] font-black">
+                                            <i data-lucide="shopping-bag" class="w-3 h-3 text-[#7774FF]"></i>
                                             Khusus Shopee Video / Feed (Maks. 150 Karakter)
                                         </span>
-                                        <span id="shopee-char-count-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-orange-500/30 text-orange-300">0 / 150 Karakter</span>
+                                        <span id="shopee-char-count-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#0F0F23] border border-[#5551FA]/30 text-[#7774FF]">0 / 150 Karakter</span>
                                     </div>
                                     <p id="ugc-shopee-caption-text" class="text-xs text-slate-200 font-medium leading-relaxed whitespace-pre-wrap select-all"></p>
-                                    <button type="button" id="btn-copy-shopee-caption" class="w-full py-1.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow transition">
+                                    <button type="button" id="btn-copy-shopee-caption" class="w-full py-1.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow transition">
                                         <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Caption Shopee (150 Char)
                                     </button>
                                 </div>
@@ -873,31 +1036,31 @@
                             </div>
 
                             <!-- Affiliate Storefront Links Card (Keranjang Kuning TikTok & Keranjang Oranye Shopee) -->
-                            <div id="ugc-marketplace-links-card" class="bg-gradient-to-r from-amber-950/30 via-slate-900 to-orange-950/30 border border-amber-500/30 rounded-xl p-3.5 space-y-3">
+                            <div id="ugc-marketplace-links-card" class="bg-gradient-to-r from-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/30 rounded-xl p-3.5 space-y-3">
                                 <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                                     <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                                        <i data-lucide="shopping-bag" class="w-4 h-4 text-amber-400"></i>
+                                        <i data-lucide="shopping-bag" class="w-4 h-4 text-[#7774FF]"></i>
                                         Tautan Produk untuk Keranjang Kuning & Oranye
                                     </span>
-                                    <span class="text-[10px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold">Siap Pasang di Etalase</span>
+                                    <span class="text-[10px] text-brand-300 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full font-bold">Siap Pasang di Etalase</span>
                                 </div>
                                 <p class="text-[11px] text-slate-300">
                                     Gunakan tautan pencarian etalase resmi ini untuk menautkan produk ke <strong>Keranjang Kuning (TikTok Shop)</strong> atau <strong>Keranjang Oranye (Shopee Video)</strong>:
                                 </p>
                                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                     <div class="relative flex-1">
-                                        <input type="text" id="ugc-marketplace-link-display" readonly class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-amber-200 font-mono select-all focus:outline-none">
+                                        <input type="text" id="ugc-marketplace-link-display" readonly class="w-full bg-[#0F0F23] border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-brand-300 font-mono select-all focus:outline-none">
                                     </div>
-                                    <button type="button" id="btn-copy-marketplace-link" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition">
+                                    <button type="button" id="btn-copy-marketplace-link" class="px-3 py-2 bg-[#2D2A70] hover:bg-[#3B38D4] text-[#7774FF] hover:text-white border border-[#5551FA]/30 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition">
                                         <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Link
                                     </button>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                                    <a id="btn-open-shopee-link" href="#" target="_blank" rel="noopener noreferrer" class="py-2 px-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow transition">
-                                        <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> 🛍️ Buka di Shopee ↗
+                                    <a id="btn-open-shopee-link" href="#" target="_blank" rel="noopener noreferrer" class="py-2 px-3 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 shadow transition">
+                                        <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i> Buka di Shopee
                                     </a>
-                                    <a id="btn-open-tiktok-link" href="#" target="_blank" rel="noopener noreferrer" class="py-2 px-3 bg-gradient-to-r from-slate-800 to-slate-900 hover:bg-slate-700 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 border border-slate-700 shadow transition">
-                                        <i data-lucide="music-2" class="w-3.5 h-3.5"></i> 🎵 Buka di TikTok Shop ↗
+                                    <a id="btn-open-tiktok-link" href="#" target="_blank" rel="noopener noreferrer" class="py-2 px-3 bg-[#2D2A70] hover:bg-[#3B38D4] text-[#F3F4F6] font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 border border-[#5551FA]/30 shadow transition">
+                                        <i data-lucide="music-2" class="w-3.5 h-3.5"></i> Buka di TikTok Shop
                                     </a>
                                 </div>
                             </div>
@@ -918,7 +1081,7 @@
             <!-- Mobile Compact Header (Identik dengan AI UGC Affiliate Creator) -->
             <div class="sm:hidden flex items-center justify-between pb-1">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white shadow-sm flex-shrink-0" style="color: #ffffff !important;">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] flex items-center justify-center text-white shadow-sm flex-shrink-0" style="color: #ffffff !important;">
                         <i data-lucide="sparkles" class="w-4 h-4" style="stroke: #ffffff !important; color: #ffffff !important;"></i>
                     </div>
                     <div>
@@ -927,7 +1090,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1 transition">
+                    <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1 transition">
                         <span>Buka Flow</span>
                         <i data-lucide="external-link" class="w-3 h-3"></i>
                     </a>
@@ -935,10 +1098,10 @@
             </div>
 
             <!-- Hero Card: Google Flow (Veo) - Desktop & Tablet View -->
-            <div class="hidden sm:block bg-gradient-to-r from-emerald-950/70 via-slate-900 to-teal-950/70 border border-emerald-500/30 rounded-2xl p-6 sm:p-8 shadow-xl">
+            <div class="hidden sm:block bg-gradient-to-r from-[#1B1B3A] via-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/30 rounded-2xl p-6 sm:p-8 shadow-xl">
                 <div class="max-w-3xl space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2D2A70] text-[#7774FF] text-xs font-bold border border-[#5551FA]/30">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-[#7774FF]"></i>
                         <span>Google DeepMind • 100% Bebas Biaya</span>
                     </div>
                     <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
@@ -948,12 +1111,12 @@
                         Generator video AI sinematik resmi dari Google DeepMind. Cukup salin prompt dari KawanDigi Creator Tools, tempel di Google Flow, dan render video 10 detik kualitas FHD 1080p secara gratis tanpa perlu kartu kredit.
                     </p>
                     <div class="pt-2 flex flex-wrap gap-3">
-                        <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition transform active:scale-95">
+                        <a href="https://aitestkitchen.withgoogle.com/tools/video-fx" target="_blank" rel="noopener noreferrer" class="px-5 py-3 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-bold text-sm rounded-xl shadow-lg shadow-[#5551FA]/25 flex items-center gap-2 transition transform active:scale-95">
                             <i data-lucide="external-link" class="w-4 h-4"></i>
                             <span>Buka Google Flow (Tab Baru)</span>
                         </a>
-                        <button type="button" id="btn-open-flow-popup" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-sm rounded-xl flex items-center gap-2 transition">
-                            <i data-lucide="columns-2" class="w-4 h-4 text-emerald-400"></i>
+                        <button type="button" id="btn-open-flow-popup" class="px-5 py-3 bg-[#2D2A70] hover:bg-[#3B38D4] border border-[#5551FA]/30 text-white font-bold text-sm rounded-xl flex items-center gap-2 transition">
+                            <i data-lucide="columns-2" class="w-4 h-4 text-[#7774FF]"></i>
                             <span>Buka Mode Berdampingan</span>
                         </button>
                     </div>
@@ -1249,7 +1412,7 @@
             <!-- Mobile Compact Header -->
             <div class="sm:hidden flex items-center justify-between pb-1">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] flex items-center justify-center text-white shadow-sm flex-shrink-0">
                         <i data-lucide="user-check" class="w-4 h-4 text-white"></i>
                     </div>
                     <div>
@@ -1257,13 +1420,13 @@
                         <p class="text-[10px] text-slate-400">Influencer & Virtual Artist Creator</p>
                     </div>
                 </div>
-                <span class="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 text-[10px] font-bold border border-pink-500/30">PRO</span>
+                <span class="px-2 py-0.5 rounded-full bg-[#2D2A70] text-[#7774FF] text-[10px] font-bold border border-[#5551FA]/30">PRO</span>
             </div>
 
             <!-- Desktop Header Banner -->
-            <div class="hidden sm:block bg-gradient-to-r from-pink-900/30 via-slate-900 to-rose-900/20 border border-pink-500/30 rounded-2xl p-6 relative overflow-hidden">
+            <div class="hidden sm:block bg-gradient-to-r from-[#1B1B3A] via-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/30 rounded-2xl p-6 relative overflow-hidden">
                 <div class="relative z-10 max-w-2xl">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-xs font-semibold mb-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2D2A70] border border-[#5551FA]/30 text-[#7774FF] text-xs font-semibold mb-3">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                         <span>AI Influencer & Virtual Artist Engine</span>
                     </div>
@@ -1420,7 +1583,7 @@
 
                     <!-- Submit Button -->
                     <div class="pt-2">
-                        <button type="button" id="btn-generate-character" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transition active:scale-[0.99]">
+                        <button type="button" id="btn-generate-character" class="w-full py-3.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transition active:scale-[0.99]">
                             <i data-lucide="wand-2" class="w-4 h-4"></i>
                             <span id="btn-generate-character-label">✨ Generate Profil Karakter & Turnaround Sheet</span>
                         </button>
@@ -1430,7 +1593,7 @@
                 <!-- RESULTS CONTAINER (GENERATED CHARACTER) -->
                 <div id="char-results" class="hidden space-y-4">
                     <!-- Character Profile Header Card -->
-                    <div class="bg-gradient-to-r from-pink-950/40 via-slate-900 to-slate-900 border border-pink-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+                    <div class="bg-gradient-to-r from-[#1B1B3A] via-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
                                 <div id="char-res-avatar-wrap" class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-800 border-2 border-pink-500/40 flex-shrink-0 flex items-center justify-center text-pink-400 font-black text-2xl shadow">
@@ -1833,8 +1996,8 @@
                 </div>
 
                 <!-- Card 2: Lisensi Selamanya All Device (Email Sama) -->
-                <div id="card-pricing-alldev" class="bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-900 border-2 border-amber-500 rounded-2xl p-6 flex flex-col justify-between text-center relative shadow-xl shadow-amber-500/10 hover:border-amber-400 transition">
-                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black text-[10px] uppercase px-3 py-1 rounded-full shadow-md shadow-amber-500/20 flex items-center gap-1 whitespace-nowrap">
+                <div id="card-pricing-alldev" class="bg-gradient-to-b from-[#1B1B3A] via-[#1B1B3A] to-[#2D2A70] border-2 border-amber-500 rounded-2xl p-6 flex flex-col justify-between text-center relative shadow-xl shadow-amber-500/10 hover:border-amber-400 transition">
+                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] text-slate-950 font-black text-[10px] uppercase px-3 py-1 rounded-full shadow-md shadow-amber-500/20 flex items-center gap-1 whitespace-nowrap">
                         <span>⭐ PALING DIREKOMENDASIKAN</span>
                     </div>
                     <div>
@@ -1901,7 +2064,7 @@
                     </div>
 
                     <div class="space-y-2 pt-3 border-t border-slate-800 text-center">
-                        <a id="btn-buy-wa-vip-alldev" href="https://wa.me/6282245565454?text=Halo%20Admin%20KawanDigi,%20saya%20ingin%20membeli%20Lisensi%20Selamanya%20All%20Device%20(Rp%20349.000%20Akses%20Selamanya)" target="_blank" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-amber-500/20">
+                        <a id="btn-buy-wa-vip-alldev" href="https://wa.me/6282245565454?text=Halo%20Admin%20KawanDigi,%20saya%20ingin%20membeli%20Lisensi%20Selamanya%20All%20Device%20(Rp%20349.000%20Akses%20Selamanya)" target="_blank" class="w-full py-3 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-[#5551FA]/20">
                             <i data-lucide="message-circle" class="w-4 h-4"></i>
                             <span>Beli Lisensi All Device</span>
                         </a>
@@ -2057,7 +2220,7 @@
                         </div>
 
                         <div class="flex justify-end pt-1">
-                            <button type="button" id="btn-generate-license" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition active:scale-95 cursor-pointer">
+                            <button type="button" id="btn-generate-license" class="px-5 py-2.5 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-black text-xs rounded-xl shadow-lg shadow-[#5551FA]/20 flex items-center gap-2 transition active:scale-95 cursor-pointer">
                                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                                 <span>Terbitkan Kunci Lisensi Baru</span>
                             </button>
@@ -2497,7 +2660,7 @@
             <!-- Modal Header -->
             <div class="flex items-start justify-between pb-3 sm:pb-4 border-b border-slate-800/80 flex-shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-rose-500/20 flex-shrink-0">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#5551FA] to-[#3B38D4] flex items-center justify-center text-white shadow-lg shadow-rose-500/20 flex-shrink-0">
                         <i data-lucide="flame" class="w-5 h-5"></i>
                     </div>
                     <div>
@@ -2514,7 +2677,7 @@
             </div>
 
             <!-- Auto-Pick Winning Product Highlight Banner -->
-            <div class="mt-3 sm:mt-4 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/40 via-amber-950/30 to-brand-950/40 border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0">
+            <div class="mt-3 sm:mt-4 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#1B1B3A] via-[#1B1B3A] to-[#2D2A70] border border-[#5551FA]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-bold flex-shrink-0">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
@@ -2527,7 +2690,7 @@
                         <p class="text-[11px] text-slate-300">AI memilihkan produk #1 paling laku dengan hook angle terbukti convert.</p>
                     </div>
                 </div>
-                <button type="button" id="btn-auto-pick-product" class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5 flex-shrink-0 active:scale-95">
+                <button type="button" id="btn-auto-pick-product" class="px-3.5 py-2 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5 flex-shrink-0 active:scale-95">
                     <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
                     <span>⚡ Pilihkan Otomatis (AI Pick)</span>
                 </button>
@@ -2695,7 +2858,7 @@
                 </div>
 
                 <div class="space-y-2 pt-1">
-                    <button id="btn-flow-direct-action" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-brand-600 hover:from-emerald-500 hover:to-brand-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                    <button id="btn-flow-direct-action" class="w-full py-3 bg-gradient-to-r from-[#5551FA] to-[#3B38D4] hover:from-[#6366F1] hover:to-[#5551FA] text-white font-bold text-xs rounded-xl shadow-lg shadow-[#5551FA]/20 flex items-center justify-center gap-2 transition">
                         <i data-lucide="external-link" class="w-4 h-4"></i>
                         <span>Salin Prompt & Buka Google Flow (Gratis)</span>
                     </button>
